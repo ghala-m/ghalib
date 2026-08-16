@@ -61,7 +61,10 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     navigate({ to: "/dashboard" });
   }
 
@@ -69,7 +72,10 @@ function AuthPage() {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (result.error) return toast.error(result.error.message ?? "OAuth error");
+    if (result.error) {
+      toast.error(result.error.message ?? "OAuth error");
+      return;
+    }
     if (result.redirected) return;
     navigate({ to: "/dashboard" });
   }
