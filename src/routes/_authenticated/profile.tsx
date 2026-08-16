@@ -58,7 +58,7 @@ function ProfilePage() {
           full_name: form.full_name || null,
           major: form.major || null,
           current_term: form.current_term || null,
-          total_credits: form.total_credits ? Number(form.total_credits) : null,
+          total_credits: form.total_credits ? Number(form.total_credits) : 0,
           overall_gpa: form.overall_gpa ? Number(form.overall_gpa) : null,
           semester_gpa: form.semester_gpa ? Number(form.semester_gpa) : null,
         })
