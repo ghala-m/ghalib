@@ -14,7 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      course_items: {
+        Row: {
+          completed: boolean
+          course_id: string
+          created_at: string
+          description: string | null
+          due_date: string | null
+          due_time: string | null
+          id: string
+          title: string
+          type: Database["public"]["Enums"]["item_type"]
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          completed?: boolean
+          course_id: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          title: string
+          type?: Database["public"]["Enums"]["item_type"]
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          completed?: boolean
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["item_type"]
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_items_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courses: {
+        Row: {
+          archived: boolean
+          code: string | null
+          color: string | null
+          created_at: string
+          credits: number | null
+          final_grade: string | null
+          id: string
+          instructor: string | null
+          is_retake: boolean
+          location: string | null
+          meetings: Json
+          name: string
+          notes: string | null
+          previous_attempt_id: string | null
+          status: Database["public"]["Enums"]["course_status"]
+          syllabus_path: string | null
+          term: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          credits?: number | null
+          final_grade?: string | null
+          id?: string
+          instructor?: string | null
+          is_retake?: boolean
+          location?: string | null
+          meetings?: Json
+          name: string
+          notes?: string | null
+          previous_attempt_id?: string | null
+          status?: Database["public"]["Enums"]["course_status"]
+          syllabus_path?: string | null
+          term?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          code?: string | null
+          color?: string | null
+          created_at?: string
+          credits?: number | null
+          final_grade?: string | null
+          id?: string
+          instructor?: string | null
+          is_retake?: boolean
+          location?: string | null
+          meetings?: Json
+          name?: string
+          notes?: string | null
+          previous_attempt_id?: string | null
+          status?: Database["public"]["Enums"]["course_status"]
+          syllabus_path?: string | null
+          term?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courses_previous_attempt_id_fkey"
+            columns: ["previous_attempt_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grade_weights: {
+        Row: {
+          category: string
+          course_id: string
+          created_at: string
+          id: string
+          percentage: number
+          user_id: string
+        }
+        Insert: {
+          category: string
+          course_id: string
+          created_at?: string
+          id?: string
+          percentage?: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          percentage?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_weights_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_term: string | null
+          full_name: string | null
+          id: string
+          language: string
+          major: string | null
+          overall_gpa: number | null
+          semester_gpa: number | null
+          total_credits: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_term?: string | null
+          full_name?: string | null
+          id: string
+          language?: string
+          major?: string | null
+          overall_gpa?: number | null
+          semester_gpa?: number | null
+          total_credits?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_term?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string
+          major?: string | null
+          overall_gpa?: number | null
+          semester_gpa?: number | null
+          total_credits?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +220,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      course_status: "current" | "completed" | "future"
+      item_type: "assignment" | "exam" | "quiz" | "project" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +348,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      course_status: ["current", "completed", "future"],
+      item_type: ["assignment", "exam", "quiz", "project", "other"],
+    },
   },
 } as const
