@@ -5,6 +5,8 @@ import { coursesQuery, profileQuery, upcomingItemsQuery } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { LangToggle } from "@/components/LangToggle";
+import { ThemeModeToggle } from "@/components/app/ThemeControls";
+import { PrereqFlowChart } from "@/components/app/PrereqFlowChart";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -34,7 +36,7 @@ function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
@@ -42,7 +44,10 @@ function DashboardPage() {
             {profile?.major || t("none")} · {profile?.current_term || t("none")}
           </p>
         </div>
-        <LangToggle variant="outline" />
+        <div className="flex items-center gap-2">
+          <ThemeModeToggle />
+          <LangToggle variant="outline" />
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -54,6 +59,10 @@ function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <section className="mt-10">
+        <PrereqFlowChart courses={courses.filter((c) => !c.archived)} />
+      </section>
 
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold">{t("upcoming")}</h2>

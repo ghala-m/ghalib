@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_items: {
         Row: {
           completed: boolean
@@ -67,11 +91,14 @@ export type Database = {
       courses: {
         Row: {
           archived: boolean
+          category: Database["public"]["Enums"]["course_category"]
           code: string | null
           color: string | null
+          completed_term: string | null
           created_at: string
           credits: number | null
           final_grade: string | null
+          grade_points: number | null
           id: string
           instructor: string | null
           is_retake: boolean
@@ -79,6 +106,8 @@ export type Database = {
           meetings: Json
           name: string
           notes: string | null
+          plan_level: number | null
+          prerequisites: string[]
           previous_attempt_id: string | null
           status: Database["public"]["Enums"]["course_status"]
           syllabus_path: string | null
@@ -88,11 +117,14 @@ export type Database = {
         }
         Insert: {
           archived?: boolean
+          category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
           color?: string | null
+          completed_term?: string | null
           created_at?: string
           credits?: number | null
           final_grade?: string | null
+          grade_points?: number | null
           id?: string
           instructor?: string | null
           is_retake?: boolean
@@ -100,6 +132,8 @@ export type Database = {
           meetings?: Json
           name: string
           notes?: string | null
+          plan_level?: number | null
+          prerequisites?: string[]
           previous_attempt_id?: string | null
           status?: Database["public"]["Enums"]["course_status"]
           syllabus_path?: string | null
@@ -109,11 +143,14 @@ export type Database = {
         }
         Update: {
           archived?: boolean
+          category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
           color?: string | null
+          completed_term?: string | null
           created_at?: string
           credits?: number | null
           final_grade?: string | null
+          grade_points?: number | null
           id?: string
           instructor?: string | null
           is_retake?: boolean
@@ -121,6 +158,8 @@ export type Database = {
           meetings?: Json
           name?: string
           notes?: string | null
+          plan_level?: number | null
+          prerequisites?: string[]
           previous_attempt_id?: string | null
           status?: Database["public"]["Enums"]["course_status"]
           syllabus_path?: string | null
@@ -175,39 +214,51 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string | null
           created_at: string
           current_term: string | null
           full_name: string | null
           id: string
           language: string
           major: string | null
+          onboarding_completed: boolean
           overall_gpa: number | null
           semester_gpa: number | null
+          theme: string
           total_credits: number
+          university: string | null
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
           created_at?: string
           current_term?: string | null
           full_name?: string | null
           id: string
           language?: string
           major?: string | null
+          onboarding_completed?: boolean
           overall_gpa?: number | null
           semester_gpa?: number | null
+          theme?: string
           total_credits?: number
+          university?: string | null
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
           created_at?: string
           current_term?: string | null
           full_name?: string | null
           id?: string
           language?: string
           major?: string | null
+          onboarding_completed?: boolean
           overall_gpa?: number | null
           semester_gpa?: number | null
+          theme?: string
           total_credits?: number
+          university?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -220,6 +271,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      course_category: "general" | "college" | "major" | "major_elective"
       course_status: "current" | "completed" | "future"
       item_type: "assignment" | "exam" | "quiz" | "project" | "other"
     }
@@ -349,6 +401,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      course_category: ["general", "college", "major", "major_elective"],
       course_status: ["current", "completed", "future"],
       item_type: ["assignment", "exam", "quiz", "project", "other"],
     },

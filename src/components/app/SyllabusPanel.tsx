@@ -5,20 +5,12 @@ import { Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { parseSyllabus, type Extraction } from "@/lib/syllabus.functions";
+import { ACCEPTED_DOCS, isAcceptedDoc, prepareDocument } from "@/lib/files";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Course } from "@/lib/queries";
-
-function toBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1] ?? "");
-    reader.onerror = () => reject(new Error("read failed"));
-    reader.readAsDataURL(file);
-  });
-}
 
 const GAP_LABELS: Record<string, string> = {
   course_name: "courseName",
@@ -39,17 +31,21 @@ export function SyllabusPanel({ course }: { course: Course }) {
 
   const run = useMutation({
     mutationFn: async (file: File) => {
-      const base64 = await toBase64(file);
+      if (!isAcceptedDoc(file)) throw new Error("INVALID_FILE");
+      const doc = await prepareDocument(file);
       await supabase.storage
         .from("syllabi")
         .upload(`${course.user_id}/${course.id}/${Date.now()}-${file.name}`, file, { upsert: true });
-      return (await parse({
-        data: { base64, mediaType: file.type || "application/pdf", courseHint: course.name },
-      })) as Extraction;
+      const payload =
+        doc.kind === "pdf"
+          ? { base64: doc.base64, mediaType: doc.mediaType, courseHint: course.name }
+          : { text: doc.text, courseHint: course.name };
+      return (await parse({ data: payload })) as Extraction;
     },
     onSuccess: (data) => setExtraction(data),
     onError: (e: Error) => {
-      if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
+      if (e.message.includes("INVALID_FILE")) toast.error(t("invalidFile"));
+      else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
       else toast.error(t("aiFailed"));
     },
@@ -126,7 +122,7 @@ export function SyllabusPanel({ course }: { course: Course }) {
           <input
             ref={inputRef}
             type="file"
-            accept="application/pdf,image/*"
+            accept={ACCEPTED_DOCS}
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -138,6 +134,7 @@ export function SyllabusPanel({ course }: { course: Course }) {
             <Upload className="size-4" />
             {run.isPending ? t("analyzing") : t("uploadSyllabus")}
           </Button>
+          <p className="mt-2 text-xs text-muted-foreground">{t("onlyPdfWord")}</p>
         </>
       ) : (
         <div className="mt-4 space-y-5">
