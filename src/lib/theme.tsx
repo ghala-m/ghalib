@@ -73,7 +73,7 @@ type Ctx = {
 const ThemeContext = createContext<Ctx | null>(null);
 
 function applyAccent(id: string, resolved: "light" | "dark") {
-  const preset = ACCENTS.find((a) => a.id === id) ?? ACCENTS[0];
+  const preset = ACCENTS.find((a) => a.id === id) ?? ACCENTS[0]!;
   const v = resolved === "dark" ? preset.dark : preset.light;
   const root = document.documentElement.style;
   root.setProperty("--accent", v.accent);
