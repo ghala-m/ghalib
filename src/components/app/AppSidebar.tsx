@@ -129,7 +129,7 @@ function SideLink({
   icon: Icon,
   label,
 }: {
-  to: "/dashboard" | "/profile";
+  to: "/dashboard" | "/profile" | "/calendar" | "/advisor";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
