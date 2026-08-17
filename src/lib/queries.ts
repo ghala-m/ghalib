@@ -87,3 +87,17 @@ export const upcomingItemsQuery = () => ({
     return (data ?? []) as (CourseItem & { courses: { name: string; code: string | null; archived: boolean } | null })[];
   },
 });
+
+export const allItemsQuery = () => ({
+  queryKey: ["items", "all"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("course_items")
+      .select("*, courses(name, code, category, archived)")
+      .order("due_date", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as (CourseItem & {
+      courses: { name: string; code: string | null; category: CourseCategory; archived: boolean } | null;
+    })[];
+  },
+});
