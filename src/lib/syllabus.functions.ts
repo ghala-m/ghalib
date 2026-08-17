@@ -101,7 +101,6 @@ export const parseSyllabus = createServerFn({ method: "POST" })
       });
       return ExtractionSchema.parse(extractJson(result.text));
     } catch (error) {
-      const { aiError: toError } = { aiError };
-      throw toError(error);
+      throw aiError(error);
     }
   });
