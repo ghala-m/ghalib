@@ -94,7 +94,7 @@ function OnboardingPage() {
         .from("profiles")
         .update({
           onboarding_completed: true,
-          major: sheet?.major ?? undefined,
+          major: sheet?.major ?? null,
           total_credits: credits,
           overall_gpa: gpa ? Number(gpa.toFixed(2)) : null,
         })
@@ -250,7 +250,7 @@ function OnboardingPage() {
 
             <div className="flex flex-wrap items-center gap-2">
               {stage === 2 ? (
-                <Button onClick={() => setStage(3)}>{t("next" in translations ? "next" : "finishSetup")}</Button>
+                <Button onClick={() => setStage(3)}>{t("markProgressTitle")}</Button>
               ) : (
                 <Button disabled={save.isPending} onClick={() => save.mutate()}>
                   {save.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
@@ -276,5 +276,3 @@ function OnboardingPage() {
     </div>
   );
 }
-
-const translations = {} as Record<string, string>;
