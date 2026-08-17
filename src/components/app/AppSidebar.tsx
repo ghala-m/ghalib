@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarRange, CheckCircle2, LogOut, ScrollText, Search, Sparkles, UserRound } from "lucide-react";
+import { BookMarked, CalendarDays, CalendarRange, CheckCircle2, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { coursesQuery, type CourseStatus } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
@@ -54,6 +54,8 @@ export function AppSidebar() {
 
       <nav className="space-y-1 px-3">
         <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} />
+        <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} />
+        <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} />
         <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} />
       </nav>
 
