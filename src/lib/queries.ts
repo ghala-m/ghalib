@@ -7,6 +7,21 @@ export type GradeWeight = Database["public"]["Tables"]["grade_weights"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type CourseStatus = Database["public"]["Enums"]["course_status"];
 export type ItemType = Database["public"]["Enums"]["item_type"];
+export type CourseCategory = Database["public"]["Enums"]["course_category"];
+export type ChatMessage = Database["public"]["Tables"]["chat_messages"]["Row"];
+
+export const chatMessagesQuery = () => ({
+  queryKey: ["chat"],
+  queryFn: async (): Promise<ChatMessage[]> => {
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .order("created_at", { ascending: true })
+      .limit(100);
+    if (error) throw error;
+    return data ?? [];
+  },
+});
 
 export type Meeting = { day: string; start_time: string | null; end_time: string | null; location: string | null };
 
