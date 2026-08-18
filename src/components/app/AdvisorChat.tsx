@@ -66,7 +66,7 @@ export function AdvisorChat() {
     onError: (e: Error) => {
       if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
-      else toast.error(t("aiFailed"));
+      else toast.error(t("aiChatFailed"));
     },
   });
 
