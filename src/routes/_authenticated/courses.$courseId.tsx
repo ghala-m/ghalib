@@ -1,12 +1,16 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, MapPin, User } from "lucide-react";
+import { CalendarDays, MapPin, Pencil, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { courseQuery, meetingsOf } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SyllabusPanel } from "@/components/app/SyllabusPanel";
+import { CourseFormDialog } from "@/components/app/CourseFormDialog";
+import { CalendarView } from "@/components/app/CalendarView";
+import { ItemDialog } from "@/components/app/ItemDialog";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId")({
   head: () => ({
@@ -50,8 +54,12 @@ function CoursePage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <header>
-        <p className="text-xs text-muted-foreground">{course.code || t("none")}</p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+        <p className="text-xs text-muted-foreground">
+          {course.code || t("none")}
+          {course.nickname ? ` · ${course.nickname}` : ""}
+        </p>
         <h1 className="mt-1 text-3xl font-bold">{course.name}</h1>
         <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
@@ -67,6 +75,16 @@ function CoursePage() {
             {course.term || t("none")}
           </span>
         </div>
+        </div>
+        <CourseFormDialog
+          course={course}
+          trigger={
+            <Button variant="outline" size="sm">
+              <Pencil className="size-4" />
+              {t("edit")}
+            </Button>
+          }
+        />
       </header>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -97,12 +115,28 @@ function CoursePage() {
         </div>
       </div>
 
+      <section className="mt-6">
+        <h2 className="mb-3 font-semibold">{t("courseCalendar")}</h2>
+        <p className="mb-3 text-xs text-muted-foreground">{t("courseCalendarHint")}</p>
+        <CalendarView courseId={courseId} />
+      </section>
+
       <section className="panel mt-6 p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold">{t("checklist")}</h2>
-          <span className="text-xs text-muted-foreground">
-            {done}/{items.length} · {t("overallProgress")}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground">
+              {done}/{items.length} · {t("overallProgress")}
+            </span>
+            <ItemDialog
+              courseId={courseId}
+              trigger={
+                <Button size="sm" variant="outline">
+                  {t("addItem")}
+                </Button>
+              }
+            />
+          </div>
         </div>
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
@@ -123,6 +157,15 @@ function CoursePage() {
                     {i.weight ? ` · ${i.weight}%` : ""}
                   </p>
                 </div>
+                <ItemDialog
+                  courseId={courseId}
+                  item={i}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="shrink-0 text-xs">
+                      {t("edit")}
+                    </Button>
+                  }
+                />
                 <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                   {i.due_date
                     ? new Date(i.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {

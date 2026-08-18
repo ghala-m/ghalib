@@ -1,12 +1,23 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { allItemsQuery, coursesQuery, meetingsOf, type Course } from "@/lib/queries";
+import { Bell, BellOff, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import {
+  allItemsQuery,
+  coursesQuery,
+  eventsQuery,
+  meetingsOf,
+  type CalendarEvent,
+  type Course,
+} from "@/lib/queries";
 import { CATEGORY_META } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { EventDialog } from "@/components/app/EventDialog";
+import { ItemDialog } from "@/components/app/ItemDialog";
+import { notificationState, requestNotificationPermission, useReminders } from "@/hooks/useReminders";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type View = "day" | "week" | "month";
 
@@ -33,15 +44,22 @@ function meetingDayIndex(day: string) {
   return i;
 }
 
-export function CalendarView() {
+/** Shared calendar. Pass `courseId` to scope every view to a single course. */
+export function CalendarView({ courseId, compact }: { courseId?: string; compact?: boolean } = {}) {
   const { t, lang } = useI18n();
   const [view, setView] = useState<View>("week");
   const [cursor, setCursor] = useState(() => new Date());
-  const { data: items = [] } = useQuery(allItemsQuery());
+  const { data: allItems = [] } = useQuery(allItemsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());
+  const { data: allEvents = [] } = useQuery(eventsQuery());
+  useReminders();
 
   const locale = lang === "ar" ? "ar" : "en-GB";
-  const activeCourses = courses.filter((c) => c.status === "current" && !c.archived);
+  const items = courseId ? allItems.filter((i) => i.course_id === courseId) : allItems;
+  const events = courseId ? allEvents.filter((e) => e.course_id === courseId) : allEvents;
+  const activeCourses = courses.filter(
+    (c) => !c.archived && (courseId ? c.id === courseId : c.status === "current"),
+  );
 
   const itemsByDate = useMemo(() => {
     const map = new Map<string, typeof items>();
@@ -53,6 +71,17 @@ export function CalendarView() {
     }
     return map;
   }, [items]);
+
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, CalendarEvent[]>();
+    for (const e of events) {
+      const list = map.get(e.event_date) ?? [];
+      list.push(e);
+      map.set(e.event_date, list);
+    }
+    for (const list of map.values()) list.sort((a, b) => (a.event_time ?? "").localeCompare(b.event_time ?? ""));
+    return map;
+  }, [events]);
 
   const classesByDay = useMemo(() => {
     const map = new Map<number, { course: Course; start: string | null; end: string | null; location: string | null }[]>();
@@ -84,42 +113,89 @@ export function CalendarView() {
     view === "month"
       ? cursor.toLocaleDateString(locale, { month: "long", year: "numeric" })
       : view === "week"
-        ? `${startOfWeek(cursor).toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${addDays(startOfWeek(cursor), 6).toLocaleDateString(locale, { day: "numeric", month: "short" })}`
+        ? `${startOfWeek(cursor).toLocaleDateString(locale, { day: "numeric", month: "short" })} – ${addDays(
+            startOfWeek(cursor),
+            6,
+          ).toLocaleDateString(locale, { day: "numeric", month: "short" })}`
         : cursor.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" });
 
+  const notif = notificationState();
+
   return (
-    <div className="panel-glass">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-4">
-        <div className="flex items-center gap-1">
+    <div className="panel-glass overflow-hidden">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
+        <div className="inline-flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => step(-1)} aria-label="previous">
-            <ChevronLeft className="size-4 rtl:rotate-180" />
+            <ChevronLeft className="size-4" />
           </Button>
           <Button variant="ghost" size="icon" onClick={() => step(1)} aria-label="next">
-            <ChevronRight className="size-4 rtl:rotate-180" />
+            <ChevronRight className="size-4" />
           </Button>
         </div>
         <p className="font-semibold">{title}</p>
         <Button variant="outline" size="sm" onClick={() => setCursor(new Date())}>
           {t("today")}
         </Button>
-        <div className="ms-auto inline-flex rounded-full border border-border p-1">
-          {(["day", "week", "month"] as View[]).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                view === v ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
+
+        <div className="ms-auto flex flex-wrap items-center gap-2">
+          {notif !== "unsupported" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              title={notif === "granted" ? t("notificationsOn") : t("enableNotifications")}
+              onClick={async () => {
+                if (notif === "denied") {
+                  toast.error(t("notificationsBlocked"));
+                  return;
+                }
+                const ok = await requestNotificationPermission();
+                toast[ok ? "success" : "error"](ok ? t("notificationsOn") : t("notificationsBlocked"));
+              }}
             >
-              {t(v)}
-            </button>
-          ))}
+              {notif === "granted" ? <Bell className="size-4 text-accent" /> : <BellOff className="size-4" />}
+            </Button>
+          )}
+          {courseId ? (
+            <ItemDialog
+              courseId={courseId}
+              defaultDate={iso(cursor)}
+              trigger={
+                <Button size="sm" variant="outline">
+                  <Plus className="size-4" />
+                  {t("addItem")}
+                </Button>
+              }
+            />
+          ) : null}
+          <EventDialog
+            {...(courseId ? { courseId } : {})}
+            defaultDate={iso(cursor)}
+            trigger={
+              <Button size="sm">
+                <Plus className="size-4" />
+                {t("addEvent")}
+              </Button>
+            }
+          />
+          <div className="inline-flex rounded-full border border-border p-1">
+            {(["day", "week", "month"] as View[]).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  view === v ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(v)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className={cn("p-4", compact && "p-3")}>
         {view === "day" && <DayColumn date={cursor} full />}
         {view === "week" && (
           <div className="grid gap-3 md:grid-cols-7">
@@ -136,6 +212,7 @@ export function CalendarView() {
   function DayColumn({ date, full }: { date: Date; full?: boolean }) {
     const dayItems = itemsByDate.get(iso(date)) ?? [];
     const dayClasses = classesByDay.get(date.getDay()) ?? [];
+    const dayEvents = eventsByDate.get(iso(date)) ?? [];
     const isToday = iso(date) === iso(new Date());
     return (
       <div className={cn("rounded-xl border border-border p-3", isToday && "border-accent bg-accent/5", full && "min-h-64")}>
@@ -154,24 +231,47 @@ export function CalendarView() {
                 borderInlineStart: `3px solid ${CATEGORY_META[c.course.category].color}`,
               }}
             >
-              <span className="font-medium">{c.course.code || c.course.name}</span>
+              <span className="font-medium">{c.course.nickname || c.course.code || c.course.name}</span>
               {c.start ? <span className="ms-1 text-muted-foreground">{c.start}</span> : null}
             </Link>
           ))}
           {dayItems.map((it) => (
-            <Link
+            <ItemDialog
               key={it.id}
-              to="/courses/$courseId"
-              params={{ courseId: it.course_id }}
-              className="block rounded-lg border border-border bg-card px-2 py-1.5 text-xs"
-            >
-              <span className="font-medium">{it.title}</span>
-              <span className="block truncate text-muted-foreground">
-                {t(it.type)} · {it.courses?.code || it.courses?.name}
-              </span>
-            </Link>
+              courseId={it.course_id}
+              item={it}
+              trigger={
+                <button type="button" className="block w-full rounded-lg border border-border bg-card px-2 py-1.5 text-start text-xs">
+                  <span className={cn("font-medium", it.completed && "text-muted-foreground line-through")}>{it.title}</span>
+                  <span className="block truncate text-muted-foreground">
+                    {t(it.type)}
+                    {courseId ? "" : ` · ${it.courses?.nickname ?? it.courses?.code ?? it.courses?.name ?? ""}`}
+                  </span>
+                </button>
+              }
+            />
           ))}
-          {!dayClasses.length && !dayItems.length && <p className="text-xs text-muted-foreground">{t("noEvents")}</p>}
+          {dayEvents.map((e) => (
+            <EventDialog
+              key={e.id}
+              event={e}
+              trigger={
+                <button
+                  type="button"
+                  className="block w-full rounded-lg border border-accent/40 bg-accent/10 px-2 py-1.5 text-start text-xs"
+                >
+                  <span className="font-medium">{e.title}</span>
+                  <span className="block truncate text-muted-foreground">
+                    {e.event_time ?? ""}
+                    {e.remind_minutes ? " · 🔔" : ""}
+                  </span>
+                </button>
+              }
+            />
+          ))}
+          {!dayClasses.length && !dayItems.length && !dayEvents.length && (
+            <p className="text-xs text-muted-foreground">{t("noEvents")}</p>
+          )}
         </div>
       </div>
     );
@@ -186,13 +286,19 @@ export function CalendarView() {
         {cells.map((d) => {
           const dayItems = itemsByDate.get(iso(d)) ?? [];
           const dayClasses = classesByDay.get(d.getDay()) ?? [];
+          const dayEvents = eventsByDate.get(iso(d)) ?? [];
           const dim = d.getMonth() !== cursor.getMonth();
           const isToday = iso(d) === iso(new Date());
           return (
-            <div
+            <button
               key={iso(d)}
+              type="button"
+              onClick={() => {
+                setCursor(d);
+                setView("day");
+              }}
               className={cn(
-                "min-h-24 rounded-lg border border-border p-1.5 text-xs",
+                "min-h-24 rounded-lg border border-border p-1.5 text-start text-xs transition-colors hover:border-accent",
                 dim && "opacity-40",
                 isToday && "border-accent bg-accent/5",
               )}
@@ -204,7 +310,7 @@ export function CalendarView() {
                   className="mb-0.5 truncate rounded px-1"
                   style={{ background: `color-mix(in oklab, ${CATEGORY_META[c.course.category].color} 18%, transparent)` }}
                 >
-                  {c.course.code || c.course.name}
+                  {c.course.nickname || c.course.code || c.course.name}
                 </p>
               ))}
               {dayItems.slice(0, 2).map((it) => (
@@ -212,7 +318,12 @@ export function CalendarView() {
                   • {it.title}
                 </p>
               ))}
-            </div>
+              {dayEvents.slice(0, 2).map((e) => (
+                <p key={e.id} className="truncate text-accent">
+                  ◆ {e.title}
+                </p>
+              ))}
+            </button>
           );
         })}
       </div>

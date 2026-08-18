@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n";
 import { LangToggle } from "@/components/LangToggle";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { PrereqFlowChart } from "@/components/app/PrereqFlowChart";
+import { TermControls } from "@/components/app/TermControls";
+import { CalendarView } from "@/components/app/CalendarView";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -50,6 +52,10 @@ function DashboardPage() {
         </div>
       </header>
 
+      <div className="mb-6">
+        <TermControls />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="panel p-5">
@@ -62,6 +68,11 @@ function DashboardPage() {
 
       <section className="mt-10">
         <PrereqFlowChart courses={courses.filter((c) => !c.archived)} />
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold">{t("calendar")}</h2>
+        <CalendarView />
       </section>
 
       <section className="mt-10">

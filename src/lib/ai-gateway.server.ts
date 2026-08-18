@@ -27,5 +27,6 @@ export function aiError(error: unknown): Error {
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes("429")) return new Error("RATE_LIMIT");
   if (message.includes("402")) return new Error("NO_CREDITS");
-  return new Error("PARSE_FAILED");
+  if (message.includes("403")) return new Error("AI_BLOCKED");
+  return new Error("AI_FAILED");
 }
