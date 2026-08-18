@@ -101,3 +101,47 @@ export const allItemsQuery = () => ({
     })[];
   },
 });
+
+export type TermRow = Database["public"]["Tables"]["terms"]["Row"];
+export type CalendarEvent = Database["public"]["Tables"]["calendar_events"]["Row"];
+
+export const termsQuery = () => ({
+  queryKey: ["terms"],
+  queryFn: async (): Promise<TermRow[]> => {
+    const { data, error } = await supabase.from("terms").select("*").order("term_number", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export const eventsQuery = (courseId?: string) => ({
+  queryKey: ["events", courseId ?? "all"],
+  queryFn: async (): Promise<CalendarEvent[]> => {
+    let q = supabase.from("calendar_events").select("*").order("event_date", { ascending: true });
+    if (courseId) q = q.eq("course_id", courseId);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+/** Course search that also matches the student's own nickname/abbreviation. */
+export function matchesCourse(c: Course, query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return [c.name, c.code, c.term, c.nickname].some((v) => (v ?? "").toLowerCase().includes(q));
+}
+
+const normCode = (v: string) => v.replace(/\s+/g, "").toUpperCase();
+
+/** A course is blocked when another course in its alternatives group is already taken. */
+export function blockedByAlternative(course: Course, all: Course[]) {
+  if (!course.alt_group || course.status === "completed" || course.status === "current") return false;
+  return all.some(
+    (o) =>
+      o.id !== course.id &&
+      o.alt_group &&
+      normCode(o.alt_group) === normCode(course.alt_group!) &&
+      (o.status === "completed" || o.status === "current"),
+  );
+}
