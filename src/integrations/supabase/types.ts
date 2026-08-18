@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          event_date: string
+          event_time: string | null
+          id: string
+          notes: string | null
+          remind_minutes: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          event_date: string
+          event_time?: string | null
+          id?: string
+          notes?: string | null
+          remind_minutes?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          notes?: string | null
+          remind_minutes?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -90,6 +134,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          alt_group: string | null
           archived: boolean
           category: Database["public"]["Enums"]["course_category"]
           code: string | null
@@ -105,6 +150,7 @@ export type Database = {
           location: string | null
           meetings: Json
           name: string
+          nickname: string | null
           notes: string | null
           plan_level: number | null
           prerequisites: string[]
@@ -116,6 +162,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          alt_group?: string | null
           archived?: boolean
           category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
@@ -131,6 +178,7 @@ export type Database = {
           location?: string | null
           meetings?: Json
           name: string
+          nickname?: string | null
           notes?: string | null
           plan_level?: number | null
           prerequisites?: string[]
@@ -142,6 +190,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          alt_group?: string | null
           archived?: boolean
           category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
@@ -157,6 +206,7 @@ export type Database = {
           location?: string | null
           meetings?: Json
           name?: string
+          nickname?: string | null
           notes?: string | null
           plan_level?: number | null
           prerequisites?: string[]
@@ -224,6 +274,7 @@ export type Database = {
           onboarding_completed: boolean
           overall_gpa: number | null
           semester_gpa: number | null
+          term_number: number
           theme: string
           total_credits: number
           university: string | null
@@ -240,6 +291,7 @@ export type Database = {
           onboarding_completed?: boolean
           overall_gpa?: number | null
           semester_gpa?: number | null
+          term_number?: number
           theme?: string
           total_credits?: number
           university?: string | null
@@ -256,10 +308,50 @@ export type Database = {
           onboarding_completed?: boolean
           overall_gpa?: number | null
           semester_gpa?: number | null
+          term_number?: number
           theme?: string
           total_credits?: number
           university?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      terms: {
+        Row: {
+          created_at: string
+          credits: number | null
+          end_date: string | null
+          gpa: number | null
+          id: string
+          is_active: boolean
+          name: string
+          start_date: string | null
+          term_number: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number | null
+          end_date?: string | null
+          gpa?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          start_date?: string | null
+          term_number?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number | null
+          end_date?: string | null
+          gpa?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_date?: string | null
+          term_number?: number
+          user_id?: string
         }
         Relationships: []
       }
