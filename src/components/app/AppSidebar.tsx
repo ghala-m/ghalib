@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarDays, CalendarRange, CheckCircle2, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound } from "lucide-react";
+import { BookMarked, CalendarDays, CalendarRange, CheckCircle2, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { coursesQuery, type CourseStatus } from "@/lib/queries";
+import { blockedByAlternative, coursesQuery, matchesCourse, type CourseStatus } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,11 +28,7 @@ export function AppSidebar() {
     const q = search.trim().toLowerCase();
     return courses
       .filter((c) => !c.archived)
-      .filter((c) =>
-        q
-          ? [c.name, c.code, c.term].some((v) => (v ?? "").toLowerCase().includes(q))
-          : true,
-      );
+      .filter((c) => matchesCourse(c, q));
   }, [courses, search]);
 
   async function signOut() {
@@ -56,6 +52,7 @@ export function AppSidebar() {
         <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} />
         <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} />
         <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} />
+        <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} />
         <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} />
       </nav>
 
@@ -94,7 +91,9 @@ export function AppSidebar() {
                       className={cn(
                         "block truncate rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
                         pathname === `/courses/${c.id}` && "bg-sidebar-accent font-medium",
+                        blockedByAlternative(c, courses) && "text-sidebar-foreground/45 line-through",
                       )}
+                      title={blockedByAlternative(c, courses) ? t("blockedByAlt") : undefined}
                     >
                       {c.code ? <span className="text-sidebar-foreground/60">{c.code} · </span> : null}
                       {c.name}
@@ -129,7 +128,7 @@ function SideLink({
   icon: Icon,
   label,
 }: {
-  to: "/dashboard" | "/profile" | "/calendar" | "/advisor";
+  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
