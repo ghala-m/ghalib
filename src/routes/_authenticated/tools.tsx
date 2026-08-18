@@ -69,7 +69,10 @@ function ToolsPage() {
 
   async function onFile(file: File | undefined) {
     if (!file) return;
-    if (!isAcceptedDoc(file)) return toast.error(t("invalidFile"));
+    if (!isAcceptedDoc(file)) {
+      toast.error(t("invalidFile"));
+      return;
+    }
     try {
       const prepared = await prepareDocument(file);
       if (prepared.kind === "pdf") {
