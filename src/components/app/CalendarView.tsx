@@ -144,7 +144,10 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
               size="icon"
               title={notif === "granted" ? t("notificationsOn") : t("enableNotifications")}
               onClick={async () => {
-                if (notif === "denied") return toast.error(t("notificationsBlocked"));
+                if (notif === "denied") {
+                  toast.error(t("notificationsBlocked"));
+                  return;
+                }
                 const ok = await requestNotificationPermission();
                 toast[ok ? "success" : "error"](ok ? t("notificationsOn") : t("notificationsBlocked"));
               }}
@@ -165,7 +168,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
             />
           ) : null}
           <EventDialog
-            courseId={courseId}
+            {...(courseId ? { courseId } : {})}
             defaultDate={iso(cursor)}
             trigger={
               <Button size="sm">

@@ -93,11 +93,17 @@ export const allItemsQuery = () => ({
   queryFn: async () => {
     const { data, error } = await supabase
       .from("course_items")
-      .select("*, courses(name, code, category, archived)")
+      .select("*, courses(name, code, nickname, category, archived)")
       .order("due_date", { ascending: true });
     if (error) throw error;
     return (data ?? []) as (CourseItem & {
-      courses: { name: string; code: string | null; category: CourseCategory; archived: boolean } | null;
+      courses: {
+        name: string;
+        code: string | null;
+        nickname: string | null;
+        category: CourseCategory;
+        archived: boolean;
+      } | null;
     })[];
   },
 });
