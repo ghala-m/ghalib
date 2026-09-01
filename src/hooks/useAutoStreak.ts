@@ -9,7 +9,7 @@ const CHECK_INTERVAL_MS = 15 * 60_000;
 
 function hhmmToMinutes(hhmm: string) {
   const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + (m || 0);
+  return (h || 0) * 60 + (m || 0);
 }
 
 /**

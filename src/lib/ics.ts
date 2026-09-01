@@ -49,13 +49,13 @@ function pushEvent(
   opts: {
     uid: string;
     title: string;
-    description?: string | null;
-    location?: string | null;
+    description?: string | null | undefined;
+    location?: string | null | undefined;
     dtstart: string; // pre-formatted ICS value (already includes VALUE=DATE if needed via `allDay`)
-    dtend?: string;
-    allDay?: boolean;
-    rrule?: string;
-    alarmMinutesBefore?: number;
+    dtend?: string | undefined;
+    allDay?: boolean | undefined;
+    rrule?: string | undefined;
+    alarmMinutesBefore?: number | undefined;
   },
 ) {
   lines.push("BEGIN:VEVENT");

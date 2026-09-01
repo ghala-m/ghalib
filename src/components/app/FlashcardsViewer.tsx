@@ -26,7 +26,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
         onClick={() => setFlipped((f) => !f)}
         className="flex min-h-48 w-full items-center justify-center rounded-2xl border border-border bg-muted/30 p-6 text-center transition-colors hover:border-accent/50"
       >
-        <p className="text-base font-medium">{flipped ? card.a : card.q}</p>
+        <p className="text-base font-medium">{flipped ? card?.a : card?.q}</p>
       </button>
       <p className="mt-2 flex items-center justify-center gap-1 text-xs text-muted-foreground">
         <RotateCw className="size-3" />

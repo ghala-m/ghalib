@@ -21,7 +21,7 @@ export default defineConfig({
   // reloading is the more reliable fix.
   vite: {
     server: {
-      ws: { perMessageDeflate: false },
+      ws: { perMessageDeflate: false } as Record<string, unknown>,
     },
   },
 });

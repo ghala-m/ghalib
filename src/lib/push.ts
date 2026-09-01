@@ -35,7 +35,7 @@ export type SubscribeResult =
 export async function subscribeToPush(userId: string): Promise<SubscribeResult> {
   if (!pushSupported()) return { ok: false, reason: "unsupported" };
 
-  const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+  const vapidKey = import.meta.env['VITE_VAPID_PUBLIC_KEY'] as string | undefined;
   if (!vapidKey) {
     console.warn("VITE_VAPID_PUBLIC_KEY is not set — see EMERGENCE.md Task 2.");
     return { ok: false, reason: "missing_vapid_key" };
@@ -48,17 +48,17 @@ export async function subscribeToPush(userId: string): Promise<SubscribeResult> 
   if (!reg) return { ok: false, reason: "unsupported" };
 
   const existing = await reg.pushManager.getSubscription();
-  const sub = existing ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) }));
+  const sub = existing ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource }));
 
   const json = sub.toJSON();
-  if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return { ok: false, reason: "save_failed" };
+  if (!json.endpoint || !json.keys?.["p256dh"] || !json.keys?.["auth"]) return { ok: false, reason: "save_failed" };
 
   const { error } = await supabase.from("push_subscriptions").upsert(
     {
       user_id: userId,
       endpoint: json.endpoint,
-      p256dh: json.keys.p256dh,
-      auth: json.keys.auth,
+      p256dh: json.keys["p256dh"]!,
+      auth: json.keys["auth"]!,
     },
     { onConflict: "user_id,endpoint" },
   );

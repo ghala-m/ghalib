@@ -68,7 +68,7 @@ function ReimportPlanPage() {
     mutationFn: async () => {
       if (!user || !diff) return;
       const toInsert = diff.rows
-        .filter((r): r is Extract<ReimportRow, { kind: "new" }> => r.kind === "new" && selected[rowKey(r)])
+        .filter((r): r is Extract<ReimportRow, { kind: "new" }> => r.kind === "new" && !!selected[rowKey(r)])
         .map((r) => ({
           user_id: user.id,
           name: r.parsed.name,
@@ -81,7 +81,7 @@ function ReimportPlanPage() {
         }));
 
       const toUpdate = diff.rows.filter(
-        (r): r is Extract<ReimportRow, { kind: "changed" }> => r.kind === "changed" && selected[rowKey(r)],
+        (r): r is Extract<ReimportRow, { kind: "changed" }> => r.kind === "changed" && !!selected[rowKey(r)],
       );
 
       if (toInsert.length) {
