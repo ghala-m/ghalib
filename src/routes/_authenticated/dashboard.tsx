@@ -3,10 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { BookMarked, CalendarClock, GraduationCap, Layers } from "lucide-react";
 import { coursesQuery, profileQuery, upcomingItemsQuery } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
+import { useAutoStreak } from "@/hooks/useAutoStreak";
 import { useI18n } from "@/lib/i18n";
 import { LangToggle } from "@/components/LangToggle";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { PrereqFlowChart } from "@/components/app/PrereqFlowChart";
+import { NextTermPreview } from "@/components/app/NextTermPreview";
+import { StudyStreak } from "@/components/app/StudyStreak";
 import { TermControls } from "@/components/app/TermControls";
 import { CalendarView } from "@/components/app/CalendarView";
 
@@ -28,6 +31,7 @@ function DashboardPage() {
   const { data: profile } = useQuery(profileQuery(user?.id));
   const { data: courses = [] } = useQuery(coursesQuery());
   const { data: upcoming = [] } = useQuery(upcomingItemsQuery());
+  useAutoStreak();
 
   const active = courses.filter((c) => c.status === "current" && !c.archived);
   const stats = [
@@ -66,8 +70,16 @@ function DashboardPage() {
         ))}
       </div>
 
+      <div className="mt-6">
+        <StudyStreak />
+      </div>
+
       <section className="mt-10">
         <PrereqFlowChart courses={courses.filter((c) => !c.archived)} />
+      </section>
+
+      <section className="mt-6">
+        <NextTermPreview courses={courses.filter((c) => !c.archived)} />
       </section>
 
       <section className="mt-10">

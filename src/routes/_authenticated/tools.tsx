@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { LangToggle } from "@/components/LangToggle";
+import { FlashcardsViewer, type Flashcard } from "@/components/app/FlashcardsViewer";
+import { QuizViewer, type QuizQuestion } from "@/components/app/QuizViewer";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tools")({
@@ -43,7 +45,9 @@ function ToolsPage() {
   const [tool, setTool] = useState<Tool>("summarize");
   const [text, setText] = useState("");
   const [pdf, setPdf] = useState<{ base64: string; name: string } | null>(null);
-  const [output, setOutput] = useState("");
+  const [output, setOutput] = useState<
+    { kind: "text"; text: string } | { kind: "flashcards"; cards: Flashcard[] } | { kind: "quiz"; questions: QuizQuestion[] } | null
+  >(null);
 
   const execute = useMutation({
     mutationFn: async () => {
@@ -55,12 +59,13 @@ function ToolsPage() {
           text,
           ...(pdf ? { pdfBase64: pdf.base64, fileName: pdf.name } : {}),
         },
-      })) as { text: string };
-      return res.text;
+      })) as { kind: "text"; text: string } | { kind: "flashcards"; cards: Flashcard[] } | { kind: "quiz"; questions: QuizQuestion[] };
+      return res;
     },
     onSuccess: (value) => setOutput(value),
     onError: (e: Error) => {
       if (e.message.includes("EMPTY_INPUT")) toast.error(t("emptyInput"));
+      else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
       else toast.error(t("aiFailed"));
@@ -106,7 +111,10 @@ function ToolsPage() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setTool(item.id)}
+              onClick={() => {
+                setTool(item.id);
+                setOutput(null);
+              }}
               className={cn(
                 "panel p-4 text-start transition-colors",
                 tool === item.id ? "border-accent ring-1 ring-accent" : "hover:border-accent/50",
@@ -138,19 +146,23 @@ function ToolsPage() {
           <div className="panel mt-6 p-6">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold">{t("result")}</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  void navigator.clipboard.writeText(output);
-                  toast.success(t("copied"));
-                }}
-              >
-                <Copy className="size-4" />
-                {t("copy")}
-              </Button>
+              {output.kind === "text" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(output.text);
+                    toast.success(t("copied"));
+                  }}
+                >
+                  <Copy className="size-4" />
+                  {t("copy")}
+                </Button>
+              )}
             </div>
-            <p className="text-sm whitespace-pre-wrap">{output}</p>
+            {output.kind === "text" && <p className="text-sm whitespace-pre-wrap">{output.text}</p>}
+            {output.kind === "flashcards" && <FlashcardsViewer cards={output.cards} />}
+            {output.kind === "quiz" && <QuizViewer questions={output.questions} />}
           </div>
         ) : null}
       </div>

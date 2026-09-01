@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -19,9 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/plan";
+import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
-import type { Course, CourseCategory, CourseStatus } from "@/lib/queries";
+import { coursesQuery, type Course, type CourseCategory, type CourseStatus } from "@/lib/queries";
 
 type FormState = {
   name: string;
@@ -37,6 +38,8 @@ type FormState = {
   alt_group: string;
   final_grade: string;
   notes: string;
+  is_retake: boolean;
+  previous_attempt_id: string;
 };
 
 const empty: FormState = {
@@ -53,6 +56,8 @@ const empty: FormState = {
   alt_group: "",
   final_grade: "",
   notes: "",
+  is_retake: false,
+  previous_attempt_id: "",
 };
 
 function fromCourse(c: Course): FormState {
@@ -70,6 +75,8 @@ function fromCourse(c: Course): FormState {
     alt_group: c.alt_group ?? "",
     final_grade: c.final_grade ?? "",
     notes: c.notes ?? "",
+    is_retake: c.is_retake,
+    previous_attempt_id: c.previous_attempt_id ?? "",
   };
 }
 
@@ -80,6 +87,7 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(course ? fromCourse(course) : empty);
+  const { data: allCourses = [] } = useQuery(coursesQuery());
 
   useEffect(() => {
     if (open) setForm(course ? fromCourse(course) : empty);
@@ -104,6 +112,8 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
     alt_group: form.alt_group.trim() || null,
     final_grade: form.final_grade.trim() || null,
     notes: form.notes.trim() || null,
+    is_retake: form.is_retake,
+    previous_attempt_id: form.is_retake ? form.previous_attempt_id || null : null,
   });
 
   const invalidate = () => {
@@ -214,7 +224,19 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
               <Input type="number" min={0} value={form.credits} onChange={(e) => set("credits", e.target.value)} />
             </Field>
             <Field label={t("finalGrade")}>
-              <Input value={form.final_grade} onChange={(e) => set("final_grade", e.target.value)} placeholder="A" />
+              <Select value={form.final_grade || "none"} onValueChange={(v) => set("final_grade", v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">—</SelectItem>
+                  {GRADE_SCALE.map((g) => (
+                    <SelectItem key={g.grade} value={g.grade}>
+                      {g.grade}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
 
@@ -234,6 +256,38 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
           <Field label={t("altGroup")} hint={t("altGroupHint")}>
             <Input value={form.alt_group} onChange={(e) => set("alt_group", e.target.value)} placeholder="GEN-HUM" />
           </Field>
+
+          <div className="space-y-2 rounded-xl border border-border p-3">
+            <label className="flex items-center gap-2 text-sm">
+              <Checkbox checked={form.is_retake} onCheckedChange={(v) => set("is_retake", !!v)} />
+              {t("isRetake")}
+            </label>
+            {form.is_retake && (
+              <div className="space-y-1.5 pt-1">
+                <Label className="text-xs font-medium">{t("previousAttempt")}</Label>
+                <Select
+                  value={form.previous_attempt_id || "none"}
+                  onValueChange={(v) => set("previous_attempt_id", v === "none" ? "" : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("previousAttempt")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">—</SelectItem>
+                    {allCourses
+                      .filter((c) => c.id !== course?.id && c.status === "completed")
+                      .map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.code ? `${c.code} · ` : ""}
+                          {c.name} {c.final_grade ? `(${c.final_grade})` : ""}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">{t("previousAttemptHint")}</p>
+              </div>
+            )}
+          </div>
 
           <Field label={t("notes")}>
             <Textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} />

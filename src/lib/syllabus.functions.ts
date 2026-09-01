@@ -3,9 +3,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const Input = z.object({
-  base64: z.string().min(10).optional(),
+  base64: z.string().min(10).max(9_000_000).optional(),
   mediaType: z.string().min(3).optional(),
-  text: z.string().min(20).optional(),
+  text: z.string().min(20).max(300_000).optional(),
   courseHint: z.string().optional(),
 });
 
@@ -59,8 +59,15 @@ const SHAPE = `{
 
 export const parseSyllabus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Input.parse(data))
-  .handler(async ({ data }) => {
+  .validator((data: unknown) => Input.parse(data))
+  .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("./rate-limit.server");
+    await enforceRateLimit(context.supabase, context.userId, {
+      endpoint: "parseSyllabus",
+      maxCalls: 15,
+      windowMinutes: 60,
+    });
+
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 

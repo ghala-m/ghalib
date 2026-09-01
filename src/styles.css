@@ -218,3 +218,22 @@
     background: transparent;
   }
 }
+
+/* Printable plan (see /plan-print): always print on a plain white page, regardless of the
+   active dark/light theme or accent color, and hide anything not meant for paper. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  .print-panel {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+}

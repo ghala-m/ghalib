@@ -1,6 +1,12 @@
 export const ACCEPTED_DOCS =
   ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
+// Keep in sync with the server-side `.max()` on `base64` in majorsheet.functions.ts,
+// syllabus.functions.ts, and tools.functions.ts. Base64 inflates size by ~4/3, so 9MB of
+// base64 caps the original file at roughly 6.5MB — generous for any real syllabus/major sheet,
+// while keeping a single AI request bounded in cost and latency.
+export const MAX_UPLOAD_BYTES = 6_500_000;
+
 export type PreparedDoc =
   | { kind: "pdf"; base64: string; mediaType: "application/pdf"; fileName: string }
   | { kind: "text"; text: string; fileName: string };
@@ -28,6 +34,7 @@ function toBase64(file: File) {
  * PDFs are sent as-is (base64); Word documents are converted to plain text in the browser.
  */
 export async function prepareDocument(file: File): Promise<PreparedDoc> {
+  if (file.size > MAX_UPLOAD_BYTES) throw new Error("FILE_TOO_LARGE");
   const ext = extOf(file.name);
 
   if (ext === ".pdf") {

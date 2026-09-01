@@ -43,6 +43,7 @@ export function ItemDialog({
     due_date: defaultDate ?? "",
     due_time: "",
     weight: "",
+    score_percent: "",
     description: "",
   });
 
@@ -54,6 +55,7 @@ export function ItemDialog({
       due_date: item?.due_date ?? defaultDate ?? "",
       due_time: item?.due_time ?? "",
       weight: item?.weight?.toString() ?? "",
+      score_percent: item?.score_percent?.toString() ?? "",
       description: item?.description ?? "",
     });
   }, [open, item, defaultDate]);
@@ -72,6 +74,7 @@ export function ItemDialog({
         due_date: form.due_date || null,
         due_time: form.due_time || null,
         weight: form.weight ? Number(form.weight) : null,
+        score_percent: form.score_percent ? Math.min(100, Math.max(0, Number(form.score_percent))) : null,
         description: form.description.trim() || null,
       };
       if (item) {
@@ -159,6 +162,17 @@ export function ItemDialog({
                 onChange={(e) => setForm((s) => ({ ...s, due_time: e.target.value }))}
               />
             </div>
+          </div>
+          <div className="max-w-[calc(50%-0.375rem)] space-y-1.5">
+            <Label>{t("scoreLabel")}</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              placeholder={t("scorePlaceholder")}
+              value={form.score_percent}
+              onChange={(e) => setForm((s) => ({ ...s, score_percent: e.target.value }))}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>{t("description")}</Label>

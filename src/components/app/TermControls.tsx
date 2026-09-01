@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { isMissingSchemaError } from "@/lib/db-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus, FlagOff } from "lucide-react";
+import { CalendarPlus, FlagOff, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -8,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { coursesQuery, profileQuery, termsQuery } from "@/lib/queries";
-import { pointsFor } from "@/lib/plan";
+import { GRADE_SCALE, pointsFor } from "@/lib/plan";
+import { completedGpa } from "@/lib/gpa";
 
 export function TermControls() {
   const { t } = useI18n();
@@ -55,7 +58,13 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
   const [name, setName] = useState("");
   const [number, setNumber] = useState(String(Math.max(1, nextNumber)));
   const [start, setStart] = useState(new Date().toISOString().slice(0, 10));
+  const [expectedEnd, setExpectedEnd] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 16 * 7); // default: a typical ~16-week term, editable
+    return d.toISOString().slice(0, 10);
+  });
   const [picked, setPicked] = useState<string[]>([]);
+  const [courseSearch, setCourseSearch] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -65,6 +74,9 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
   }, [open, nextNumber, courses]);
 
   const selectable = courses.filter((c) => !c.archived && c.status !== "completed");
+  const filteredSelectable = courseSearch.trim()
+    ? selectable.filter((c) => `${c.code ?? ""} ${c.name}`.toLowerCase().includes(courseSearch.trim().toLowerCase()))
+    : selectable;
 
   const run = useMutation({
     mutationFn: async () => {
@@ -75,6 +87,7 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
         name: name.trim() || `Term ${number}`,
         term_number: Number(number) || 1,
         start_date: start || null,
+        end_date: expectedEnd || null,
         is_active: true,
       });
       if (error) throw error;
@@ -96,7 +109,7 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
       setOpen(false);
       toast.success(t("termStarted"));
     },
-    onError: () => toast.error(t("saveFailed")),
+    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
 
   return (
@@ -123,14 +136,30 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
               <Input type="number" min={1} value={number} onChange={(e) => setNumber(e.target.value)} />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>{t("startDate")}</Label>
-            <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>{t("startDate")}</Label>
+              <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("expectedEndDate")}</Label>
+              <Input type="date" value={expectedEnd} onChange={(e) => setExpectedEnd(e.target.value)} />
+            </div>
           </div>
+          <p className="text-xs text-muted-foreground">{t("expectedEndDateHint")}</p>
           <div>
             <Label>{t("selectCourses")}</Label>
+            <div className="relative mt-2">
+              <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={courseSearch}
+                onChange={(e) => setCourseSearch(e.target.value)}
+                placeholder={t("searchCourses")}
+                className="ps-8"
+              />
+            </div>
             <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-border p-2">
-              {selectable.map((c) => (
+              {filteredSelectable.map((c) => (
                 <li key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50">
                   <Checkbox
                     checked={picked.includes(c.id)}
@@ -144,7 +173,7 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
                   </span>
                 </li>
               ))}
-              {!selectable.length && <li className="p-2 text-sm text-muted-foreground">{t("noCourses")}</li>}
+              {!filteredSelectable.length && <li className="p-2 text-sm text-muted-foreground">{t("noCourses")}</li>}
             </ul>
           </div>
         </div>
@@ -212,22 +241,16 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
         .eq("id", termId);
 
       const completed = courses.filter((c) => c.status === "completed" && !c.archived);
-      let pts = 0;
-      let cr = 0;
-      for (const c of [...completed, ...current]) {
-        const grade = current.some((x) => x.id === c.id) ? grades[c.id] : c.final_grade;
-        const p = pointsFor(grade || null);
-        if (p === null) continue;
-        const credits = c.credits ?? 3;
-        pts += p * credits;
-        cr += credits;
-      }
+      const merged = [...completed, ...current].map((c) =>
+        current.some((x) => x.id === c.id) ? { ...c, final_grade: grades[c.id] || null } : c,
+      );
+      const totals = completedGpa(merged);
       await supabase
         .from("profiles")
         .update({
-          overall_gpa: cr ? Number((pts / cr).toFixed(2)) : null,
+          overall_gpa: totals.gpa !== null ? Number(totals.gpa.toFixed(2)) : null,
           semester_gpa: termGpa ? Number(termGpa.gpa.toFixed(2)) : null,
-          total_credits: cr,
+          total_credits: totals.credits,
           term_number: (profile?.term_number ?? 1) + 1,
         })
         .eq("id", user.id);
@@ -237,7 +260,7 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
       setOpen(false);
       toast.success(t("termEnded"));
     },
-    onError: () => toast.error(t("saveFailed")),
+    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
 
   return (
@@ -264,12 +287,18 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
               {current.map((c) => (
                 <li key={c.id} className="flex items-center gap-3">
                   <span className="min-w-0 flex-1 truncate text-sm">{c.code || c.name}</span>
-                  <Input
-                    className="w-24"
-                    placeholder="A"
-                    value={grades[c.id] ?? ""}
-                    onChange={(e) => setGrades((s) => ({ ...s, [c.id]: e.target.value }))}
-                  />
+                  <Select value={grades[c.id] ?? ""} onValueChange={(v) => setGrades((s) => ({ ...s, [c.id]: v }))}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue placeholder="—" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GRADE_SCALE.map((g) => (
+                        <SelectItem key={g.grade} value={g.grade}>
+                          {g.grade}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </li>
               ))}
               {!current.length && <li className="text-sm text-muted-foreground">{t("noCourses")}</li>}

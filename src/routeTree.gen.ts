@@ -15,8 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdvisorRouteImport } from './routes/_authenticated/advisor'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGpaPlannerRouteImport } from './routes/_authenticated/gpa-planner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedPlanPrintRouteImport } from './routes/_authenticated/plan-print'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authenticated/reimport-plan'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
 
@@ -49,9 +52,19 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGpaPlannerRoute = AuthenticatedGpaPlannerRouteImport.update({
+  id: '/gpa-planner',
+  path: '/gpa-planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanPrintRoute = AuthenticatedPlanPrintRouteImport.update({
+  id: '/plan-print',
+  path: '/plan-print',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -59,6 +72,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReimportPlanRoute =
+  AuthenticatedReimportPlanRouteImport.update({
+    id: '/reimport-plan',
+    path: '/reimport-plan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -77,8 +96,11 @@ export interface FileRoutesByFullPath {
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -88,8 +110,11 @@ export interface FileRoutesByTo {
   '/advisor': typeof AuthenticatedAdvisorRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -101,8 +126,11 @@ export interface FileRoutesById {
   '/_authenticated/advisor': typeof AuthenticatedAdvisorRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/plan-print': typeof AuthenticatedPlanPrintRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -114,8 +142,11 @@ export interface FileRouteTypes {
     | '/advisor'
     | '/calendar'
     | '/dashboard'
+    | '/gpa-planner'
     | '/onboarding'
+    | '/plan-print'
     | '/profile'
+    | '/reimport-plan'
     | '/tools'
     | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
@@ -125,8 +156,11 @@ export interface FileRouteTypes {
     | '/advisor'
     | '/calendar'
     | '/dashboard'
+    | '/gpa-planner'
     | '/onboarding'
+    | '/plan-print'
     | '/profile'
+    | '/reimport-plan'
     | '/tools'
     | '/courses/$courseId'
   id:
@@ -137,8 +171,11 @@ export interface FileRouteTypes {
     | '/_authenticated/advisor'
     | '/_authenticated/calendar'
     | '/_authenticated/dashboard'
+    | '/_authenticated/gpa-planner'
     | '/_authenticated/onboarding'
+    | '/_authenticated/plan-print'
     | '/_authenticated/profile'
+    | '/_authenticated/reimport-plan'
     | '/_authenticated/tools'
     | '/_authenticated/courses/$courseId'
   fileRoutesById: FileRoutesById
@@ -193,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gpa-planner': {
+      id: '/_authenticated/gpa-planner'
+      path: '/gpa-planner'
+      fullPath: '/gpa-planner'
+      preLoaderRoute: typeof AuthenticatedGpaPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -200,11 +244,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plan-print': {
+      id: '/_authenticated/plan-print'
+      path: '/plan-print'
+      fullPath: '/plan-print'
+      preLoaderRoute: typeof AuthenticatedPlanPrintRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reimport-plan': {
+      id: '/_authenticated/reimport-plan'
+      path: '/reimport-plan'
+      fullPath: '/reimport-plan'
+      preLoaderRoute: typeof AuthenticatedReimportPlanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tools': {
@@ -228,8 +286,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdvisorRoute: typeof AuthenticatedAdvisorRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGpaPlannerRoute: typeof AuthenticatedGpaPlannerRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPlanPrintRoute: typeof AuthenticatedPlanPrintRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedReimportPlanRoute: typeof AuthenticatedReimportPlanRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -238,8 +299,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdvisorRoute: AuthenticatedAdvisorRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGpaPlannerRoute: AuthenticatedGpaPlannerRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPlanPrintRoute: AuthenticatedPlanPrintRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedReimportPlanRoute: AuthenticatedReimportPlanRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
 }

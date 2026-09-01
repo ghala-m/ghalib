@@ -38,7 +38,7 @@ function AuthenticatedLayout() {
 
   return (
     <div dir={dir} className="flex min-h-screen bg-background">
-      {pathname === "/onboarding" ? null : <AppSidebar />}
+      {pathname === "/onboarding" || pathname === "/plan-print" ? null : <AppSidebar />}
       <main className="min-w-0 flex-1">
         <Outlet />
       </main>

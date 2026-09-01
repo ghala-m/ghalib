@@ -12,4 +12,16 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Works around "RangeError: Invalid WebSocket frame: RSV1 must be clear" crashing the dev
+  // server during HMR. That error means something between the browser and this process is
+  // altering the WebSocket frames — almost always a VPN client, corporate proxy, or antivirus
+  // doing traffic inspection (Cisco AnyConnect is a very common culprit). Disabling
+  // compression negotiation on the socket is the standard workaround, since compressed frames
+  // are what gets corrupted. If it still crashes, temporarily disconnecting the VPN and
+  // reloading is the more reliable fix.
+  vite: {
+    server: {
+      ws: { perMessageDeflate: false },
+    },
+  },
 });

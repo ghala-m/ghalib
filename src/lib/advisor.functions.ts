@@ -14,8 +14,15 @@ const Input = z.object({
 
 export const askAdvisor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Input.parse(data))
-  .handler(async ({ data }) => {
+  .validator((data: unknown) => Input.parse(data))
+  .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("./rate-limit.server");
+    await enforceRateLimit(context.supabase, context.userId, {
+      endpoint: "askAdvisor",
+      maxCalls: 30,
+      windowMinutes: 60,
+    });
+
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 

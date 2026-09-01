@@ -4,6 +4,7 @@ import { CalendarDays, MapPin, Pencil, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { courseQuery, meetingsOf } from "@/lib/queries";
+import { summarizeGrades } from "@/lib/grades";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SyllabusPanel } from "@/components/app/SyllabusPanel";
@@ -51,6 +52,7 @@ function CoursePage() {
 
   const done = items.filter((i) => i.completed).length;
   const meetings = meetingsOf(course);
+  const grade = summarizeGrades(items);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -138,6 +140,28 @@ function CoursePage() {
             />
           </div>
         </div>
+
+        {grade.totalWeight > 0 && (
+          <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4">
+            {grade.currentAverage !== null ? (
+              <>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="text-sm font-medium">{t("currentGrade")}</p>
+                  <p className="text-2xl font-bold tabular-nums text-accent">{grade.currentAverage.toFixed(1)}%</p>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-muted">
+                  <div className="h-1.5 rounded-full bg-accent" style={{ width: `${Math.min(100, grade.coverage)}%` }} />
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {grade.coverage.toFixed(0)}% {t("gradeCoverage")}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("noGradedYet")}</p>
+            )}
+          </div>
+        )}
+
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
         ) : (
@@ -154,7 +178,8 @@ function CoursePage() {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t(i.type)}
-                    {i.weight ? ` · ${i.weight}%` : ""}
+                    {i.weight ? ` · ${t("weight")}: ${i.weight}%` : ""}
+                    {i.score_percent !== null ? ` · ${t("scoreLabel")}: ${i.score_percent}%` : ""}
                   </p>
                 </div>
                 <ItemDialog

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_log: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      briefing_log: {
+        Row: {
+          briefing_date: string
+          id: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          briefing_date: string
+          id?: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          briefing_date?: string
+          id?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           course_id: string | null
@@ -22,6 +64,7 @@ export type Database = {
           event_time: string | null
           id: string
           notes: string | null
+          notified_at: string | null
           remind_minutes: number | null
           title: string
           user_id: string
@@ -33,6 +76,7 @@ export type Database = {
           event_time?: string | null
           id?: string
           notes?: string | null
+          notified_at?: string | null
           remind_minutes?: number | null
           title: string
           user_id: string
@@ -44,6 +88,7 @@ export type Database = {
           event_time?: string | null
           id?: string
           notes?: string | null
+          notified_at?: string | null
           remind_minutes?: number | null
           title?: string
           user_id?: string
@@ -58,12 +103,37 @@ export type Database = {
           },
         ]
       }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
           created_at: string
           id: string
           role: string
+          session_id: string | null
           user_id: string
         }
         Insert: {
@@ -71,6 +141,7 @@ export type Database = {
           created_at?: string
           id?: string
           role: string
+          session_id?: string | null
           user_id: string
         }
         Update: {
@@ -78,6 +149,7 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
+          session_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -91,6 +163,8 @@ export type Database = {
           due_date: string | null
           due_time: string | null
           id: string
+          notified_at: string | null
+          score_percent: number | null
           title: string
           type: Database["public"]["Enums"]["item_type"]
           user_id: string
@@ -104,6 +178,8 @@ export type Database = {
           due_date?: string | null
           due_time?: string | null
           id?: string
+          notified_at?: string | null
+          score_percent?: number | null
           title: string
           type?: Database["public"]["Enums"]["item_type"]
           user_id: string
@@ -117,6 +193,8 @@ export type Database = {
           due_date?: string | null
           due_time?: string | null
           id?: string
+          notified_at?: string | null
+          score_percent?: number | null
           title?: string
           type?: Database["public"]["Enums"]["item_type"]
           user_id?: string
@@ -265,9 +343,16 @@ export type Database = {
       profiles: {
         Row: {
           accent_color: string | null
+          briefing_buffer_minutes: number
+          briefing_enabled: boolean
+          briefing_lead_minutes: number
+          commute_mode: string
           created_at: string
           current_term: string | null
           full_name: string | null
+          home_address: string | null
+          home_lat: number | null
+          home_lng: number | null
           id: string
           language: string
           major: string | null
@@ -276,15 +361,26 @@ export type Database = {
           semester_gpa: number | null
           term_number: number
           theme: string
+          timezone: string
           total_credits: number
           university: string | null
+          university_address: string | null
+          university_lat: number | null
+          university_lng: number | null
           updated_at: string
         }
         Insert: {
           accent_color?: string | null
+          briefing_buffer_minutes?: number
+          briefing_enabled?: boolean
+          briefing_lead_minutes?: number
+          commute_mode?: string
           created_at?: string
           current_term?: string | null
           full_name?: string | null
+          home_address?: string | null
+          home_lat?: number | null
+          home_lng?: number | null
           id: string
           language?: string
           major?: string | null
@@ -293,15 +389,26 @@ export type Database = {
           semester_gpa?: number | null
           term_number?: number
           theme?: string
+          timezone?: string
           total_credits?: number
           university?: string | null
+          university_address?: string | null
+          university_lat?: number | null
+          university_lng?: number | null
           updated_at?: string
         }
         Update: {
           accent_color?: string | null
+          briefing_buffer_minutes?: number
+          briefing_enabled?: boolean
+          briefing_lead_minutes?: number
+          commute_mode?: string
           created_at?: string
           current_term?: string | null
           full_name?: string | null
+          home_address?: string | null
+          home_lat?: number | null
+          home_lng?: number | null
           id?: string
           language?: string
           major?: string | null
@@ -310,9 +417,64 @@ export type Database = {
           semester_gpa?: number | null
           term_number?: number
           theme?: string
+          timezone?: string
           total_credits?: number
           university?: string | null
+          university_address?: string | null
+          university_lat?: number | null
+          university_lng?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_streak: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          log_date: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          log_date: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          log_date?: string
+          user_id?: string
         }
         Relationships: []
       }

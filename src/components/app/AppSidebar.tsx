@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarDays, CalendarRange, CheckCircle2, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
+import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { blockedByAlternative, coursesQuery, matchesCourse, type CourseStatus } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
@@ -21,6 +21,7 @@ export function AppSidebar() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [collapsed, setCollapsed] = useState<Record<CourseStatus, boolean>>({ current: false, completed: false, future: true });
   const { data: courses = [] } = useQuery(coursesQuery());
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -53,6 +54,7 @@ export function AppSidebar() {
         <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} />
         <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} />
         <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} />
+        <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} />
         <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} />
       </nav>
 
@@ -75,37 +77,47 @@ export function AppSidebar() {
       <div className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         {groups.map(({ status, icon: Icon }) => {
           const list = filtered.filter((c) => c.status === status);
+          const isCollapsed = collapsed[status] && !search.trim();
           return (
             <section key={status}>
-              <p className="flex items-center gap-2 px-2 pb-2 text-xs font-semibold tracking-wide text-sidebar-foreground/60 uppercase">
+              <button
+                type="button"
+                onClick={() => setCollapsed((s) => ({ ...s, [status]: !s[status] }))}
+                className="flex w-full items-center gap-2 rounded-lg px-2 pb-2 text-xs font-semibold tracking-wide text-sidebar-foreground/60 uppercase transition-colors hover:text-sidebar-foreground"
+              >
                 <Icon className="size-3.5" />
                 {t(status)}
-                <span className="ms-auto">{list.length}</span>
-              </p>
-              <ul className="space-y-0.5">
-                {list.map((c) => (
-                  <li key={c.id}>
-                    <Link
-                      to="/courses/$courseId"
-                      params={{ courseId: c.id }}
-                      className={cn(
-                        "block truncate rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
-                        pathname === `/courses/${c.id}` && "bg-sidebar-accent font-medium",
-                        blockedByAlternative(c, courses) && "text-sidebar-foreground/45 line-through",
-                      )}
-                      title={blockedByAlternative(c, courses) ? t("blockedByAlt") : undefined}
-                    >
-                      {c.code ? <span className="text-sidebar-foreground/60">{c.code} · </span> : null}
-                      {c.name}
-                      {c.is_retake ? (
-                        <span className="ms-2 rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[10px] text-sidebar-primary">
-                          {t("retakeBadge")}
-                        </span>
-                      ) : null}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+                <span className="ms-auto flex items-center gap-1.5">
+                  {list.length}
+                  <ChevronDown className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")} />
+                </span>
+              </button>
+              {!isCollapsed && (
+                <ul className="space-y-0.5">
+                  {list.map((c) => (
+                    <li key={c.id}>
+                      <Link
+                        to="/courses/$courseId"
+                        params={{ courseId: c.id }}
+                        className={cn(
+                          "block truncate rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
+                          pathname === `/courses/${c.id}` && "bg-sidebar-accent font-medium",
+                          blockedByAlternative(c, courses) && "text-sidebar-foreground/45 line-through",
+                        )}
+                        title={blockedByAlternative(c, courses) ? t("blockedByAlt") : undefined}
+                      >
+                        {c.code ? <span className="text-sidebar-foreground/60">{c.code} · </span> : null}
+                        {c.name}
+                        {c.is_retake ? (
+                          <span className="ms-2 rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[10px] text-sidebar-primary">
+                            {t("retakeBadge")}
+                          </span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           );
         })}
@@ -128,7 +140,7 @@ function SideLink({
   icon: Icon,
   label,
 }: {
-  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools";
+  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner";
   active: boolean;
   icon: typeof BookMarked;
   label: string;

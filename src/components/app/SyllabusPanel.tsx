@@ -45,6 +45,8 @@ export function SyllabusPanel({ course }: { course: Course }) {
     onSuccess: (data) => setExtraction(data),
     onError: (e: Error) => {
       if (e.message.includes("INVALID_FILE")) toast.error(t("invalidFile"));
+      else if (e.message.includes("FILE_TOO_LARGE")) toast.error(t("fileTooLarge"));
+      else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
       else toast.error(t("aiFailed"));

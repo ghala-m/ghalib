@@ -9,15 +9,27 @@ export type CourseStatus = Database["public"]["Enums"]["course_status"];
 export type ItemType = Database["public"]["Enums"]["item_type"];
 export type CourseCategory = Database["public"]["Enums"]["course_category"];
 export type ChatMessage = Database["public"]["Tables"]["chat_messages"]["Row"];
+export type ChatSession = Database["public"]["Tables"]["chat_sessions"]["Row"];
 
-export const chatMessagesQuery = () => ({
-  queryKey: ["chat"],
+export const chatSessionsQuery = () => ({
+  queryKey: ["chat-sessions"],
+  queryFn: async (): Promise<ChatSession[]> => {
+    const { data, error } = await supabase.from("chat_sessions").select("*").order("updated_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export const chatMessagesQuery = (sessionId: string | null) => ({
+  queryKey: ["chat", sessionId],
   queryFn: async (): Promise<ChatMessage[]> => {
+    if (!sessionId) return [];
     const { data, error } = await supabase
       .from("chat_messages")
       .select("*")
+      .eq("session_id", sessionId)
       .order("created_at", { ascending: true })
-      .limit(100);
+      .limit(200);
     if (error) throw error;
     return data ?? [];
   },
@@ -28,6 +40,17 @@ export type Meeting = { day: string; start_time: string | null; end_time: string
 export function meetingsOf(course: Pick<Course, "meetings">): Meeting[] {
   const raw = course.meetings;
   return Array.isArray(raw) ? (raw as unknown as Meeting[]) : [];
+}
+
+export const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+/** Parses a free-text meeting day (English or Arabic, as extracted from a syllabus) into a 0(Sun)-6(Sat) index, or -1 if unrecognized. */
+export function meetingDayIndex(day: string): number {
+  const v = day.trim().toLowerCase();
+  const en = DAY_KEYS.findIndex((k) => v.startsWith(k.slice(0, 3)));
+  if (en >= 0) return en;
+  const ar = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  return ar.findIndex((k) => v.includes(k.replace("ال", "")));
 }
 
 export const coursesQuery = () => ({
@@ -119,6 +142,37 @@ export const termsQuery = () => ({
     return data ?? [];
   },
 });
+
+export type StreakEntryRow = Database["public"]["Tables"]["study_streak"]["Row"];
+
+export const streakQuery = () => ({
+  queryKey: ["streak"],
+  queryFn: async (): Promise<StreakEntryRow[]> => {
+    const { data, error } = await supabase.from("study_streak").select("*");
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+/** Logs (or increments) today's study/attendance streak entry for the current user. */
+export async function logStreakToday(userId: string): Promise<void> {
+  const today = new Date();
+  const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const { data: existing } = await supabase
+    .from("study_streak")
+    .select("id, count")
+    .eq("user_id", userId)
+    .eq("log_date", todayIso)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await supabase.from("study_streak").update({ count: existing.count + 1 }).eq("id", existing.id);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("study_streak").insert({ user_id: userId, log_date: todayIso, count: 1 });
+    if (error) throw error;
+  }
+}
 
 export const eventsQuery = (courseId?: string) => ({
   queryKey: ["events", courseId ?? "all"],

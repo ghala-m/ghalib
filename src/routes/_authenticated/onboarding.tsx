@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMajorSheet, type MajorSheet, type PlanCourse } from "@/lib/majorsheet.functions";
 import { ACCEPTED_DOCS, isAcceptedDoc, prepareDocument } from "@/lib/files";
-import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE, pointsFor } from "@/lib/plan";
+import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE, pointsFor, unresolvedPrerequisites } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,42 @@ function OnboardingPage() {
   const [sheet, setSheet] = useState<MajorSheet | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [stage, setStage] = useState<1 | 2 | 3>(1);
+  const [restoredDraft, setRestoredDraft] = useState(false);
+
+  // Autosave: parsing the major sheet is a real AI cost, so losing that work to an accidental
+  // refresh or closed tab before the final "save" click would be wasteful and frustrating.
+  const draftKey = user ? `ghalib:onboarding-draft:${user.id}` : null;
+
+  useEffect(() => {
+    if (!draftKey) return;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { sheet: MajorSheet; rows: Row[]; stage: 1 | 2 | 3 };
+      if (draft.sheet && draft.rows?.length) {
+        setSheet(draft.sheet);
+        setRows(draft.rows);
+        setStage(draft.stage ?? 2);
+        setRestoredDraft(true);
+      }
+    } catch {
+      // corrupted draft — ignore and start fresh rather than crash onboarding
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftKey || !sheet) return;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ sheet, rows, stage }));
+    } catch {
+      // storage full/unavailable — autosave is a nice-to-have, not worth surfacing an error for
+    }
+  }, [draftKey, sheet, rows, stage]);
+
+  const clearDraft = () => {
+    if (draftKey) localStorage.removeItem(draftKey);
+  };
 
   const run = useMutation({
     mutationFn: async (file: File) => {
@@ -59,6 +95,8 @@ function OnboardingPage() {
     },
     onError: (e: Error) => {
       if (e.message.includes("INVALID_FILE")) toast.error(t("invalidFile"));
+      else if (e.message.includes("FILE_TOO_LARGE")) toast.error(t("fileTooLarge"));
+      else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
       else toast.error(t("aiFailed"));
@@ -103,6 +141,7 @@ function OnboardingPage() {
     },
     onSuccess: async () => {
       await qc.invalidateQueries();
+      clearDraft();
       toast.success(t("planSaved"));
       navigate({ to: "/dashboard" });
     },
@@ -110,6 +149,7 @@ function OnboardingPage() {
   });
 
   const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const unresolved = useMemo(() => unresolvedPrerequisites(rows), [rows]);
 
   return (
     <div className="surface-gradient min-h-screen">
@@ -138,6 +178,25 @@ function OnboardingPage() {
             </li>
           ))}
         </ol>
+
+        {restoredDraft && stage !== 1 && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-accent/30 bg-accent/5 px-4 py-2.5 text-xs">
+            <span>{t("draftRestored")}</span>
+            <button
+              type="button"
+              className="font-medium text-accent hover:underline"
+              onClick={() => {
+                clearDraft();
+                setSheet(null);
+                setRows([]);
+                setStage(1);
+                setRestoredDraft(false);
+              }}
+            >
+              {t("discardDraft")}
+            </button>
+          </div>
+        )}
 
         {stage === 1 && (
           <div className="panel-glass p-8 text-center">
@@ -173,6 +232,14 @@ function OnboardingPage() {
                 {rows.length} {t("coursesFound")}
               </p>
             </div>
+
+            {unresolved.length > 0 && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                <p className="font-medium text-amber-600 dark:text-amber-400">{t("unresolvedPrereqsTitle")}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t("unresolvedPrereqsHint")}</p>
+                <p className="mt-2 font-mono text-xs">{unresolved.join(" · ")}</p>
+              </div>
+            )}
 
             <div className="panel-glass overflow-hidden">
               <div className="border-b border-border px-5 py-4">

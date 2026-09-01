@@ -1,15 +1,18 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, BellOff, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Bell, BellOff, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
 import {
   allItemsQuery,
   coursesQuery,
   eventsQuery,
+  meetingDayIndex,
   meetingsOf,
+  termsQuery,
   type CalendarEvent,
   type Course,
 } from "@/lib/queries";
+import { buildIcs, downloadIcs } from "@/lib/ics";
 import { CATEGORY_META } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -20,8 +23,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 type View = "day" | "week" | "month";
-
-const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 function iso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -35,14 +36,6 @@ function startOfWeek(d: Date) {
   return addDays(d, -d.getDay());
 }
 
-function meetingDayIndex(day: string) {
-  const v = day.trim().toLowerCase();
-  const en = DAY_KEYS.findIndex((k) => v.startsWith(k.slice(0, 3)));
-  if (en >= 0) return en;
-  const ar = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-  const i = ar.findIndex((k) => v.includes(k.replace("ال", "")));
-  return i;
-}
 
 /** Shared calendar. Pass `courseId` to scope every view to a single course. */
 export function CalendarView({ courseId, compact }: { courseId?: string; compact?: boolean } = {}) {
@@ -52,7 +45,22 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
   const { data: allItems = [] } = useQuery(allItemsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());
   const { data: allEvents = [] } = useQuery(eventsQuery());
+  const { data: terms = [] } = useQuery(termsQuery());
   useReminders();
+
+  const activeTerm = terms.find((term) => term.is_active) ?? null;
+
+  const exportIcs = () => {
+    const ics = buildIcs({
+      courses,
+      items: allItems,
+      events: allEvents,
+      activeTerm,
+      calendarName: t("appName"),
+    });
+    downloadIcs("ghalib-schedule.ics", ics);
+    toast.success(t("icsExported"));
+  };
 
   const locale = lang === "ar" ? "ar" : "en-GB";
   const items = courseId ? allItems.filter((i) => i.course_id === courseId) : allItems;
@@ -98,6 +106,16 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
     return map;
   }, [activeCourses]);
 
+  // Recurring class meetings only make sense *within* the active term's dates — without this,
+  // a Sunday 9am class would render forever, on every week ever navigated to, past or future.
+  const inTermRange = (date: Date) => {
+    if (!activeTerm) return true; // no active term set — most permissive fallback, don't hide anything
+    const d = iso(date);
+    if (activeTerm.start_date && d < activeTerm.start_date) return false;
+    if (activeTerm.end_date && d > activeTerm.end_date) return false;
+    return true;
+  };
+
   const step = (dir: number) => {
     if (view === "day") setCursor((d) => addDays(d, dir));
     else if (view === "week") setCursor((d) => addDays(d, dir * 7));
@@ -138,6 +156,9 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
         </Button>
 
         <div className="ms-auto flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="icon" title={t("exportIcs")} onClick={exportIcs}>
+            <Download className="size-4" />
+          </Button>
           {notif !== "unsupported" && (
             <Button
               variant="ghost"
@@ -211,7 +232,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
 
   function DayColumn({ date, full }: { date: Date; full?: boolean }) {
     const dayItems = itemsByDate.get(iso(date)) ?? [];
-    const dayClasses = classesByDay.get(date.getDay()) ?? [];
+    const dayClasses = inTermRange(date) ? (classesByDay.get(date.getDay()) ?? []) : [];
     const dayEvents = eventsByDate.get(iso(date)) ?? [];
     const isToday = iso(date) === iso(new Date());
     return (
@@ -285,7 +306,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
       <div className="grid grid-cols-7 gap-1.5">
         {cells.map((d) => {
           const dayItems = itemsByDate.get(iso(d)) ?? [];
-          const dayClasses = classesByDay.get(d.getDay()) ?? [];
+          const dayClasses = inTermRange(d) ? (classesByDay.get(d.getDay()) ?? []) : [];
           const dayEvents = eventsByDate.get(iso(d)) ?? [];
           const dim = d.getMonth() !== cursor.getMonth();
           const isToday = iso(d) === iso(new Date());
