@@ -23,7 +23,7 @@ function toIso(d: Date) {
  *  timezone once read back through local getters (getDate/getMonth/...) — always use this. */
 function fromIso(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return new Date(y || 1970, (m || 1) - 1, d || 1);
 }
 
 function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {

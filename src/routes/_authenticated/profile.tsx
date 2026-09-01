@@ -176,7 +176,7 @@ function ProfilePage() {
               id={f.key}
               type={f.type ?? "text"}
               step={f.step}
-              value={form[f.key]}
+              value={String(form[f.key] ?? "")}
               onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
             />
           </div>

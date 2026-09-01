@@ -57,7 +57,7 @@ export function PlaceSearchInput({
   const [status, setStatus] = useState<"loading" | "ready" | "no_key" | "error">("loading");
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+    const apiKey = import.meta.env['VITE_GOOGLE_MAPS_API_KEY'] as string | undefined;
     if (!apiKey) {
       setStatus("no_key");
       return;
