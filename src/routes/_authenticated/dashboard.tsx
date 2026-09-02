@@ -60,7 +60,7 @@ function DashboardPage() {
         <TermControls />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((s) => (
           <div key={s.label} className="panel p-5">
             <s.icon className="size-5 text-accent" />
