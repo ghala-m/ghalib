@@ -28,7 +28,33 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
+const FALLBACK_TIMEZONES = [
+  "Asia/Kuwait",
+  "Asia/Riyadh",
+  "Asia/Dubai",
+  "Asia/Qatar",
+  "Asia/Bahrain",
+  "Africa/Cairo",
+  "Europe/London",
+  "America/New_York",
+  "UTC",
+];
+
+function listTimezones(): string[] {
+  try {
+    const supported = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf;
+    const zones = supported?.("timeZone");
+    if (zones?.length) return zones;
+  } catch {
+    /* fall through */
+  }
+  return FALLBACK_TIMEZONES;
+}
+
+const TIMEZONES = listTimezones();
+
 function ProfilePage() {
+
   const { t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
