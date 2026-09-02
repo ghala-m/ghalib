@@ -58,7 +58,7 @@ export function MobileNav() {
   );
 }
 
-function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
+function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -189,7 +189,7 @@ function SideLink({
   active: boolean;
   icon: typeof BookMarked;
   label: string;
-  onNavigate?: () => void;
+  onNavigate?: (() => void) | undefined;
 }) {
   return (
     <Link
