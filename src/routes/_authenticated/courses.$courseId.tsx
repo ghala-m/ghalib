@@ -55,7 +55,7 @@ function CoursePage() {
   const grade = summarizeGrades(items);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
         <p className="text-xs text-muted-foreground">

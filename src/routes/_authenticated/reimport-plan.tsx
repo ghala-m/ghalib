@@ -124,7 +124,7 @@ function ReimportPlanPage() {
 
   return (
     <div className="surface-gradient min-h-screen">
-      <div className="mx-auto max-w-4xl px-6 py-10">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link to="/profile" className="mb-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
