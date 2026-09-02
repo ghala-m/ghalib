@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, LogOut, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
+import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, LogOut, Menu, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { blockedByAlternative, coursesQuery, matchesCourse, type CourseStatus } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LangToggle } from "@/components/LangToggle";
 import { AddCourseDialog } from "@/components/app/AddCourseDialog";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,46 @@ const groups: { status: CourseStatus; icon: typeof BookMarked }[] = [
 ];
 
 export function AppSidebar() {
+  return (
+    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+      <SidebarInner />
+    </aside>
+  );
+}
+
+/** Hamburger + slide-over sidebar, shown only on small screens. */
+export function MobileNav() {
+  const { t, dir } = useI18n();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:hidden">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label={t("openMenu")}>
+            <Menu className="size-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side={dir === "rtl" ? "right" : "left"}
+          className="w-[85vw] max-w-80 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
+        >
+          <SheetTitle className="sr-only">{t("openMenu")}</SheetTitle>
+          <div className="flex h-full flex-col">
+            <SidebarInner onNavigate={() => setOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+      <div className="flex items-center gap-2">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <ScrollText className="size-4" />
+        </div>
+        <p className="font-display text-base font-bold">{t("appName")}</p>
+      </div>
+    </div>
+  );
+}
+
+function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -38,7 +79,7 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <>
       <div className="flex items-center gap-2 px-5 py-5">
         <div className="flex size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
           <ScrollText className="size-5" />
@@ -50,12 +91,12 @@ export function AppSidebar() {
       </div>
 
       <nav className="space-y-1 px-3">
-        <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} />
-        <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} />
-        <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} />
-        <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} />
-        <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} />
-        <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} />
+        <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} onNavigate={onNavigate} />
+        <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} onNavigate={onNavigate} />
+        <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} onNavigate={onNavigate} />
+        <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} onNavigate={onNavigate} />
+        <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} onNavigate={onNavigate} />
+        <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} onNavigate={onNavigate} />
       </nav>
 
       <div className="px-3 py-4">
@@ -69,6 +110,7 @@ export function AppSidebar() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchCourses")}
+            aria-label={t("searchCourses")}
             className="border-sidebar-border bg-sidebar-accent ps-9 text-sidebar-foreground placeholder:text-sidebar-foreground/50"
           />
         </div>
@@ -82,6 +124,7 @@ export function AppSidebar() {
             <section key={status}>
               <button
                 type="button"
+                aria-expanded={!isCollapsed}
                 onClick={() => setCollapsed((s) => ({ ...s, [status]: !s[status] }))}
                 className="flex w-full items-center gap-2 rounded-lg px-2 pb-2 text-xs font-semibold tracking-wide text-sidebar-foreground/60 uppercase transition-colors hover:text-sidebar-foreground"
               >
@@ -99,6 +142,7 @@ export function AppSidebar() {
                       <Link
                         to="/courses/$courseId"
                         params={{ courseId: c.id }}
+                        onClick={onNavigate}
                         className={cn(
                           "block truncate rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
                           pathname === `/courses/${c.id}` && "bg-sidebar-accent font-medium",
@@ -130,7 +174,7 @@ export function AppSidebar() {
           {t("signOut")}
         </Button>
       </div>
-    </aside>
+    </>
   );
 }
 
@@ -139,15 +183,19 @@ function SideLink({
   active,
   icon: Icon,
   label,
+  onNavigate,
 }: {
   to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       to={to}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
         active && "bg-sidebar-accent font-medium",
