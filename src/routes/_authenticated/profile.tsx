@@ -50,7 +50,9 @@ function ProfilePage() {
     briefing_enabled: false,
     briefing_lead_minutes: "60",
     briefing_buffer_minutes: "10",
+    timezone: "Asia/Kuwait",
   });
+
 
   useEffect(() => {
     if (!profile) return;
@@ -68,7 +70,9 @@ function ProfilePage() {
       briefing_enabled: profile.briefing_enabled ?? false,
       briefing_lead_minutes: profile.briefing_lead_minutes?.toString() ?? "60",
       briefing_buffer_minutes: profile.briefing_buffer_minutes?.toString() ?? "10",
+      timezone: profile.timezone ?? "Asia/Kuwait",
     });
+
   }, [profile]);
 
   const useMyLocation = () => {
@@ -112,6 +116,8 @@ function ProfilePage() {
           briefing_enabled: form.briefing_enabled,
           briefing_lead_minutes: form.briefing_lead_minutes ? Number(form.briefing_lead_minutes) : 60,
           briefing_buffer_minutes: form.briefing_buffer_minutes ? Number(form.briefing_buffer_minutes) : 10,
+          timezone: form.timezone || "Asia/Kuwait",
+
         })
         .eq("id", user.id);
       if (error) throw error;
@@ -181,9 +187,26 @@ function ProfilePage() {
             />
           </div>
         ))}
+        <div className="space-y-2">
+          <Label>{t("timezone")}</Label>
+          <Select value={form.timezone} onValueChange={(v) => setForm((s) => ({ ...s, timezone: v }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              {TIMEZONES.map((tz) => (
+                <SelectItem key={tz} value={tz}>
+                  {tz}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t("timezoneHint")}</p>
+        </div>
         <Button onClick={() => save.mutate()} disabled={save.isPending}>
           {t("save")}
         </Button>
+
       </div>
 
       {/* Real push notifications */}
