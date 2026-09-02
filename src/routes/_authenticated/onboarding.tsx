@@ -153,7 +153,7 @@ function OnboardingPage() {
 
   return (
     <div className="surface-gradient min-h-screen">
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold tracking-wide text-accent uppercase">{t("onboarding")}</p>

@@ -32,7 +32,7 @@ function PlanPrintPage() {
   });
 
   return (
-    <div dir={dir} className="mx-auto max-w-4xl px-6 py-10 print:max-w-none print:px-0 print:py-0">
+    <div dir={dir} className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10 print:max-w-none print:px-0 print:py-0">
       <div className="print-hide mb-6 flex items-center justify-between gap-3">
         <Link to="/profile" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="size-4 rtl:rotate-180" />

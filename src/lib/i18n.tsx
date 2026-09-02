@@ -416,6 +416,13 @@ const dict = {
   latitude: { ar: "خط العرض", en: "Latitude" },
   longitude: { ar: "خط الطول", en: "Longitude" },
   commuteMode: { ar: "وسيلة التنقل", en: "Commute mode" },
+  openMenu: { ar: "القائمة", en: "Menu" },
+  timezone: { ar: "المنطقة الزمنية", en: "Time zone" },
+  timezoneHint: {
+    ar: "تُستخدم لحساب موعد الإحاطة الصباحية والتنبيهات.",
+    en: "Used for morning briefing timing and reminders.",
+  },
+
   driving: { ar: "سيارة", en: "Driving" },
   walking: { ar: "مشي", en: "Walking" },
   transit: { ar: "مواصلات عامة", en: "Transit" },

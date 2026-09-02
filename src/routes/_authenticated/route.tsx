@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { profileQuery } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
-import { AppSidebar } from "@/components/app/AppSidebar";
+import { AppSidebar, MobileNav } from "@/components/app/AppSidebar";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -36,12 +36,18 @@ function AuthenticatedLayout() {
     );
   }
 
+  const bare = pathname === "/onboarding" || pathname === "/plan-print";
+
   return (
     <div dir={dir} className="flex min-h-screen bg-background">
-      {pathname === "/onboarding" || pathname === "/plan-print" ? null : <AppSidebar />}
-      <main className="min-w-0 flex-1">
-        <Outlet />
-      </main>
+      {bare ? null : <AppSidebar />}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {bare ? null : <MobileNav />}
+        <main className="min-w-0 flex-1">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
+

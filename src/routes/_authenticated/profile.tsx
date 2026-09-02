@@ -28,7 +28,33 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 });
 
+const FALLBACK_TIMEZONES = [
+  "Asia/Kuwait",
+  "Asia/Riyadh",
+  "Asia/Dubai",
+  "Asia/Qatar",
+  "Asia/Bahrain",
+  "Africa/Cairo",
+  "Europe/London",
+  "America/New_York",
+  "UTC",
+];
+
+function listTimezones(): string[] {
+  try {
+    const supported = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf;
+    const zones = supported?.("timeZone");
+    if (zones?.length) return zones;
+  } catch {
+    /* fall through */
+  }
+  return FALLBACK_TIMEZONES;
+}
+
+const TIMEZONES = listTimezones();
+
 function ProfilePage() {
+
   const { t } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -50,7 +76,9 @@ function ProfilePage() {
     briefing_enabled: false,
     briefing_lead_minutes: "60",
     briefing_buffer_minutes: "10",
+    timezone: "Asia/Kuwait",
   });
+
 
   useEffect(() => {
     if (!profile) return;
@@ -68,7 +96,9 @@ function ProfilePage() {
       briefing_enabled: profile.briefing_enabled ?? false,
       briefing_lead_minutes: profile.briefing_lead_minutes?.toString() ?? "60",
       briefing_buffer_minutes: profile.briefing_buffer_minutes?.toString() ?? "10",
+      timezone: profile.timezone ?? "Asia/Kuwait",
     });
+
   }, [profile]);
 
   const useMyLocation = () => {
@@ -112,6 +142,8 @@ function ProfilePage() {
           briefing_enabled: form.briefing_enabled,
           briefing_lead_minutes: form.briefing_lead_minutes ? Number(form.briefing_lead_minutes) : 60,
           briefing_buffer_minutes: form.briefing_buffer_minutes ? Number(form.briefing_buffer_minutes) : 10,
+          timezone: form.timezone || "Asia/Kuwait",
+
         })
         .eq("id", user.id);
       if (error) throw error;
@@ -130,7 +162,7 @@ function ProfilePage() {
   ];
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-10">
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
       <h1 className="text-3xl font-bold">{t("profile")}</h1>
       <div className="mt-1 flex items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">{user?.email}</p>
@@ -181,9 +213,26 @@ function ProfilePage() {
             />
           </div>
         ))}
+        <div className="space-y-2">
+          <Label>{t("timezone")}</Label>
+          <Select value={form.timezone} onValueChange={(v) => setForm((s) => ({ ...s, timezone: v }))}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              {TIMEZONES.map((tz) => (
+                <SelectItem key={tz} value={tz}>
+                  {tz}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">{t("timezoneHint")}</p>
+        </div>
         <Button onClick={() => save.mutate()} disabled={save.isPending}>
           {t("save")}
         </Button>
+
       </div>
 
       {/* Real push notifications */}
