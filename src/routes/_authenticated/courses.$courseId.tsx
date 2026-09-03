@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, MapPin, Pencil, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { courseQuery, meetingsOf } from "@/lib/queries";
+import { primaryNickname, courseQuery, meetingsOf } from "@/lib/queries";
 import { summarizeGrades } from "@/lib/grades";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,7 +60,7 @@ function CoursePage() {
         <div>
         <p className="text-xs text-muted-foreground">
           {course.code || t("none")}
-          {course.nickname ? ` · ${course.nickname}` : ""}
+          {primaryNickname(course.nickname) ? ` · ${primaryNickname(course.nickname)}` : ""}
         </p>
         <h1 className="mt-1 text-3xl font-bold">{course.name}</h1>
         <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">

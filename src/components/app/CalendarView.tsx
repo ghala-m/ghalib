@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BellOff, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
-import {
+import { primaryNickname,
   allItemsQuery,
   coursesQuery,
   eventsQuery,
@@ -252,7 +252,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                 borderInlineStart: `3px solid ${CATEGORY_META[c.course.category].color}`,
               }}
             >
-              <span className="font-medium">{c.course.nickname || c.course.code || c.course.name}</span>
+              <span className="font-medium">{primaryNickname(c.course.nickname) || c.course.code || c.course.name}</span>
               {c.start ? <span className="ms-1 text-muted-foreground">{c.start}</span> : null}
             </Link>
           ))}
@@ -266,7 +266,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                   <span className={cn("font-medium", it.completed && "text-muted-foreground line-through")}>{it.title}</span>
                   <span className="block truncate text-muted-foreground">
                     {t(it.type)}
-                    {courseId ? "" : ` · ${it.courses?.nickname ?? it.courses?.code ?? it.courses?.name ?? ""}`}
+                    {courseId ? "" : ` · ${primaryNickname(it.courses?.nickname) ?? it.courses?.code ?? it.courses?.name ?? ""}`}
                   </span>
                 </button>
               }
@@ -331,7 +331,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                   className="mb-0.5 truncate rounded px-1"
                   style={{ background: `color-mix(in oklab, ${CATEGORY_META[c.course.category].color} 18%, transparent)` }}
                 >
-                  {c.course.nickname || c.course.code || c.course.name}
+                  {primaryNickname(c.course.nickname) || c.course.code || c.course.name}
                 </p>
               ))}
               {dayItems.slice(0, 2).map((it) => (

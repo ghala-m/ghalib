@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, type CalendarEvent } from "@/lib/queries";
+import { primaryNickname, coursesQuery, type CalendarEvent } from "@/lib/queries";
 import { requestNotificationPermission } from "@/hooks/useReminders";
 
 const REMINDERS: { value: string; key: "noReminder" | "remind10" | "remind30" | "remind60" | "remind1440" }[] = [
@@ -160,7 +160,7 @@ export function EventDialog({
                     .filter((c) => !c.archived)
                     .map((c) => (
                       <SelectItem key={c.id} value={c.id}>
-                        {c.nickname || c.code || c.name}
+                        {primaryNickname(c.nickname) || c.code || c.name}
                       </SelectItem>
                     ))}
                 </SelectContent>
