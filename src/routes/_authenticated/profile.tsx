@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
+import { ResetAccountCard } from "@/components/app/ResetAccountCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -378,6 +379,8 @@ function ProfilePage() {
           {t("save")}
         </Button>
       </div>
+
+      <ResetAccountCard />
     </div>
   );
 }

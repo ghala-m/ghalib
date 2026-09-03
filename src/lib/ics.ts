@@ -1,4 +1,4 @@
-import { meetingDayIndex, meetingsOf, type CalendarEvent, type Course, type CourseItem, type TermRow } from "@/lib/queries";
+import { primaryNickname, meetingDayIndex, meetingsOf, type CalendarEvent, type Course, type CourseItem, type TermRow } from "@/lib/queries";
 
 const ICS_DOW = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
@@ -114,7 +114,7 @@ export function buildIcs(params: {
       const until = `${allDayDate(toIsoDate(termEnd))}T235959Z`;
       pushEvent(lines, {
         uid: `class-${course.id}-${i}@ghalib`,
-        title: course.nickname || course.code || course.name,
+        title: primaryNickname(course.nickname) || course.code || course.name,
         description: course.instructor ? `${course.name} — ${course.instructor}` : course.name,
         location: m.location,
         dtstart,

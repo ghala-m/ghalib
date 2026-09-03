@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useI18n } from "@/lib/i18n";
 import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, type Course, type CourseCategory, type CourseStatus } from "@/lib/queries";
+import { coursesQuery, nicknameList, type Course, type CourseCategory, type CourseStatus } from "@/lib/queries";
 
 type FormState = {
   name: string;
   code: string;
-  nickname: string;
+  nicknames: string[];
   instructor: string;
   location: string;
   term: string;
@@ -45,7 +45,7 @@ type FormState = {
 const empty: FormState = {
   name: "",
   code: "",
-  nickname: "",
+  nicknames: [],
   instructor: "",
   location: "",
   term: "",
@@ -64,7 +64,7 @@ function fromCourse(c: Course): FormState {
   return {
     name: c.name,
     code: c.code ?? "",
-    nickname: c.nickname ?? "",
+    nicknames: nicknameList(c.nickname),
     instructor: c.instructor ?? "",
     location: c.location ?? "",
     term: c.term ?? "",
@@ -98,7 +98,7 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
   const payload = () => ({
     name: form.name.trim(),
     code: form.code.trim() || null,
-    nickname: form.nickname.trim() || null,
+    nickname: form.nicknames.map((n) => n.trim()).filter(Boolean).join(", ") || null,
     instructor: form.instructor.trim() || null,
     location: form.location.trim() || null,
     term: form.term.trim() || null,
@@ -175,14 +175,48 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
             <Input value={form.name} onChange={(e) => set("name", e.target.value)} />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t("courseCode")}>
-              <Input value={form.code} onChange={(e) => set("code", e.target.value)} />
-            </Field>
-            <Field label={t("nickname")}>
-              <Input value={form.nickname} onChange={(e) => set("nickname", e.target.value)} placeholder="Calc I" />
-            </Field>
-          </div>
+          <Field label={t("courseCode")}>
+            <Input value={form.code} onChange={(e) => set("code", e.target.value)} />
+          </Field>
+
+          <Field label={t("nicknames")} hint={t("nicknameHint")}>
+            <div className="space-y-2">
+              {(form.nicknames.length ? form.nicknames : [""]).map((nick, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <Input
+                    value={nick}
+                    placeholder="Calc I"
+                    onChange={(e) =>
+                      set(
+                        "nicknames",
+                        (form.nicknames.length ? form.nicknames : [""]).map((n, j) => (j === i ? e.target.value : n)),
+                      )
+                    }
+                  />
+                  {form.nicknames.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("delete")}
+                      onClick={() => set("nicknames", form.nicknames.filter((_, j) => j !== i))}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => set("nicknames", [...(form.nicknames.length ? form.nicknames : [""]), ""])}
+              >
+                <Plus className="size-4" />
+                {t("addNickname")}
+              </Button>
+            </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("status")}>

@@ -10,6 +10,7 @@ import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { PrereqFlowChart } from "@/components/app/PrereqFlowChart";
 import { NextTermPreview } from "@/components/app/NextTermPreview";
 import { StudyStreak } from "@/components/app/StudyStreak";
+import { GpaTrendChart } from "@/components/app/GpaTrendChart";
 import { TermControls } from "@/components/app/TermControls";
 import { CalendarView } from "@/components/app/CalendarView";
 
@@ -72,6 +73,10 @@ function DashboardPage() {
 
       <div className="mt-6">
         <StudyStreak />
+      </div>
+
+      <div className="mt-6">
+        <GpaTrendChart />
       </div>
 
       <section className="mt-10">
