@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff, FileOutput, Loader2, MapPin, RefreshCw } from "lucide-react";
+import { AlertTriangle, Bell, BellOff, FileOutput, Loader2, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
+import { ResetAccountCard } from "@/components/app/ResetAccountCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -378,6 +379,8 @@ function ProfilePage() {
           {t("save")}
         </Button>
       </div>
+
+      <ResetAccountCard />
     </div>
   );
 }
