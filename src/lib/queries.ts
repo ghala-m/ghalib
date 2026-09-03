@@ -185,11 +185,24 @@ export const eventsQuery = (courseId?: string) => ({
   },
 });
 
+/** Nicknames are stored comma-separated in a single column. */
+export function nicknameList(nickname: string | null | undefined): string[] {
+  return (nickname ?? "")
+    .split(/[,،]/)
+    .map((n) => n.trim())
+    .filter(Boolean);
+}
+
+/** First nickname, used wherever a single short label is shown. */
+export function primaryNickname(nickname: string | null | undefined): string | null {
+  return nicknameList(nickname)[0] ?? null;
+}
+
 /** Course search that also matches the student's own nickname/abbreviation. */
 export function matchesCourse(c: Course, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return [c.name, c.code, c.term, c.nickname].some((v) => (v ?? "").toLowerCase().includes(q));
+  return [c.name, c.code, c.term, ...nicknameList(c.nickname)].some((v) => (v ?? "").toLowerCase().includes(q));
 }
 
 const normCode = (v: string) => v.replace(/\s+/g, "").toUpperCase();
