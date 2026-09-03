@@ -489,6 +489,47 @@ export type Database = {
         }
         Relationships: []
       }
+      term_calendar_events: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          event_type: string
+          id: string
+          start_date: string
+          term_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          event_type?: string
+          id?: string
+          start_date: string
+          term_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          event_type?: string
+          id?: string
+          start_date?: string
+          term_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "term_calendar_events_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       terms: {
         Row: {
           created_at: string
@@ -501,6 +542,7 @@ export type Database = {
           start_date: string | null
           term_number: number
           user_id: string
+          weeks_count: number | null
         }
         Insert: {
           created_at?: string
@@ -513,6 +555,7 @@ export type Database = {
           start_date?: string | null
           term_number?: number
           user_id: string
+          weeks_count?: number | null
         }
         Update: {
           created_at?: string
@@ -525,6 +568,7 @@ export type Database = {
           start_date?: string | null
           term_number?: number
           user_id?: string
+          weeks_count?: number | null
         }
         Relationships: []
       }
