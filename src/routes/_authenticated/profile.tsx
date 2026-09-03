@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Bell, BellOff, FileOutput, Loader2, MapPin, RefreshCw } from "lucide-react";
+import { Bell, BellOff, FileOutput, Loader2, MapPin, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
