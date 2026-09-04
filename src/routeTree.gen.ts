@@ -20,6 +20,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPlanPrintRouteImport } from './routes/_authenticated/plan-print'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authenticated/reimport-plan'
+import { Route as AuthenticatedTermCalendarRouteImport } from './routes/_authenticated/term-calendar'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
 
@@ -78,6 +79,12 @@ const AuthenticatedReimportPlanRoute =
     path: '/reimport-plan',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTermCalendarRoute =
+  AuthenticatedTermCalendarRouteImport.update({
+    id: '/term-calendar',
+    path: '/term-calendar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -101,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -131,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/plan-print': typeof AuthenticatedPlanPrintRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/_authenticated/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/plan-print'
     | '/profile'
     | '/reimport-plan'
+    | '/term-calendar'
     | '/tools'
     | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/plan-print'
     | '/profile'
     | '/reimport-plan'
+    | '/term-calendar'
     | '/tools'
     | '/courses/$courseId'
   id:
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/plan-print'
     | '/_authenticated/profile'
     | '/_authenticated/reimport-plan'
+    | '/_authenticated/term-calendar'
     | '/_authenticated/tools'
     | '/_authenticated/courses/$courseId'
   fileRoutesById: FileRoutesById
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReimportPlanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/term-calendar': {
+      id: '/_authenticated/term-calendar'
+      path: '/term-calendar'
+      fullPath: '/term-calendar'
+      preLoaderRoute: typeof AuthenticatedTermCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tools': {
       id: '/_authenticated/tools'
       path: '/tools'
@@ -291,6 +311,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlanPrintRoute: typeof AuthenticatedPlanPrintRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReimportPlanRoute: typeof AuthenticatedReimportPlanRoute
+  AuthenticatedTermCalendarRoute: typeof AuthenticatedTermCalendarRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
 }
@@ -304,6 +325,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlanPrintRoute: AuthenticatedPlanPrintRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReimportPlanRoute: AuthenticatedReimportPlanRoute,
+  AuthenticatedTermCalendarRoute: AuthenticatedTermCalendarRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
 }
