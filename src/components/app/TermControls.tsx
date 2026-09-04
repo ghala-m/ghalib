@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarPlus, CalendarRange, FlagOff, Search, Sparkles, Upload, X } from "lucide-react";
+import { CalendarPlus, CalendarRange, FlagOff, Pencil, Plus, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, profileQuery, termsQuery } from "@/lib/queries";
+import { coursesQuery, profileQuery, termCalendarEventsQuery, termsQuery, type TermRow } from "@/lib/queries";
 import { GRADE_SCALE, pointsFor } from "@/lib/plan";
 import { completedGpa } from "@/lib/gpa";
 import { parseAcademicCalendar, type AcademicCalendar } from "@/lib/academic-calendar.functions";
@@ -70,12 +70,15 @@ export function TermControls() {
         </p>
       </div>
       {activeTerm ? (
-        <Button size="sm" variant="outline" asChild>
-          <Link to="/term-calendar">
-            <CalendarRange className="size-4" />
-            {t("viewTermCalendar")}
-          </Link>
-        </Button>
+        <>
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/term-calendar">
+              <CalendarRange className="size-4" />
+              {t("viewTermCalendar")}
+            </Link>
+          </Button>
+          <EditTermDialog term={activeTerm} onDone={invalidate} />
+        </>
       ) : null}
       <StartTermDialog
         nextNumber={(profile?.term_number ?? terms.length) + (activeTerm ? 1 : 0)}
