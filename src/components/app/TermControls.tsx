@@ -1,20 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus, FlagOff, Search } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { CalendarPlus, CalendarRange, FlagOff, Search, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { coursesQuery, profileQuery, termsQuery } from "@/lib/queries";
 import { GRADE_SCALE, pointsFor } from "@/lib/plan";
 import { completedGpa } from "@/lib/gpa";
+import { parseAcademicCalendar, type AcademicCalendar } from "@/lib/academic-calendar.functions";
+import {
+  ACCEPTED_DOCS_AND_IMAGES,
+  isAcceptedDocOrImage,
+  prepareDocumentOrImage,
+} from "@/lib/files";
 
 export function TermControls() {
   const { t } = useI18n();
@@ -38,13 +61,26 @@ export function TermControls() {
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{t("activeTerm")}</p>
         <p className="truncate font-semibold">
-          {activeTerm ? `${activeTerm.name} · ${t("termNumber")} ${activeTerm.term_number}` : t("noActiveTerm")}
+          {activeTerm
+            ? `${activeTerm.name} · ${t("termNumber")} ${activeTerm.term_number}`
+            : t("noActiveTerm")}
         </p>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {currentCourses.length} · {t("current")}
         </p>
       </div>
-      <StartTermDialog nextNumber={(profile?.term_number ?? terms.length) + (activeTerm ? 1 : 0)} onDone={invalidate} />
+      {activeTerm ? (
+        <Button size="sm" variant="outline" asChild>
+          <Link to="/term-calendar">
+            <CalendarRange className="size-4" />
+            {t("viewTermCalendar")}
+          </Link>
+        </Button>
+      ) : null}
+      <StartTermDialog
+        nextNumber={(profile?.term_number ?? terms.length) + (activeTerm ? 1 : 0)}
+        onDone={invalidate}
+      />
       {activeTerm ? <EndTermDialog termId={activeTerm.id} onDone={invalidate} /> : null}
     </div>
   );
@@ -65,32 +101,99 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
   });
   const [picked, setPicked] = useState<string[]>([]);
   const [courseSearch, setCourseSearch] = useState("");
+  const [weeksCount, setWeeksCount] = useState("");
+  const [calendarText, setCalendarText] = useState("");
+  const [milestones, setMilestones] = useState<AcademicCalendar["events"]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const parseCalendar = useServerFn(parseAcademicCalendar);
 
   useEffect(() => {
     if (open) {
       setNumber(String(Math.max(1, nextNumber)));
       setPicked(courses.filter((c) => c.status === "current" && !c.archived).map((c) => c.id));
+      setWeeksCount("");
+      setCalendarText("");
+      setMilestones([]);
     }
   }, [open, nextNumber, courses]);
 
+  const extract = useMutation({
+    mutationFn: async (file: File | null) => {
+      let payload: { base64: string; mediaType: string } | { text: string };
+      if (file) {
+        if (!isAcceptedDocOrImage(file)) throw new Error("INVALID_FILE");
+        const doc = await prepareDocumentOrImage(file);
+        payload =
+          doc.kind === "text"
+            ? { text: doc.text }
+            : { base64: doc.base64, mediaType: doc.mediaType };
+      } else if (calendarText.trim()) {
+        payload = { text: calendarText.trim() };
+      } else {
+        throw new Error("NOTHING_TO_PARSE");
+      }
+      return (await parseCalendar({ data: payload })) as AcademicCalendar;
+    },
+    onSuccess: (data) => {
+      if (data.term_name && !name.trim()) setName(data.term_name);
+      if (data.start_date) setStart(data.start_date);
+      if (data.end_date) setExpectedEnd(data.end_date);
+      if (data.weeks_count) setWeeksCount(String(data.weeks_count));
+      setMilestones(data.events);
+      toast.success(t("calendarExtracted"));
+    },
+    onError: (e: Error) => {
+      if (e.message.includes("NOTHING_TO_PARSE")) toast.error(t("uploadOrPasteCalendar"));
+      else if (e.message.includes("INVALID_FILE")) toast.error(t("invalidFile"));
+      else if (e.message.includes("FILE_TOO_LARGE")) toast.error(t("fileTooLarge"));
+      else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
+      else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
+      else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
+      else toast.error(t("aiFailed"));
+    },
+  });
+
   const selectable = courses.filter((c) => !c.archived && c.status !== "completed");
   const filteredSelectable = courseSearch.trim()
-    ? selectable.filter((c) => `${c.code ?? ""} ${c.name}`.toLowerCase().includes(courseSearch.trim().toLowerCase()))
+    ? selectable.filter((c) =>
+        `${c.code ?? ""} ${c.name}`.toLowerCase().includes(courseSearch.trim().toLowerCase()),
+      )
     : selectable;
 
   const run = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
-      await supabase.from("terms").update({ is_active: false }).eq("user_id", user.id).eq("is_active", true);
-      const { error } = await supabase.from("terms").insert({
-        user_id: user.id,
-        name: name.trim() || `Term ${number}`,
-        term_number: Number(number) || 1,
-        start_date: start || null,
-        end_date: expectedEnd || null,
-        is_active: true,
-      });
+      await supabase
+        .from("terms")
+        .update({ is_active: false })
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+      const { data: inserted, error } = await supabase
+        .from("terms")
+        .insert({
+          user_id: user.id,
+          name: name.trim() || `Term ${number}`,
+          term_number: Number(number) || 1,
+          start_date: start || null,
+          end_date: expectedEnd || null,
+          weeks_count: weeksCount ? Number(weeksCount) : null,
+          is_active: true,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (milestones.length && inserted) {
+        await supabase.from("term_calendar_events").insert(
+          milestones.map((m) => ({
+            user_id: user.id,
+            term_id: inserted.id,
+            title: m.title,
+            event_type: m.type,
+            start_date: m.start_date,
+            end_date: m.end_date,
+          })),
+        );
+      }
       await supabase
         .from("profiles")
         .update({ current_term: name.trim() || `Term ${number}`, term_number: Number(number) || 1 })
@@ -101,15 +204,19 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
           .update({ status: "current", term: name.trim() || `Term ${number}` })
           .in("id", picked);
       }
-      const unpicked = selectable.filter((c) => c.status === "current" && !picked.includes(c.id)).map((c) => c.id);
-      if (unpicked.length) await supabase.from("courses").update({ status: "future" }).in("id", unpicked);
+      const unpicked = selectable
+        .filter((c) => c.status === "current" && !picked.includes(c.id))
+        .map((c) => c.id);
+      if (unpicked.length)
+        await supabase.from("courses").update({ status: "future" }).in("id", unpicked);
     },
     onSuccess: () => {
       onDone();
       setOpen(false);
       toast.success(t("termStarted"));
     },
-    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
+    onError: (e: Error) =>
+      toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
 
   return (
@@ -129,11 +236,20 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t("termName")}</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Fall 2026" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Fall 2026"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>{t("termNumber")}</Label>
-              <Input type="number" min={1} value={number} onChange={(e) => setNumber(e.target.value)} />
+              <Input
+                type="number"
+                min={1}
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -143,10 +259,86 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
             </div>
             <div className="space-y-1.5">
               <Label>{t("expectedEndDate")}</Label>
-              <Input type="date" value={expectedEnd} onChange={(e) => setExpectedEnd(e.target.value)} />
+              <Input
+                type="date"
+                value={expectedEnd}
+                onChange={(e) => setExpectedEnd(e.target.value)}
+              />
             </div>
           </div>
           <p className="text-xs text-muted-foreground">{t("expectedEndDateHint")}</p>
+
+          <div className="space-y-2 rounded-xl border border-dashed border-border p-3">
+            <Label className="flex items-center gap-1.5">
+              <Sparkles className="size-3.5 text-accent" />
+              {t("academicCalendarExtract")}
+            </Label>
+            <p className="text-xs text-muted-foreground">{t("academicCalendarExtractHint")}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                ref={inputRef}
+                type="file"
+                accept={ACCEPTED_DOCS_AND_IMAGES}
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (file) extract.mutate(file);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => inputRef.current?.click()}
+                disabled={extract.isPending}
+              >
+                <Upload className="size-3.5" />
+                {t("uploadCalendarFile")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={extract.isPending || !calendarText.trim()}
+                onClick={() => extract.mutate(null)}
+              >
+                <Sparkles className="size-3.5" />
+                {extract.isPending ? t("extracting") : t("extractFromText")}
+              </Button>
+            </div>
+            <Textarea
+              value={calendarText}
+              onChange={(e) => setCalendarText(e.target.value)}
+              placeholder={t("pasteCalendarPlaceholder")}
+              className="min-h-20 text-xs"
+            />
+            {milestones.length ? (
+              <div className="space-y-1 rounded-lg bg-muted/40 p-2">
+                <p className="text-xs font-medium">
+                  {t("extractedMilestones")} ({milestones.length})
+                  {weeksCount ? ` · ${t("weeksCountLabel")}: ${weeksCount}` : ""}
+                </p>
+                <ul className="max-h-32 space-y-1 overflow-y-auto">
+                  {milestones.map((m, i) => (
+                    <li key={i} className="flex items-center gap-2 text-xs">
+                      <span className="min-w-0 flex-1 truncate">
+                        {m.title} <span className="text-muted-foreground">· {m.start_date}</span>
+                      </span>
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => setMilestones((s) => s.filter((_, idx) => idx !== i))}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
           <div>
             <Label>{t("selectCourses")}</Label>
             <div className="relative mt-2">
@@ -160,7 +352,10 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
             </div>
             <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-border p-2">
               {filteredSelectable.map((c) => (
-                <li key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50">
+                <li
+                  key={c.id}
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50"
+                >
                   <Checkbox
                     checked={picked.includes(c.id)}
                     onCheckedChange={(v) =>
@@ -173,7 +368,9 @@ function StartTermDialog({ nextNumber, onDone }: { nextNumber: number; onDone: (
                   </span>
                 </li>
               ))}
-              {!filteredSelectable.length && <li className="p-2 text-sm text-muted-foreground">{t("noCourses")}</li>}
+              {!filteredSelectable.length && (
+                <li className="p-2 text-sm text-muted-foreground">{t("noCourses")}</li>
+              )}
             </ul>
           </div>
         </div>
@@ -237,7 +434,12 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
       }
       await supabase
         .from("terms")
-        .update({ is_active: false, end_date: end || null, gpa: termGpa?.gpa ?? null, credits: termGpa?.credits ?? null })
+        .update({
+          is_active: false,
+          end_date: end || null,
+          gpa: termGpa?.gpa ?? null,
+          credits: termGpa?.credits ?? null,
+        })
         .eq("id", termId);
 
       const completed = courses.filter((c) => c.status === "completed" && !c.archived);
@@ -260,7 +462,8 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
       setOpen(false);
       toast.success(t("termEnded"));
     },
-    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
+    onError: (e: Error) =>
+      toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
 
   return (
@@ -287,7 +490,10 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
               {current.map((c) => (
                 <li key={c.id} className="flex items-center gap-3">
                   <span className="min-w-0 flex-1 truncate text-sm">{c.code || c.name}</span>
-                  <Select value={grades[c.id] ?? ""} onValueChange={(v) => setGrades((s) => ({ ...s, [c.id]: v }))}>
+                  <Select
+                    value={grades[c.id] ?? ""}
+                    onValueChange={(v) => setGrades((s) => ({ ...s, [c.id]: v }))}
+                  >
                     <SelectTrigger className="w-24">
                       <SelectValue placeholder="—" />
                     </SelectTrigger>
@@ -301,7 +507,9 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
                   </Select>
                 </li>
               ))}
-              {!current.length && <li className="text-sm text-muted-foreground">{t("noCourses")}</li>}
+              {!current.length && (
+                <li className="text-sm text-muted-foreground">{t("noCourses")}</li>
+              )}
             </ul>
           </div>
           {termGpa ? (

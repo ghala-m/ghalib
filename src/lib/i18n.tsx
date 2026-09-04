@@ -306,6 +306,28 @@ const dict = {
   termStarted: { ar: "بدأ الفصل الجديد", en: "New term started" },
   termEnded: { ar: "تم إنهاء الفصل", en: "Term closed" },
   history: { ar: "السجل", en: "History" },
+  viewTermCalendar: { ar: "كالندر الفصل", en: "Term calendar" },
+  academicCalendarExtract: { ar: "استخراج من الكالندر الجامعي", en: "Extract from the university calendar" },
+  academicCalendarExtractHint: {
+    ar: "ارفع صورة أو PDF للكالندر الجامعي الرسمي، أو الصق تفاصيله كنص — وسيملأ الذكاء الاصطناعي التواريخ والإجازات وأسبوع الاختبارات تلقائياً.",
+    en: "Upload a photo or PDF of the official university calendar, or paste its details as text — AI will fill in the dates, holidays and finals week automatically.",
+  },
+  uploadCalendarFile: { ar: "رفع ملف / صورة", en: "Upload file / photo" },
+  extractFromText: { ar: "استخراج من النص", en: "Extract from text" },
+  extracting: { ar: "جارٍ الاستخراج…", en: "Extracting…" },
+  pasteCalendarPlaceholder: {
+    ar: "أو الصق هنا تفاصيل الكالندر الجامعي (بداية الفصل، الإجازات، أسبوع الاختبارات...)",
+    en: "Or paste the university calendar details here (term start, holidays, finals week...)",
+  },
+  uploadOrPasteCalendar: { ar: "ارفع ملفاً أو الصق نصاً أولاً", en: "Upload a file or paste text first" },
+  calendarExtracted: { ar: "تم استخراج بيانات الكالندر", en: "Calendar data extracted" },
+  extractedMilestones: { ar: "أحداث مستخرجة", en: "Extracted events" },
+  weeksCountLabel: { ar: "عدد الأسابيع", en: "Weeks" },
+  semesterGridNoStartDate: {
+    ar: "أضف تاريخ بداية للفصل (وعدد الأسابيع أو تاريخ النهاية) لتوليد كالندر الفصل.",
+    en: "Add a term start date (and a week count or end date) to generate the term calendar.",
+  },
+  weekLabel: { ar: "أسبوع", en: "Week" },
   // --- Advisor / profile redesign ---
   aiChatFailed: { ar: "تعذّر الرد من المرشد، حاول مرة أخرى.", en: "The advisor could not reply, please try again." },
   advisorSidebarTitle: { ar: "سياق المحادثة", en: "Conversation context" },
