@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarPlus, CalendarRange, FlagOff, Search, Sparkles, Upload, X } from "lucide-react";
+import { CalendarPlus, CalendarRange, FlagOff, Pencil, Plus, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, profileQuery, termsQuery } from "@/lib/queries";
+import { coursesQuery, profileQuery, termCalendarEventsQuery, termsQuery, type TermRow } from "@/lib/queries";
 import { GRADE_SCALE, pointsFor } from "@/lib/plan";
 import { completedGpa } from "@/lib/gpa";
 import { parseAcademicCalendar, type AcademicCalendar } from "@/lib/academic-calendar.functions";
@@ -70,12 +70,15 @@ export function TermControls() {
         </p>
       </div>
       {activeTerm ? (
-        <Button size="sm" variant="outline" asChild>
-          <Link to="/term-calendar">
-            <CalendarRange className="size-4" />
-            {t("viewTermCalendar")}
-          </Link>
-        </Button>
+        <>
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/term-calendar">
+              <CalendarRange className="size-4" />
+              {t("viewTermCalendar")}
+            </Link>
+          </Button>
+          <EditTermDialog term={activeTerm} onDone={invalidate} />
+        </>
       ) : null}
       <StartTermDialog
         nextNumber={(profile?.term_number ?? terms.length) + (activeTerm ? 1 : 0)}
@@ -524,6 +527,315 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
           </Button>
           <Button disabled={run.isPending} onClick={() => run.mutate()}>
             {t("endTerm")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditTermDialog({ term, onDone }: { term: TermRow; onDone: () => void }) {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const { data: courses = [] } = useQuery(coursesQuery());
+  const { data: events = [] } = useQuery(termCalendarEventsQuery(term.id));
+
+  const [name, setName] = useState(term.name);
+  const [number, setNumber] = useState(String(term.term_number));
+  const [start, setStart] = useState(term.start_date ?? "");
+  const [end, setEnd] = useState(term.end_date ?? "");
+  const [weeksCount, setWeeksCount] = useState(term.weeks_count ? String(term.weeks_count) : "");
+
+  const [evTitle, setEvTitle] = useState("");
+  const [evType, setEvType] = useState("other");
+  const [evStart, setEvStart] = useState("");
+  const [evEnd, setEvEnd] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setName(term.name);
+      setNumber(String(term.term_number));
+      setStart(term.start_date ?? "");
+      setEnd(term.end_date ?? "");
+      setWeeksCount(term.weeks_count ? String(term.weeks_count) : "");
+      setEvTitle("");
+      setEvType("other");
+      setEvStart("");
+      setEvEnd("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const refresh = () => {
+    onDone();
+    qc.invalidateQueries({ queryKey: ["term-calendar-events"] });
+  };
+
+  const termCourses = courses.filter((c) => c.status === "current" && !c.archived);
+  const otherCourses = courses.filter((c) => !c.archived && c.status !== "current" && c.status !== "completed");
+
+  const saveDetails = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("no user");
+      const termName = name.trim() || term.name;
+      const { error } = await supabase
+        .from("terms")
+        .update({
+          name: termName,
+          term_number: Number(number) || term.term_number,
+          start_date: start || null,
+          end_date: end || null,
+          weeks_count: weeksCount ? Number(weeksCount) : null,
+        })
+        .eq("id", term.id);
+      if (error) throw error;
+      await supabase
+        .from("profiles")
+        .update({ current_term: termName, term_number: Number(number) || term.term_number })
+        .eq("id", user.id);
+      // keep the term label on its courses in sync
+      if (termCourses.length)
+        await supabase.from("courses").update({ term: termName }).in("id", termCourses.map((c) => c.id));
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success(t("termUpdated"));
+    },
+    onError: (e: Error) =>
+      toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
+  });
+
+  const removeCourse = useMutation({
+    mutationFn: async (courseId: string) => {
+      const { error } = await supabase
+        .from("courses")
+        .update({ status: "future", term: null })
+        .eq("id", courseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success(t("removedFromTerm"));
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const addCourse = useMutation({
+    mutationFn: async (courseId: string) => {
+      const { error } = await supabase
+        .from("courses")
+        .update({ status: "current", term: name.trim() || term.name })
+        .eq("id", courseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success(t("addedToTerm"));
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const addEvent = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("no user");
+      const { error } = await supabase.from("term_calendar_events").insert({
+        user_id: user.id,
+        term_id: term.id,
+        title: evTitle.trim(),
+        event_type: evType,
+        start_date: evStart,
+        end_date: evEnd || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setEvTitle("");
+      setEvStart("");
+      setEvEnd("");
+      setEvType("other");
+      refresh();
+      toast.success(t("eventAdded"));
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const deleteEvent = useMutation({
+    mutationFn: async (eventId: string) => {
+      const { error } = await supabase.from("term_calendar_events").delete().eq("id", eventId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      refresh();
+      toast.success(t("eventDeleted"));
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          <Pencil className="size-4" />
+          {t("editTerm")}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{t("editTerm")}</DialogTitle>
+          <DialogDescription>{t("editTermHint")}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>{t("termName")}</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("termNumber")}</Label>
+              <Input type="number" min={1} value={number} onChange={(e) => setNumber(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("startDate")}</Label>
+              <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("endDate")}</Label>
+              <Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("weeksCountLabel")}</Label>
+              <Input
+                type="number"
+                min={1}
+                value={weeksCount}
+                onChange={(e) => setWeeksCount(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button size="sm" disabled={saveDetails.isPending} onClick={() => saveDetails.mutate()}>
+              {t("save")}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("termCourses")}</Label>
+            <ul className="space-y-1 rounded-xl border border-border p-2">
+              {termCourses.map((c) => (
+                <li key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate">
+                    {c.code ? <span className="text-muted-foreground">{c.code} · </span> : null}
+                    {c.name}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive"
+                    disabled={removeCourse.isPending}
+                    onClick={() => removeCourse.mutate(c.id)}
+                  >
+                    <X className="size-3.5" />
+                    {t("removeFromTerm")}
+                  </Button>
+                </li>
+              ))}
+              {!termCourses.length && (
+                <li className="p-2 text-sm text-muted-foreground">{t("noCourses")}</li>
+              )}
+            </ul>
+            <p className="text-xs text-muted-foreground">{t("removeFromTermHint")}</p>
+            {otherCourses.length ? (
+              <ul className="space-y-1 rounded-xl border border-dashed border-border p-2">
+                {otherCourses.map((c) => (
+                  <li key={c.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm">
+                    <span className="min-w-0 flex-1 truncate">
+                      {c.code ? <span className="text-muted-foreground">{c.code} · </span> : null}
+                      {c.name}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={addCourse.isPending}
+                      onClick={() => addCourse.mutate(c.id)}
+                    >
+                      <Plus className="size-3.5" />
+                      {t("addToTerm")}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("noOtherCourses")}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t("termEvents")}</Label>
+            <ul className="space-y-1 rounded-xl border border-border p-2">
+              {events.map((ev) => (
+                <li key={ev.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate">
+                    {ev.title}{" "}
+                    <span className="text-muted-foreground">
+                      · {ev.start_date}
+                      {ev.end_date && ev.end_date !== ev.start_date ? ` → ${ev.end_date}` : ""}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="text-muted-foreground hover:text-destructive"
+                    disabled={deleteEvent.isPending}
+                    onClick={() => deleteEvent.mutate(ev.id)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </li>
+              ))}
+              {!events.length && (
+                <li className="p-2 text-sm text-muted-foreground">{t("noTermEvents")}</li>
+              )}
+            </ul>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                value={evTitle}
+                onChange={(e) => setEvTitle(e.target.value)}
+                placeholder={t("eventTitle")}
+                className="col-span-2"
+              />
+              <Select value={evType} onValueChange={setEvType}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="holiday">{t("eventTypeHoliday")}</SelectItem>
+                  <SelectItem value="exams">{t("eventTypeExams")}</SelectItem>
+                  <SelectItem value="break">{t("eventTypeBreak")}</SelectItem>
+                  <SelectItem value="other">{t("eventTypeOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="grid grid-cols-2 gap-2">
+                <Input type="date" value={evStart} onChange={(e) => setEvStart(e.target.value)} />
+                <Input type="date" value={evEnd} onChange={(e) => setEvEnd(e.target.value)} />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={addEvent.isPending || !evTitle.trim() || !evStart}
+                onClick={() => addEvent.mutate()}
+              >
+                <Plus className="size-3.5" />
+                {t("addEvent")}
+              </Button>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            {t("cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>
