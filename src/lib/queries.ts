@@ -14,7 +14,10 @@ export type ChatSession = Database["public"]["Tables"]["chat_sessions"]["Row"];
 export const chatSessionsQuery = () => ({
   queryKey: ["chat-sessions"],
   queryFn: async (): Promise<ChatSession[]> => {
-    const { data, error } = await supabase.from("chat_sessions").select("*").order("updated_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("chat_sessions")
+      .select("*")
+      .order("updated_at", { ascending: false });
     if (error) throw error;
     return data ?? [];
   },
@@ -35,14 +38,27 @@ export const chatMessagesQuery = (sessionId: string | null) => ({
   },
 });
 
-export type Meeting = { day: string; start_time: string | null; end_time: string | null; location: string | null };
+export type Meeting = {
+  day: string;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+};
 
 export function meetingsOf(course: Pick<Course, "meetings">): Meeting[] {
   const raw = course.meetings;
   return Array.isArray(raw) ? (raw as unknown as Meeting[]) : [];
 }
 
-export const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+export const DAY_KEYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
 
 /** Parses a free-text meeting day (English or Arabic, as extracted from a syllabus) into a 0(Sun)-6(Sat) index, or -1 if unrecognized. */
 export function meetingDayIndex(day: string): number {
@@ -70,8 +86,16 @@ export const courseQuery = (id: string) => ({
   queryFn: async () => {
     const [course, items, weights] = await Promise.all([
       supabase.from("courses").select("*").eq("id", id).maybeSingle(),
-      supabase.from("course_items").select("*").eq("course_id", id).order("due_date", { ascending: true }),
-      supabase.from("grade_weights").select("*").eq("course_id", id).order("percentage", { ascending: false }),
+      supabase
+        .from("course_items")
+        .select("*")
+        .eq("course_id", id)
+        .order("due_date", { ascending: true }),
+      supabase
+        .from("grade_weights")
+        .select("*")
+        .eq("course_id", id)
+        .order("percentage", { ascending: false }),
     ]);
     if (course.error) throw course.error;
     return {
@@ -87,10 +111,18 @@ export const profileQuery = (userId: string | undefined) => ({
   enabled: !!userId,
   queryFn: async (): Promise<Profile | null> => {
     if (!userId) return null;
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
     if (error) throw error;
     if (data) return data;
-    const inserted = await supabase.from("profiles").insert({ id: userId }).select("*").maybeSingle();
+    const inserted = await supabase
+      .from("profiles")
+      .insert({ id: userId })
+      .select("*")
+      .maybeSingle();
     return inserted.data ?? null;
   },
 });
@@ -107,7 +139,9 @@ export const upcomingItemsQuery = () => ({
       .order("due_date", { ascending: true })
       .limit(12);
     if (error) throw error;
-    return (data ?? []) as (CourseItem & { courses: { name: string; code: string | null; archived: boolean } | null })[];
+    return (data ?? []) as (CourseItem & {
+      courses: { name: string; code: string | null; archived: boolean } | null;
+    })[];
   },
 });
 
@@ -137,7 +171,27 @@ export type CalendarEvent = Database["public"]["Tables"]["calendar_events"]["Row
 export const termsQuery = () => ({
   queryKey: ["terms"],
   queryFn: async (): Promise<TermRow[]> => {
-    const { data, error } = await supabase.from("terms").select("*").order("term_number", { ascending: false });
+    const { data, error } = await supabase
+      .from("terms")
+      .select("*")
+      .order("term_number", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export type TermCalendarEvent = Database["public"]["Tables"]["term_calendar_events"]["Row"];
+
+export const termCalendarEventsQuery = (termId: string | undefined) => ({
+  queryKey: ["term-calendar-events", termId ?? "none"],
+  enabled: !!termId,
+  queryFn: async (): Promise<TermCalendarEvent[]> => {
+    if (!termId) return [];
+    const { data, error } = await supabase
+      .from("term_calendar_events")
+      .select("*")
+      .eq("term_id", termId)
+      .order("start_date", { ascending: true });
     if (error) throw error;
     return data ?? [];
   },
@@ -166,10 +220,15 @@ export async function logStreakToday(userId: string): Promise<void> {
     .maybeSingle();
 
   if (existing) {
-    const { error } = await supabase.from("study_streak").update({ count: existing.count + 1 }).eq("id", existing.id);
+    const { error } = await supabase
+      .from("study_streak")
+      .update({ count: existing.count + 1 })
+      .eq("id", existing.id);
     if (error) throw error;
   } else {
-    const { error } = await supabase.from("study_streak").insert({ user_id: userId, log_date: todayIso, count: 1 });
+    const { error } = await supabase
+      .from("study_streak")
+      .insert({ user_id: userId, log_date: todayIso, count: 1 });
     if (error) throw error;
   }
 }
@@ -209,7 +268,8 @@ const normCode = (v: string) => v.replace(/\s+/g, "").toUpperCase();
 
 /** A course is blocked when another course in its alternatives group is already taken. */
 export function blockedByAlternative(course: Course, all: Course[]) {
-  if (!course.alt_group || course.status === "completed" || course.status === "current") return false;
+  if (!course.alt_group || course.status === "completed" || course.status === "current")
+    return false;
   return all.some(
     (o) =>
       o.id !== course.id &&
