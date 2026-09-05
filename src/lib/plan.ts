@@ -161,24 +161,21 @@ export function bestCombination(
   for (;;) {
     let bestIdx = -1;
     let bestGain = 0;
-    let bestUnlocks: Course[] = [];
+    const baseCount = simulateUnlocks(courses, picked.map((p) => p.id)).length;
     for (let i = 0; i < pool.length; i++) {
-      const c = pool[i];
+      const c = pool[i]!;
       const credits = c.credits ?? 0;
       if (maxCredits != null && usedCredits + credits > maxCredits) continue;
-      const unlocks = simulateUnlocks(courses, [...picked.map((p) => p.id), c.id]);
-      const gain = unlocks.length - simulateUnlocks(courses, picked.map((p) => p.id)).length;
-      if (gain > bestGain || (gain === bestGain && gain > 0 && bestIdx >= 0 && credits < (pool[bestIdx].credits ?? 0))) {
+      const gain = simulateUnlocks(courses, [...picked.map((p) => p.id), c.id]).length - baseCount;
+      if (gain > bestGain || (gain === bestGain && gain > 0 && bestIdx >= 0 && credits < (pool[bestIdx]!.credits ?? 0))) {
         bestIdx = i;
         bestGain = gain;
-        bestUnlocks = unlocks;
       }
     }
     if (bestIdx < 0 || bestGain <= 0) break;
-    const chosen = pool.splice(bestIdx, 1)[0];
+    const chosen = pool.splice(bestIdx, 1)[0]!;
     picked.push(chosen);
     usedCredits += chosen.credits ?? 0;
-    void bestUnlocks;
   }
 
   return { picked, unlocks: simulateUnlocks(courses, picked.map((p) => p.id)) };
