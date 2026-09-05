@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Check, FlaskConical, Sparkles, X } from "lucide-react";
-import { buildPrereqGraph, bestCombination, norm, simulateUnlocks, CATEGORY_META } from "@/lib/plan";
+import { buildPrereqGraph, bestCombination, simulateUnlocks, CATEGORY_META } from "@/lib/plan";
 import { blockedByAlternative, coursesQuery } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -190,6 +190,3 @@ function SimulatorPage() {
     </div>
   );
 }
-
-// norm imported for future per-course prerequisite display; re-export guard for tree-shaking clarity.
-void norm;
