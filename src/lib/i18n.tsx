@@ -345,8 +345,6 @@ const dict = {
   removedFromTerm: { ar: "أُزيلت المادة من الفصل", en: "Course removed from the term" },
   noOtherCourses: { ar: "لا توجد مواد أخرى متاحة", en: "No other courses available" },
   termEvents: { ar: "أحداث الكالندر الجامعي", en: "University calendar events" },
-  addEvent: { ar: "إضافة حدث", en: "Add event" },
-  eventTitle: { ar: "عنوان الحدث", en: "Event title" },
   eventType: { ar: "نوع الحدث", en: "Event type" },
   eventTypeHoliday: { ar: "إجازة", en: "Holiday" },
   eventTypeExams: { ar: "اختبارات", en: "Exams" },
