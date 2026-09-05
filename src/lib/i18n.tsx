@@ -353,6 +353,28 @@ const dict = {
   eventAdded: { ar: "أُضيف الحدث", en: "Event added" },
   eventDeleted: { ar: "حُذف الحدث", en: "Event deleted" },
   noTermEvents: { ar: "لا توجد أحداث بعد", en: "No events yet" },
+  // --- Registration simulator ---
+  simulator: { ar: "محاكي التسجيل", en: "Registration simulator" },
+  simHint: {
+    ar: "اختر المواد التي تفكّر بتسجيلها لترى ما ستفتحه من مواد مستقبلية.",
+    en: "Pick the courses you're thinking of registering to see what future courses they unlock.",
+  },
+  simAvailableToPick: { ar: "مواد متاحة للتسجيل", en: "Courses available to register" },
+  simSelected: { ar: "المواد المختارة", en: "Selected courses" },
+  simUnlocks: { ar: "ستفتح لك", en: "Will unlock for you" },
+  simUnlockCount: { ar: "مادة جديدة ستتاح", en: "new courses will open" },
+  simNothingYet: { ar: "اختر مادة واحدة على الأقل لرؤية ما ستفتحه.", en: "Pick at least one course to see what it unlocks." },
+  simNoUnlocks: { ar: "هذه التشكيلة لا تفتح مواد جديدة حالياً.", en: "This selection doesn't unlock new courses yet." },
+  simBestTitle: { ar: "أفضل تشكيلة", en: "Best combination" },
+  simBestHint: {
+    ar: "يقترح التشكيلة التي تفتح أكبر عدد من المواد المستقبلية ضمن حد الوحدات.",
+    en: "Suggests the combination that opens the most future courses within the credit limit.",
+  },
+  simMaxCredits: { ar: "الحد الأقصى للوحدات", en: "Max credits" },
+  simNoLimit: { ar: "بدون حد", en: "No limit" },
+  simSuggest: { ar: "اقترح أفضل تشكيلة", en: "Suggest best combination" },
+  simNoAvailable: { ar: "لا توجد مواد متاحة للتسجيل حالياً — أنهِ متطلباتها أولاً.", en: "No courses available to register right now — finish their prerequisites first." },
+  simCredits: { ar: "وحدة", en: "credits" },
   // --- Advisor / profile redesign ---
   aiChatFailed: { ar: "تعذّر الرد من المرشد، حاول مرة أخرى.", en: "The advisor could not reply, please try again." },
   advisorSidebarTitle: { ar: "سياق المحادثة", en: "Conversation context" },
