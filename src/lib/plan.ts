@@ -113,6 +113,74 @@ export function nextTermPreview(courses: Course[]): Course[] {
   );
 }
 
+/**
+ * Registration simulator: assuming the selected courses are completed, which still-locked
+ * "future" courses would newly become available? Mirrors `nextTermPreview`'s rules but with
+ * an arbitrary assumption set instead of "current courses pass". Excludes courses already
+ * available today and courses blocked by a taken alternative-group course.
+ */
+export function simulateUnlocks(courses: Course[], selectedIds: string[]): Course[] {
+  const byKey = new Map<string, Course>();
+  for (const c of courses) byKey.set(norm(c.code || c.name), c);
+  const assumed = new Set(selectedIds);
+
+  const result: Course[] = [];
+  for (const c of courses) {
+    if (c.status !== "future" || assumed.has(c.id)) continue;
+    const prereqs = c.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const availableToday = prereqs.every((p) => byKey.get(p)!.status === "completed");
+    if (availableToday) continue;
+    const unlocked = prereqs.every((p) => {
+      const pre = byKey.get(p)!;
+      return pre.status === "completed" || assumed.has(pre.id);
+    });
+    if (!unlocked) continue;
+    if (blockedByAlternative(c, courses)) continue;
+    result.push(c);
+  }
+
+  return result.sort(
+    (a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category) || a.name.localeCompare(b.name),
+  );
+}
+
+/**
+ * Greedy "best combination": from the candidates (courses available to register today),
+ * repeatedly pick the one that newly unlocks the most future courses, within an optional
+ * credit budget. Stops when nothing with a positive unlock gain fits the budget.
+ */
+export function bestCombination(
+  courses: Course[],
+  candidates: Course[],
+  maxCredits: number | null,
+): { picked: Course[]; unlocks: Course[] } {
+  const picked: Course[] = [];
+  const pool = [...candidates];
+  let usedCredits = 0;
+
+  for (;;) {
+    let bestIdx = -1;
+    let bestGain = 0;
+    const baseCount = simulateUnlocks(courses, picked.map((p) => p.id)).length;
+    for (let i = 0; i < pool.length; i++) {
+      const c = pool[i]!;
+      const credits = c.credits ?? 0;
+      if (maxCredits != null && usedCredits + credits > maxCredits) continue;
+      const gain = simulateUnlocks(courses, [...picked.map((p) => p.id), c.id]).length - baseCount;
+      if (gain > bestGain || (gain === bestGain && gain > 0 && bestIdx >= 0 && credits < (pool[bestIdx]!.credits ?? 0))) {
+        bestIdx = i;
+        bestGain = gain;
+      }
+    }
+    if (bestIdx < 0 || bestGain <= 0) break;
+    const chosen = pool.splice(bestIdx, 1)[0]!;
+    picked.push(chosen);
+    usedCredits += chosen.credits ?? 0;
+  }
+
+  return { picked, unlocks: simulateUnlocks(courses, picked.map((p) => p.id)) };
+}
+
 export type ReimportRow =
   | { kind: "new"; parsed: PlanCourse }
   | { kind: "changed"; parsed: PlanCourse; existing: Course; changes: ("credits" | "category" | "level" | "prerequisites")[] };

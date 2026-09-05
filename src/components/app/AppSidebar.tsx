@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, LogOut, Menu, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
+import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, FlaskConical, LogOut, Menu, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { blockedByAlternative, coursesQuery, matchesCourse, type CourseStatus } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
@@ -96,6 +96,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
         <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} onNavigate={onNavigate} />
         <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} onNavigate={onNavigate} />
         <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} onNavigate={onNavigate} />
+        <SideLink to="/simulator" active={pathname === "/simulator"} icon={FlaskConical} label={t("simulator")} onNavigate={onNavigate} />
         <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} onNavigate={onNavigate} />
       </nav>
 
@@ -185,7 +186,7 @@ function SideLink({
   label,
   onNavigate,
 }: {
-  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner";
+  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
