@@ -37,11 +37,12 @@ export function ThemeModeToggle({ className }: { className?: string }) {
 export function AccentPicker() {
   const { accent, setAccent } = useTheme();
   const { t, lang } = useI18n();
+  const custom = isCustomAccent(accent);
   return (
     <div>
       <p className="text-sm font-medium">{t("accentColor")}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{t("accentHint")}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         {ACCENTS.map((a) => (
           <button
             key={a.id}
@@ -57,7 +58,26 @@ export function AccentPicker() {
             style={{ background: a.swatch }}
           />
         ))}
+        <label
+          className={cn(
+            "relative flex size-9 cursor-pointer items-center justify-center rounded-full border-2 transition-transform hover:scale-110",
+            custom ? "border-foreground" : "border-dashed border-muted-foreground/50",
+          )}
+          style={custom ? { background: accent } : undefined}
+          title={t("customColor")}
+        >
+          {!custom && <Pipette className="size-4 text-muted-foreground" />}
+          <input
+            type="color"
+            aria-label={t("customColor")}
+            value={custom ? accent : "#f59e0b"}
+            onChange={(e) => setAccent(e.target.value)}
+            className="absolute inset-0 cursor-pointer opacity-0"
+          />
+        </label>
       </div>
+      {custom && <p className="mt-2 text-xs text-muted-foreground">{t("customColor")}: {accent}</p>}
     </div>
   );
 }
+
