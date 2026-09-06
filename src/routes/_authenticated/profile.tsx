@@ -236,49 +236,18 @@ function ProfilePage() {
 
       </div>
 
-      {/* Real push notifications */}
-      <div className="panel mt-6 p-6">
-        <h2 className="font-semibold">{t("pushNotifTitle")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("pushNotifHint")}</p>
-        {!push.supported ? (
-          <p className="mt-4 text-sm text-muted-foreground">{t("pushUnsupported")}</p>
-        ) : (
-          <div className="mt-4 flex items-center gap-3">
-            <Button
-              variant={push.subscribed ? "outline" : "default"}
-              disabled={push.checking || push.busy}
-              onClick={async () => {
-                if (push.subscribed) {
-                  await push.disable();
-                  return;
-                }
-                const result = await push.enable();
-                if (result.ok) {
-                  toast.success(t("pushActive"));
-                } else if (result.reason === "missing_vapid_key") {
-                  toast.error(t("pushKeyMissing"));
-                } else if (result.reason === "permission_denied") {
-                  toast.error(t("pushPermissionDenied"));
-                } else if (result.reason === "unsupported") {
-                  toast.error(t("pushUnsupported"));
-                } else {
-                  toast.error(t("saveFailed"));
-                }
-              }}
-            >
-              {push.busy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : push.subscribed ? (
-                <BellOff className="size-4" />
-              ) : (
-                <Bell className="size-4" />
-              )}
-              {push.subscribed ? t("pushDisable") : t("pushEnable")}
-            </Button>
-            {push.subscribed && <span className="text-xs text-cat-general">{t("pushActive")}</span>}
-          </div>
-        )}
+      {/* Appearance: light/dark + accent colour, including a fully custom colour */}
+      <div className="panel mt-6 space-y-4 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">{t("appearance")}</h2>
+          <ThemeModeToggle />
+        </div>
+        <AccentPicker />
       </div>
+
+      {/* Every reminder control in one place */}
+      <NotificationSettings userId={user?.id} />
+
 
       {/* Morning commute briefing */}
       <div className="panel mt-6 space-y-5 p-6">
