@@ -1,5 +1,6 @@
 import { Monitor, Moon, Sun } from "lucide-react";
-import { ACCENTS, useTheme, type ThemeMode } from "@/lib/theme";
+import { Pipette } from "lucide-react";
+import { ACCENTS, isCustomAccent, useTheme, type ThemeMode } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
