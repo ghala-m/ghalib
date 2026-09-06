@@ -165,6 +165,18 @@ const dict = {
   themeSystem: { ar: "النظام", en: "System" },
   accentColor: { ar: "لون الواجهة", en: "Accent colour" },
   accentHint: { ar: "اختر اللون الذي يناسبك، ويُطبَّق على الموقع كاملاً.", en: "Pick the colour that suits you; it applies across the whole app." },
+  customColor: { ar: "لون مخصص", en: "Custom colour" },
+  navAcademic: { ar: "أكاديمي", en: "Academic" },
+  navTools: { ar: "أدوات", en: "Tools" },
+  termCalendarNav: { ar: "تقويم الفصل", en: "Term calendar" },
+  notificationsTitle: { ar: "التنبيهات", en: "Notifications" },
+  notificationsHint: {
+    ar: "فعّل تنبيهات المتصفح لتذكيرك بالواجبات والاختبارات، وفعّل الدفع لتصلك حتى والموقع مغلق.",
+    en: "Turn on browser reminders for assignments and exams, and push so they reach you even when the app is closed.",
+  },
+  browserReminders: { ar: "تذكيرات المتصفح", en: "Browser reminders" },
+  openNotificationSettings: { ar: "إعدادات التنبيهات", en: "Notification settings" },
+
   // --- Categories ---
   categories: { ar: "أقسام المواد", en: "Course categories" },
   category: { ar: "القسم", en: "Category" },
