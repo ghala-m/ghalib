@@ -263,7 +263,7 @@ function ProfilePage() {
                 toast.error(t("briefingNeedsLocation"));
                 return;
               }
-              if (checked && Notification?.permission !== "granted") {
+              if (checked && (typeof Notification === "undefined" || Notification.permission !== "granted")) {
                 toast.error(t("briefingNeedsPush"));
                 return;
               }

@@ -18,7 +18,7 @@ import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { EventDialog } from "@/components/app/EventDialog";
 import { ItemDialog } from "@/components/app/ItemDialog";
-import { notificationState, requestNotificationPermission, useReminders } from "@/hooks/useReminders";
+import { notificationState, useReminders } from "@/hooks/useReminders";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -159,21 +159,11 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
           <Button variant="ghost" size="icon" title={t("exportIcs")} onClick={exportIcs}>
             <Download className="size-4" />
           </Button>
-          {notif !== "unsupported" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              title={notif === "granted" ? t("notificationsOn") : t("enableNotifications")}
-              onClick={async () => {
-                if (notif === "denied") {
-                  toast.error(t("notificationsBlocked"));
-                  return;
-                }
-                const ok = await requestNotificationPermission();
-                toast[ok ? "success" : "error"](ok ? t("notificationsOn") : t("notificationsBlocked"));
-              }}
-            >
-              {notif === "granted" ? <Bell className="size-4 text-accent" /> : <BellOff className="size-4" />}
+          {notif !== "granted" && notif !== "unsupported" && (
+            <Button asChild variant="ghost" size="icon" title={t("openNotificationSettings")} aria-label={t("openNotificationSettings")}>
+              <Link to="/profile" hash="notifications">
+                <BellOff className="size-4" />
+              </Link>
             </Button>
           )}
           {courseId ? (
