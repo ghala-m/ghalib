@@ -33,10 +33,10 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
         {t("flipCard")}
       </p>
       <div className="mt-4 flex items-center justify-center gap-3">
-        <Button variant="outline" size="icon" disabled={index === 0} onClick={() => go(-1)}>
+        <Button variant="outline" size="icon" aria-label={t("prev")} disabled={index === 0} onClick={() => go(-1)}>
           <ChevronLeft className="size-4" />
         </Button>
-        <Button variant="outline" size="icon" disabled={index === cards.length - 1} onClick={() => go(1)}>
+        <Button variant="outline" size="icon" aria-label={t("next")} disabled={index === cards.length - 1} onClick={() => go(1)}>
           <ChevronRight className="size-4" />
         </Button>
       </div>

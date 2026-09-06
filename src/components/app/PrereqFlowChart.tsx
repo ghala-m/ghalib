@@ -92,14 +92,14 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1" dir="ltr">
-            <Button variant="outline" size="icon" className="size-7" onClick={() => setScale((s) => clamp(s - 0.15))}>
+            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomOut")} onClick={() => setScale((s) => clamp(s - 0.15))}>
               <Minus className="size-3.5" />
             </Button>
             <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">{Math.round(scale * 100)}%</span>
-            <Button variant="outline" size="icon" className="size-7" onClick={() => setScale((s) => clamp(s + 0.15))}>
+            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomIn")} onClick={() => setScale((s) => clamp(s + 0.15))}>
               <Plus className="size-3.5" />
             </Button>
-            <Button variant="outline" size="icon" className="size-7" title={t("resetZoom")} onClick={() => setScale(1)}>
+            <Button variant="outline" size="icon" className="size-7" title={t("resetZoom")} aria-label={t("resetZoom")} onClick={() => setScale(1)}>
               <Maximize2 className="size-3.5" />
             </Button>
           </div>

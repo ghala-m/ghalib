@@ -143,10 +143,10 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
     <div className="panel-glass overflow-hidden">
       <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
         <div className="inline-flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => step(-1)} aria-label="previous">
+          <Button variant="ghost" size="icon" onClick={() => step(-1)} aria-label={t("prev")}>
             <ChevronLeft className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => step(1)} aria-label="next">
+          <Button variant="ghost" size="icon" onClick={() => step(1)} aria-label={t("next")}>
             <ChevronRight className="size-4" />
           </Button>
         </div>
@@ -156,7 +156,7 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
         </Button>
 
         <div className="ms-auto flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="icon" title={t("exportIcs")} onClick={exportIcs}>
+          <Button variant="ghost" size="icon" title={t("exportIcs")} aria-label={t("exportIcs")} onClick={exportIcs}>
             <Download className="size-4" />
           </Button>
           {notif !== "granted" && notif !== "unsupported" && (

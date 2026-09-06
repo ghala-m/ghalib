@@ -228,7 +228,7 @@ export function AdvisorChat() {
             placeholder={t("askPlaceholder")}
             className="min-h-11 resize-none"
           />
-          <Button onClick={() => submit(input)} disabled={send.isPending || !input.trim()} size="icon" className="size-11 shrink-0">
+          <Button onClick={() => submit(input)} disabled={send.isPending || !input.trim()} size="icon" aria-label={t("send")} className="size-11 shrink-0">
             <SendHorizonal className="size-4" />
           </Button>
         </div>
