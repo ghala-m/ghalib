@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
+import { NotificationSettings } from "@/components/app/NotificationSettings";
+import { AccentPicker, ThemeModeToggle } from "@/components/app/ThemeControls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -60,7 +61,6 @@ function ProfilePage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
-  const push = usePushNotifications(user?.id);
   const [locating, setLocating] = useState(false);
 
   const [form, setForm] = useState({
