@@ -90,14 +90,21 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
         </div>
       </div>
 
-      <nav className="space-y-1 px-3">
-        <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} onNavigate={onNavigate} />
-        <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} onNavigate={onNavigate} />
-        <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} onNavigate={onNavigate} />
-        <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} onNavigate={onNavigate} />
-        <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} onNavigate={onNavigate} />
-        <SideLink to="/simulator" active={pathname === "/simulator"} icon={FlaskConical} label={t("simulator")} onNavigate={onNavigate} />
-        <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} onNavigate={onNavigate} />
+      <nav className="space-y-4 px-3">
+        <div className="space-y-1">
+          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">{t("navAcademic")}</p>
+          <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} onNavigate={onNavigate} />
+          <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} onNavigate={onNavigate} />
+          <SideLink to="/term-calendar" active={pathname === "/term-calendar"} icon={CalendarRange} label={t("termCalendarNav")} onNavigate={onNavigate} />
+          <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} onNavigate={onNavigate} />
+        </div>
+        <div className="space-y-1">
+          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">{t("navTools")}</p>
+          <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} onNavigate={onNavigate} />
+          <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} onNavigate={onNavigate} />
+          <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} onNavigate={onNavigate} />
+          <SideLink to="/simulator" active={pathname === "/simulator"} icon={FlaskConical} label={t("simulator")} onNavigate={onNavigate} />
+        </div>
       </nav>
 
       <div className="px-3 py-4">
@@ -186,7 +193,7 @@ function SideLink({
   label,
   onNavigate,
 }: {
-  to: "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
+  to: "/dashboard" | "/profile" | "/calendar" | "/term-calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
