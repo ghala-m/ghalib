@@ -263,10 +263,11 @@ function ProfilePage() {
                 toast.error(t("briefingNeedsLocation"));
                 return;
               }
-              if (checked && !push.subscribed) {
+              if (checked && Notification?.permission !== "granted") {
                 toast.error(t("briefingNeedsPush"));
                 return;
               }
+
               setForm((s) => ({ ...s, briefing_enabled: checked }));
             }}
           />
