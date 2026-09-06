@@ -72,10 +72,40 @@ type Ctx = {
 
 const ThemeContext = createContext<Ctx | null>(null);
 
+/** Relative luminance of a #rrggbb colour, used to pick readable foreground text. */
+function hexLuminance(hex: string): number {
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [number, number, number];
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+export function isCustomAccent(id: string): boolean {
+  return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(id);
+}
+
 function applyAccent(id: string, resolved: "light" | "dark") {
+  const root = document.documentElement.style;
+  if (isCustomAccent(id)) {
+    const fg = hexLuminance(id) > 0.5 ? "oklch(0.2 0.02 260)" : "oklch(0.98 0.005 260)";
+    for (const [prop, val] of [
+      ["--accent", id],
+      ["--accent-foreground", fg],
+      ["--primary", id],
+      ["--primary-foreground", fg],
+      ["--ring", id],
+      ["--sidebar-primary", id],
+      ["--sidebar-primary-foreground", fg],
+      ["--sidebar-ring", id],
+      ["--chart-2", id],
+    ] as const) {
+      root.setProperty(prop, val);
+    }
+    return;
+  }
   const preset = ACCENTS.find((a) => a.id === id) ?? ACCENTS[0]!;
   const v = resolved === "dark" ? preset.dark : preset.light;
-  const root = document.documentElement.style;
   root.setProperty("--accent", v.accent);
   root.setProperty("--accent-foreground", v.accentFg);
   root.setProperty("--primary", v.primary);
@@ -86,6 +116,7 @@ function applyAccent(id: string, resolved: "light" | "dark") {
   root.setProperty("--sidebar-ring", v.accent);
   root.setProperty("--chart-2", v.accent);
 }
+
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("system");
