@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
-import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
+import { NotificationSettings } from "@/components/app/NotificationSettings";
+import { AccentPicker, ThemeModeToggle } from "@/components/app/ThemeControls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -60,7 +61,6 @@ function ProfilePage() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
-  const push = usePushNotifications(user?.id);
   const [locating, setLocating] = useState(false);
 
   const [form, setForm] = useState({
@@ -236,49 +236,18 @@ function ProfilePage() {
 
       </div>
 
-      {/* Real push notifications */}
-      <div className="panel mt-6 p-6">
-        <h2 className="font-semibold">{t("pushNotifTitle")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("pushNotifHint")}</p>
-        {!push.supported ? (
-          <p className="mt-4 text-sm text-muted-foreground">{t("pushUnsupported")}</p>
-        ) : (
-          <div className="mt-4 flex items-center gap-3">
-            <Button
-              variant={push.subscribed ? "outline" : "default"}
-              disabled={push.checking || push.busy}
-              onClick={async () => {
-                if (push.subscribed) {
-                  await push.disable();
-                  return;
-                }
-                const result = await push.enable();
-                if (result.ok) {
-                  toast.success(t("pushActive"));
-                } else if (result.reason === "missing_vapid_key") {
-                  toast.error(t("pushKeyMissing"));
-                } else if (result.reason === "permission_denied") {
-                  toast.error(t("pushPermissionDenied"));
-                } else if (result.reason === "unsupported") {
-                  toast.error(t("pushUnsupported"));
-                } else {
-                  toast.error(t("saveFailed"));
-                }
-              }}
-            >
-              {push.busy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : push.subscribed ? (
-                <BellOff className="size-4" />
-              ) : (
-                <Bell className="size-4" />
-              )}
-              {push.subscribed ? t("pushDisable") : t("pushEnable")}
-            </Button>
-            {push.subscribed && <span className="text-xs text-cat-general">{t("pushActive")}</span>}
-          </div>
-        )}
+      {/* Appearance: light/dark + accent colour, including a fully custom colour */}
+      <div className="panel mt-6 space-y-4 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">{t("appearance")}</h2>
+          <ThemeModeToggle />
+        </div>
+        <AccentPicker />
       </div>
+
+      {/* Every reminder control in one place */}
+      <NotificationSettings userId={user?.id} />
+
 
       {/* Morning commute briefing */}
       <div className="panel mt-6 space-y-5 p-6">
@@ -294,10 +263,11 @@ function ProfilePage() {
                 toast.error(t("briefingNeedsLocation"));
                 return;
               }
-              if (checked && !push.subscribed) {
+              if (checked && (typeof Notification === "undefined" || Notification.permission !== "granted")) {
                 toast.error(t("briefingNeedsPush"));
                 return;
               }
+
               setForm((s) => ({ ...s, briefing_enabled: checked }));
             }}
           />

@@ -65,7 +65,8 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
 
   const onPointerDown = (e: React.PointerEvent) => {
     const el = scrollRef.current;
-    if (!el) return;
+    // Touch and pen keep the browser's native momentum scrolling; only mouse needs grab-panning.
+    if (!el || e.pointerType !== "mouse") return;
     drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
     el.setPointerCapture(e.pointerId);
   };
@@ -92,14 +93,14 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1" dir="ltr">
-            <Button variant="outline" size="icon" className="size-7" onClick={() => setScale((s) => clamp(s - 0.15))}>
+            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomOut")} onClick={() => setScale((s) => clamp(s - 0.15))}>
               <Minus className="size-3.5" />
             </Button>
             <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">{Math.round(scale * 100)}%</span>
-            <Button variant="outline" size="icon" className="size-7" onClick={() => setScale((s) => clamp(s + 0.15))}>
+            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomIn")} onClick={() => setScale((s) => clamp(s + 0.15))}>
               <Plus className="size-3.5" />
             </Button>
-            <Button variant="outline" size="icon" className="size-7" title={t("resetZoom")} onClick={() => setScale(1)}>
+            <Button variant="outline" size="icon" className="size-7" title={t("resetZoom")} aria-label={t("resetZoom")} onClick={() => setScale(1)}>
               <Maximize2 className="size-3.5" />
             </Button>
           </div>
@@ -116,7 +117,7 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
 
       <div
         ref={scrollRef}
-        className="cursor-grab overflow-auto p-5 select-none active:cursor-grabbing"
+        className="touch-pan-x touch-pan-y cursor-grab overflow-auto p-5 select-none overscroll-contain active:cursor-grabbing"
         dir="ltr"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
