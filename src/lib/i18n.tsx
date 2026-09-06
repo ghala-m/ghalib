@@ -104,6 +104,10 @@ const dict = {
     en: "Your database doesn't seem to have the latest update yet — apply the new migrations (see EMERGENCE.md) and try again.",
   },
   resetZoom: { ar: "إعادة الحجم الطبيعي", en: "Reset zoom" },
+  zoomIn: { ar: "تكبير", en: "Zoom in" },
+  zoomOut: { ar: "تصغير", en: "Zoom out" },
+  prev: { ar: "السابق", en: "Previous" },
+  next: { ar: "التالي", en: "Next" },
   gpaTrend: { ar: "تطوّر المعدل", en: "GPA trend" },
   gpaTrendEmpty: {
     ar: "أنهِ فصلين على الأقل مع تسجيل المعدل لرؤية الرسم البياني.",
