@@ -36,7 +36,11 @@ function AuthenticatedLayout() {
     );
   }
 
-  const bare = pathname === "/onboarding" || pathname === "/plan-print";
+  const bare =
+    pathname === "/onboarding" ||
+    pathname === "/plan-print" ||
+    pathname === "/term-calendar" ||
+    pathname === "/transcript";
 
   return (
     <div dir={dir} className="flex min-h-screen bg-background">
@@ -50,4 +54,3 @@ function AuthenticatedLayout() {
     </div>
   );
 }
-

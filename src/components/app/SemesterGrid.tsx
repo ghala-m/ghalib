@@ -74,47 +74,44 @@ export function SemesterGrid({
   }
 
   return (
-    <div dir={dir} className="semester-grid overflow-x-auto">
-      <div className="mb-4 text-center">
+    <div dir={dir} className="semester-grid space-y-6">
+      <div className="text-center">
         <h2 className="text-lg font-bold">{term.name}</h2>
       </div>
-      <table className="w-full border-collapse text-xs">
-        <thead>
-          <tr>
-            {months.map((m) => (
-              <th
-                key={`${m.year}-${m.monthIndex}`}
-                colSpan={m.weeks.length}
-                className="border border-border bg-muted/60 px-2 py-1.5 text-sm font-semibold"
-              >
-                {new Date(m.year, m.monthIndex, 1).toLocaleDateString(locale, {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </th>
-            ))}
-          </tr>
-          <tr>
-            {months.flatMap((m) =>
-              m.weeks.map((w) => (
-                <th
-                  key={w.weekNumber}
-                  className="border border-border bg-muted/30 px-1 py-1 font-medium text-muted-foreground [writing-mode:vertical-rl]"
-                >
-                  {t("weekLabel")} {w.weekNumber}
+      {months.map((m) => (
+        <div
+          key={`${m.year}-${m.monthIndex}`}
+          className="overflow-hidden rounded-xl border border-border"
+        >
+          <div className="bg-muted/60 px-3 py-2 text-center text-sm font-semibold">
+            {new Date(m.year, m.monthIndex, 1).toLocaleDateString(locale, {
+              month: "long",
+              year: "numeric",
+            })}
+          </div>
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th className="w-14 border border-border bg-muted/30 px-1 py-1 font-medium text-muted-foreground">
+                  {t("weekLabel")}
                 </th>
-              )),
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 7 }, (_, dayIdx) => (
-            <tr key={dayIdx}>
-              {months.flatMap((m) =>
-                m.weeks.map((w) => {
-                  const day = w.days[dayIdx];
-                  if (!day) return null;
-                  return (
+                {weekday.map((label, i) => (
+                  <th
+                    key={i}
+                    className="border border-border bg-muted/30 px-1 py-1 font-medium text-muted-foreground"
+                  >
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {m.weeks.map((w) => (
+                <tr key={w.weekNumber}>
+                  <th className="border border-border bg-muted/20 px-1 py-1 text-center font-medium text-muted-foreground">
+                    {w.weekNumber}
+                  </th>
+                  {w.days.map((day, dayIdx) => (
                     <DayCell
                       key={`${w.weekNumber}-${dayIdx}`}
                       day={day}
@@ -122,13 +119,13 @@ export function SemesterGrid({
                       marks={marksByDate.get(day.date)}
                       weekdayLabel={weekday[dayIdx] ?? ""}
                     />
-                  );
-                }),
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
     </div>
   );
 }

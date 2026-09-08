@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Maximize2, Minus, Plus } from "lucide-react";
+import { Maximize2, Minus, Plus, RotateCcw } from "lucide-react";
 import { buildPrereqGraph, CATEGORY_META, type GraphNode } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
 import type { Course } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const NODE_W = 190;
@@ -59,9 +60,6 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
     };
   }, [courses]);
 
-  // Always starts at 100% by default. If the user manually zooms in/out, that choice is
-  // remembered (per browser) and reused the next time the chart is opened — until they change
-  // it again or hit "reset zoom", which puts it back to the 100% default.
   const [scale, setScaleState] = useState(() => {
     if (typeof window === "undefined") return 1;
     const saved = Number(localStorage.getItem("ghalib.prereqZoom"));
@@ -75,23 +73,35 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
       return next;
     });
   };
+  // The Maximize2 button opens a real fullscreen view of the chart (its own icon promises
+  // "expand", not "reset zoom") — zoom/pan state is shared with the inline chart via `scale`.
+  const [expanded, setExpanded] = useState(false);
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    const el = scrollRef.current;
-    // Touch and pen keep the browser's native momentum scrolling; only mouse needs grab-panning.
-    if (!el || e.pointerType !== "mouse") return;
-    drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
-    el.setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    const el = scrollRef.current;
-    if (!el || !drag.current) return;
-    el.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
-    el.scrollTop = drag.current.top - (e.clientY - drag.current.y);
-  };
-  const stopDrag = () => {
-    drag.current = null;
-  };
+  const expandedScrollRef = useRef<HTMLDivElement>(null);
+  const expandedDrag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
+  const makeHandlers = (
+    elRef: React.RefObject<HTMLDivElement | null>,
+    dragRef: React.RefObject<{ x: number; y: number; left: number; top: number } | null>,
+  ) => ({
+    onPointerDown: (e: React.PointerEvent) => {
+      const el = elRef.current;
+      if (!el || e.pointerType !== "mouse") return;
+      dragRef.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
+      el.setPointerCapture(e.pointerId);
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      const el = elRef.current;
+      if (!el || !dragRef.current) return;
+      el.scrollLeft = dragRef.current.left - (e.clientX - dragRef.current.x);
+      el.scrollTop = dragRef.current.top - (e.clientY - dragRef.current.y);
+    },
+    onPointerUp: () => {
+      dragRef.current = null;
+    },
+    onPointerLeave: () => {
+      dragRef.current = null;
+    },
+  });
 
   if (!placed.length) {
     return (
@@ -99,69 +109,72 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
     );
   }
 
-  return (
-    <div className="panel-glass overflow-hidden">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-        <div>
-          <h2 className="font-semibold">{t("flowChart")}</h2>
-          <p className="text-xs text-muted-foreground">{t("flowChartHint")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-1" dir="ltr">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-7"
-              aria-label={t("zoomOut")}
-              onClick={() => setScale((s) => clamp(s - 0.15))}
-            >
-              <Minus className="size-3.5" />
-            </Button>
-            <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">
-              {Math.round(scale * 100)}%
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-7"
-              aria-label={t("zoomIn")}
-              onClick={() => setScale((s) => clamp(s + 0.15))}
-            >
-              <Plus className="size-3.5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-7"
-              title={t("resetZoom")}
-              aria-label={t("resetZoom")}
-              onClick={() => {
-                if (typeof window !== "undefined") localStorage.removeItem("ghalib.prereqZoom");
-                setScale(1);
-              }}
-            >
-              <Maximize2 className="size-3.5" />
-            </Button>
-          </div>
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-            {(["completed", "current", "available", "locked"] as const).map((s) => (
-              <span key={s} className="flex items-center gap-1.5">
-                <i className={cn("size-2.5 rounded-full", stateDot[s])} />
-                {t(s === "completed" ? "completed" : s === "current" ? "current" : s)}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+  const zoomControls = (
+    <div className="flex items-center gap-1" dir="ltr">
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-7"
+        aria-label={t("zoomOut")}
+        onClick={() => setScale((s) => clamp(s - 0.15))}
+      >
+        <Minus className="size-3.5" />
+      </Button>
+      <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">
+        {Math.round(scale * 100)}%
+      </span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-7"
+        aria-label={t("zoomIn")}
+        onClick={() => setScale((s) => clamp(s + 0.15))}
+      >
+        <Plus className="size-3.5" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-7"
+        title={t("resetZoom")}
+        aria-label={t("resetZoom")}
+        onClick={() => {
+          if (typeof window !== "undefined") localStorage.removeItem("ghalib.prereqZoom");
+          setScale(1);
+        }}
+      >
+        <RotateCcw className="size-3.5" />
+      </Button>
+    </div>
+  );
 
+  const legend = (
+    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+      {(["completed", "current", "available", "locked"] as const).map((s) => (
+        <span key={s} className="flex items-center gap-1.5">
+          <i className={cn("size-2.5 rounded-full", stateDot[s])} />
+          {t(s === "completed" ? "completed" : s === "current" ? "current" : s)}
+        </span>
+      ))}
+    </div>
+  );
+
+  function Canvas({
+    elRef,
+    dragHandlers,
+    maxHeight,
+  }: {
+    elRef: React.RefObject<HTMLDivElement | null>;
+    dragHandlers: ReturnType<typeof makeHandlers>;
+    maxHeight?: string;
+  }) {
+    return (
       <div
-        ref={scrollRef}
+        ref={elRef}
         className="touch-pan-x touch-pan-y cursor-grab overflow-auto p-5 select-none overscroll-contain active:cursor-grabbing"
         dir="ltr"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={stopDrag}
-        onPointerLeave={stopDrag}
+        style={maxHeight ? { maxHeight } : undefined}
+        {...dragHandlers}
       >
         <div
           className="relative"
@@ -228,6 +241,53 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
           </div>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="panel-glass overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
+        <div>
+          <h2 className="font-semibold">{t("flowChart")}</h2>
+          <p className="text-xs text-muted-foreground">{t("flowChartHint")}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          {zoomControls}
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-7"
+            title={t("expandChart")}
+            aria-label={t("expandChart")}
+            onClick={() => setExpanded(true)}
+          >
+            <Maximize2 className="size-3.5" />
+          </Button>
+          {legend}
+        </div>
+      </div>
+
+      <Canvas elRef={scrollRef} dragHandlers={makeHandlers(scrollRef, drag)} />
+
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="flex h-[92vh] w-[96vw] max-w-none flex-col gap-0 overflow-hidden p-0 sm:rounded-2xl">
+          <DialogTitle className="sr-only">{t("flowChart")}</DialogTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+            <h2 className="font-semibold">{t("flowChart")}</h2>
+            <div className="flex flex-wrap items-center gap-4">
+              {zoomControls}
+              {legend}
+            </div>
+          </div>
+          <div className="min-h-0 flex-1">
+            <Canvas
+              elRef={expandedScrollRef}
+              dragHandlers={makeHandlers(expandedScrollRef, expandedDrag)}
+              maxHeight="100%"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

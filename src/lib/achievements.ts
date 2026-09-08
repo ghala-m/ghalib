@@ -2,6 +2,7 @@ import { BookOpenCheck, Flame, GraduationCap, Rocket, Sparkles, Star, Trophy } f
 import type { Course, Profile, TermRow } from "@/lib/queries";
 import type { StreakEntry } from "@/lib/streak";
 import { computeStreaks } from "@/lib/streak";
+import { deriveTermHistory } from "@/lib/gpa";
 
 export type AchievementIcon = typeof BookOpenCheck;
 
@@ -35,7 +36,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: "firstTerm",
     icon: GraduationCap,
-    progress: ({ terms }) => clamp01(terms.filter((t) => t.gpa != null).length / 1),
+    // Counts terms via completed-course history, not just rows in `terms` — bulk-imported
+    // historical terms (onboarding, reimport) never get their own `terms` row.
+    progress: ({ courses, terms }) => clamp01(deriveTermHistory(courses, terms).length / 1),
   },
   {
     id: "credits30",

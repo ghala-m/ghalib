@@ -1,10 +1,12 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, MapPin, Pencil, User } from "lucide-react";
+import { CalendarDays, MapPin, Pencil, RotateCcw, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { primaryNickname, courseQuery, meetingsOf } from "@/lib/queries";
+import { primaryNickname, courseQuery, coursesQuery, meetingsOf } from "@/lib/queries";
 import { summarizeGrades } from "@/lib/grades";
+import { pointsFor } from "@/lib/plan";
+import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SyllabusPanel } from "@/components/app/SyllabusPanel";
@@ -17,9 +19,15 @@ export const Route = createFileRoute("/_authenticated/courses/$courseId")({
   head: () => ({
     meta: [
       { title: "Course workspace — Ghalib" },
-      { name: "description", content: "Checklist, timeline, grade weights and logistics for this course." },
+      {
+        name: "description",
+        content: "Checklist, timeline, grade weights and logistics for this course.",
+      },
       { property: "og:title", content: "Course workspace — Ghalib" },
-      { property: "og:description", content: "Checklist, timeline, grade weights and logistics for this course." },
+      {
+        property: "og:description",
+        content: "Checklist, timeline, grade weights and logistics for this course.",
+      },
     ],
   }),
   component: CoursePage,
@@ -28,8 +36,11 @@ export const Route = createFileRoute("/_authenticated/courses/$courseId")({
 function CoursePage() {
   const { courseId } = useParams({ from: "/_authenticated/courses/$courseId" });
   const { t, lang } = useI18n();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { data } = useQuery(courseQuery(courseId));
+  const { data: allCourses = [] } = useQuery(coursesQuery());
   const course = data?.course;
   const items = data?.items ?? [];
   const weights = data?.weights ?? [];
@@ -46,6 +57,48 @@ function CoursePage() {
     onError: () => toast.error(t("saveFailed")),
   });
 
+  // "Retake" is only offered for a completed course graded C- or below — anything above that
+  // can't be retaken, per how grading works here.
+  const gradePoints = course ? pointsFor(course.final_grade) : null;
+  const cMinusPoints = pointsFor("C-") ?? 1.67;
+  const eligibleForRetake =
+    course?.status === "completed" && gradePoints !== null && gradePoints <= cMinusPoints;
+  const alreadyRetaken = course
+    ? allCourses.some((c) => c.previous_attempt_id === course.id)
+    : false;
+
+  const retake = useMutation({
+    mutationFn: async () => {
+      if (!course || !user) throw new Error("no course/user");
+      const { data: inserted, error } = await supabase
+        .from("courses")
+        .insert({
+          user_id: user.id,
+          name: course.name,
+          code: course.code,
+          nickname: course.nickname,
+          credits: course.credits,
+          category: course.category,
+          prerequisites: course.prerequisites,
+          alt_group: course.alt_group,
+          plan_level: course.plan_level,
+          status: "future",
+          is_retake: true,
+          previous_attempt_id: course.id,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return inserted.id as string;
+    },
+    onSuccess: (newId) => {
+      qc.invalidateQueries({ queryKey: ["courses"] });
+      toast.success(t("retakeCreated"));
+      navigate({ to: "/courses/$courseId", params: { courseId: newId } });
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
   if (!course) {
     return <div className="p-10 text-sm text-muted-foreground">{t("loading")}</div>;
   }
@@ -58,35 +111,53 @@ function CoursePage() {
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-        <p className="text-xs text-muted-foreground">
-          {course.code || t("none")}
-          {primaryNickname(course.nickname) ? ` · ${primaryNickname(course.nickname)}` : ""}
-        </p>
-        <h1 className="mt-1 text-3xl font-bold">{course.name}</h1>
-        <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
-            <User className="size-4" />
-            {course.instructor || t("none")}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <MapPin className="size-4" />
-            {course.location || t("none")}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarDays className="size-4" />
-            {course.term || t("none")}
-          </span>
+          <p className="text-xs text-muted-foreground">
+            {course.code || t("none")}
+            {primaryNickname(course.nickname) ? ` · ${primaryNickname(course.nickname)}` : ""}
+          </p>
+          <h1 className="mt-1 text-3xl font-bold">{course.name}</h1>
+          <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <User className="size-4" />
+              {course.instructor || t("none")}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <MapPin className="size-4" />
+              {course.location || t("none")}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays className="size-4" />
+              {course.term || t("none")}
+            </span>
+            {course.final_grade ? (
+              <span className="inline-flex items-center gap-1.5">
+                {t("grade")}: <strong>{course.final_grade}</strong>
+              </span>
+            ) : null}
+          </div>
         </div>
-        </div>
-        <CourseFormDialog
-          course={course}
-          trigger={
-            <Button variant="outline" size="sm">
-              <Pencil className="size-4" />
-              {t("edit")}
+        <div className="flex shrink-0 items-center gap-2">
+          {eligibleForRetake && !alreadyRetaken ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => retake.mutate()}
+              disabled={retake.isPending}
+            >
+              <RotateCcw className="size-4" />
+              {t("retakeCourse")}
             </Button>
-          }
-        />
+          ) : null}
+          <CourseFormDialog
+            course={course}
+            trigger={
+              <Button variant="outline" size="sm">
+                <Pencil className="size-4" />
+                {t("edit")}
+              </Button>
+            }
+          />
+        </div>
       </header>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -147,10 +218,15 @@ function CoursePage() {
               <>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-sm font-medium">{t("currentGrade")}</p>
-                  <p className="text-2xl font-bold tabular-nums text-accent">{grade.currentAverage.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold tabular-nums text-accent">
+                    {grade.currentAverage.toFixed(1)}%
+                  </p>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-muted">
-                  <div className="h-1.5 rounded-full bg-accent" style={{ width: `${Math.min(100, grade.coverage)}%` }} />
+                  <div
+                    className="h-1.5 rounded-full bg-accent"
+                    style={{ width: `${Math.min(100, grade.coverage)}%` }}
+                  />
                 </div>
                 <p className="mt-1.5 text-xs text-muted-foreground">
                   {grade.coverage.toFixed(0)}% {t("gradeCoverage")}
@@ -173,7 +249,9 @@ function CoursePage() {
                   onCheckedChange={(v) => toggle.mutate({ id: i.id, completed: v === true })}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className={`truncate text-sm ${i.completed ? "text-muted-foreground line-through" : ""}`}>
+                  <p
+                    className={`truncate text-sm ${i.completed ? "text-muted-foreground line-through" : ""}`}
+                  >
                     {i.title}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -213,7 +291,8 @@ function CoursePage() {
               <li key={idx} className="flex justify-between rounded-md bg-muted/40 px-3 py-2">
                 <span>{m.day}</span>
                 <span className="text-muted-foreground">
-                  {[m.start_time, m.end_time].filter(Boolean).join(" – ") || "—"} {m.location ? `· ${m.location}` : ""}
+                  {[m.start_time, m.end_time].filter(Boolean).join(" – ") || "—"}{" "}
+                  {m.location ? `· ${m.location}` : ""}
                 </span>
               </li>
             ))}

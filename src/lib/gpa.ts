@@ -1,5 +1,5 @@
 import { GRADE_SCALE, pointsFor } from "@/lib/plan";
-import type { Course } from "@/lib/queries";
+import type { Course, TermRow } from "@/lib/queries";
 
 export type GpaTotals = { credits: number; points: number; gpa: number | null };
 
@@ -13,8 +13,12 @@ function creditsOf(c: Pick<Course, "credits">) {
  *
  * A course pointed to by another course's `previous_attempt_id` (i.e. it was later retaken) is
  * excluded — only the newer attempt counts, so a retake doesn't get double-counted. */
-export function completedGpa(courses: Pick<Course, "id" | "credits" | "final_grade" | "previous_attempt_id">[]): GpaTotals {
-  const superseded = new Set(courses.map((c) => c.previous_attempt_id).filter((id): id is string => !!id));
+export function completedGpa(
+  courses: Pick<Course, "id" | "credits" | "final_grade" | "previous_attempt_id">[],
+): GpaTotals {
+  const superseded = new Set(
+    courses.map((c) => c.previous_attempt_id).filter((id): id is string => !!id),
+  );
   let credits = 0;
   let points = 0;
   for (const c of courses) {
@@ -55,11 +59,77 @@ export function simulateGpa(
 }
 
 /**
+ * One row of "how many terms has this student actually finished" — built primarily from
+ * completed courses grouped by the term they were recorded under, since imported/historical
+ * terms (bulk-pasted during onboarding, or via "reimport plan") never get a row in the `terms`
+ * table at all — only a term the student actually started and ended through the app does. Using
+ * `terms.gpa` alone therefore undercounts real term history; this reconciles both sources.
+ */
+export type TermHistoryRow = {
+  key: string;
+  label: string;
+  termNumber: number | null;
+  gpa: number | null;
+  credits: number;
+};
+
+export function deriveTermHistory(
+  courses: Pick<
+    Course,
+    | "id"
+    | "credits"
+    | "final_grade"
+    | "previous_attempt_id"
+    | "status"
+    | "archived"
+    | "completed_term"
+    | "term"
+  >[],
+  terms: Pick<TermRow, "id" | "name" | "gpa" | "credits" | "term_number">[],
+): TermHistoryRow[] {
+  const completed = courses.filter((c) => c.status === "completed" && !c.archived);
+  const byLabel = new Map<string, typeof completed>();
+  for (const c of completed) {
+    const label = (c.completed_term || c.term || "").trim();
+    if (!label) continue;
+    const list = byLabel.get(label) ?? [];
+    list.push(c);
+    byLabel.set(label, list);
+  }
+
+  const rows: TermHistoryRow[] = [];
+  for (const [label, list] of byLabel) {
+    const totals = completedGpa(list);
+    const matchingTerm = terms.find((t) => t.name === label);
+    const asNumber = Number(label);
+    rows.push({
+      key: label,
+      label,
+      termNumber: matchingTerm?.term_number ?? (Number.isFinite(asNumber) ? asNumber : null),
+      gpa: matchingTerm?.gpa ?? totals.gpa,
+      credits: matchingTerm?.credits ?? totals.credits,
+    });
+  }
+
+  rows.sort((a, b) => {
+    if (a.termNumber != null && b.termNumber != null) return a.termNumber - b.termNumber;
+    if (a.termNumber != null) return -1;
+    if (b.termNumber != null) return 1;
+    return a.label.localeCompare(b.label);
+  });
+  return rows;
+}
+
+/**
  * Reverse-solves: given a target overall GPA and a pool of remaining credits, what average
  * grade-points do those remaining credits need to earn to hit the target? Returns null when
  * there are no remaining credits to solve for.
  */
-export function requiredAverage(base: GpaTotals, remainingCredits: number, targetGpa: number): number | null {
+export function requiredAverage(
+  base: GpaTotals,
+  remainingCredits: number,
+  targetGpa: number,
+): number | null {
   if (remainingCredits <= 0) return null;
   const neededPoints = targetGpa * (base.credits + remainingCredits) - base.points;
   return neededPoints / remainingCredits;

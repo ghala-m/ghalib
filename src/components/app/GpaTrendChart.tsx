@@ -11,26 +11,25 @@ import {
   YAxis,
 } from "recharts";
 import { TrendingUp } from "lucide-react";
-import { termsQuery } from "@/lib/queries";
+import { coursesQuery, termsQuery } from "@/lib/queries";
+import { deriveTermHistory } from "@/lib/gpa";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 
 export function GpaTrendChart() {
   const { t } = useI18n();
   const { data: terms = [] } = useQuery(termsQuery());
+  const { data: courses = [] } = useQuery(coursesQuery());
 
+  const history = useMemo(() => deriveTermHistory(courses, terms), [courses, terms]);
   const data = useMemo(
-    () =>
-      terms
-        .filter((term) => term.gpa != null)
-        .sort((a, b) => a.term_number - b.term_number)
-        .map((term) => ({ name: term.name, gpa: Number(term.gpa) })),
-    [terms],
+    () => history.filter((h) => h.gpa != null).map((h) => ({ name: h.label, gpa: Number(h.gpa) })),
+    [history],
   );
 
   // More than two terms exist, but not enough of them have a recorded GPA to plot a trend —
   // that's a data gap worth calling out, not just a quiet "not enough data yet".
-  const hasMissingData = terms.length > 2 && data.length < 2;
+  const hasMissingData = history.length > 2 && data.length < 2;
 
   return (
     <section className="panel p-5">

@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BellOff, ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
-import { primaryNickname,
+import {
+  primaryNickname,
   allItemsQuery,
   coursesQuery,
   eventsQuery,
@@ -36,11 +37,10 @@ function startOfWeek(d: Date) {
   return addDays(d, -d.getDay());
 }
 
-
 /** Shared calendar. Pass `courseId` to scope every view to a single course. */
 export function CalendarView({ courseId, compact }: { courseId?: string; compact?: boolean } = {}) {
   const { t, lang } = useI18n();
-  const [view, setView] = useState<View>("week");
+  const [view, setView] = useState<View>("month");
   const [cursor, setCursor] = useState(() => new Date());
   const { data: allItems = [] } = useQuery(allItemsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());
@@ -87,12 +87,16 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
       list.push(e);
       map.set(e.event_date, list);
     }
-    for (const list of map.values()) list.sort((a, b) => (a.event_time ?? "").localeCompare(b.event_time ?? ""));
+    for (const list of map.values())
+      list.sort((a, b) => (a.event_time ?? "").localeCompare(b.event_time ?? ""));
     return map;
   }, [events]);
 
   const classesByDay = useMemo(() => {
-    const map = new Map<number, { course: Course; start: string | null; end: string | null; location: string | null }[]>();
+    const map = new Map<
+      number,
+      { course: Course; start: string | null; end: string | null; location: string | null }[]
+    >();
     for (const c of activeCourses) {
       for (const m of meetingsOf(c)) {
         const idx = meetingDayIndex(m.day);
@@ -102,7 +106,8 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
         map.set(idx, list);
       }
     }
-    for (const list of map.values()) list.sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""));
+    for (const list of map.values())
+      list.sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""));
     return map;
   }, [activeCourses]);
 
@@ -156,11 +161,23 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
         </Button>
 
         <div className="ms-auto flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="icon" title={t("exportIcs")} aria-label={t("exportIcs")} onClick={exportIcs}>
+          <Button
+            variant="ghost"
+            size="icon"
+            title={t("exportIcs")}
+            aria-label={t("exportIcs")}
+            onClick={exportIcs}
+          >
             <Download className="size-4" />
           </Button>
           {notif !== "granted" && notif !== "unsupported" && (
-            <Button asChild variant="ghost" size="icon" title={t("openNotificationSettings")} aria-label={t("openNotificationSettings")}>
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              title={t("openNotificationSettings")}
+              aria-label={t("openNotificationSettings")}
+            >
               <Link to="/profile" hash="notifications">
                 <BellOff className="size-4" />
               </Link>
@@ -196,7 +213,9 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                 onClick={() => setView(v)}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  view === v ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+                  view === v
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {t(v)}
@@ -226,7 +245,13 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
     const dayEvents = eventsByDate.get(iso(date)) ?? [];
     const isToday = iso(date) === iso(new Date());
     return (
-      <div className={cn("rounded-xl border border-border p-3", isToday && "border-accent bg-accent/5", full && "min-h-64")}>
+      <div
+        className={cn(
+          "rounded-xl border border-border p-3",
+          isToday && "border-accent bg-accent/5",
+          full && "min-h-64",
+        )}
+      >
         <p className="mb-2 text-xs font-semibold text-muted-foreground">
           {date.toLocaleDateString(locale, { weekday: "short", day: "numeric" })}
         </p>
@@ -242,7 +267,9 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                 borderInlineStart: `3px solid ${CATEGORY_META[c.course.category].color}`,
               }}
             >
-              <span className="font-medium">{primaryNickname(c.course.nickname) || c.course.code || c.course.name}</span>
+              <span className="font-medium">
+                {primaryNickname(c.course.nickname) || c.course.code || c.course.name}
+              </span>
               {c.start ? <span className="ms-1 text-muted-foreground">{c.start}</span> : null}
             </Link>
           ))}
@@ -252,11 +279,23 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
               courseId={it.course_id}
               item={it}
               trigger={
-                <button type="button" className="block w-full rounded-lg border border-border bg-card px-2 py-1.5 text-start text-xs">
-                  <span className={cn("font-medium", it.completed && "text-muted-foreground line-through")}>{it.title}</span>
+                <button
+                  type="button"
+                  className="block w-full rounded-lg border border-border bg-card px-2 py-1.5 text-start text-xs"
+                >
+                  <span
+                    className={cn(
+                      "font-medium",
+                      it.completed && "text-muted-foreground line-through",
+                    )}
+                  >
+                    {it.title}
+                  </span>
                   <span className="block truncate text-muted-foreground">
                     {t(it.type)}
-                    {courseId ? "" : ` · ${primaryNickname(it.courses?.nickname) ?? it.courses?.code ?? it.courses?.name ?? ""}`}
+                    {courseId
+                      ? ""
+                      : ` · ${primaryNickname(it.courses?.nickname) ?? it.courses?.code ?? it.courses?.name ?? ""}`}
                   </span>
                 </button>
               }
@@ -319,7 +358,9 @@ export function CalendarView({ courseId, compact }: { courseId?: string; compact
                 <p
                   key={i}
                   className="mb-0.5 truncate rounded px-1"
-                  style={{ background: `color-mix(in oklab, ${CATEGORY_META[c.course.category].color} 18%, transparent)` }}
+                  style={{
+                    background: `color-mix(in oklab, ${CATEGORY_META[c.course.category].color} 18%, transparent)`,
+                  }}
                 >
                   {primaryNickname(c.course.nickname) || c.course.code || c.course.name}
                 </p>

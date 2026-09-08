@@ -15,18 +15,18 @@ export const CATEGORY_META: Record<
 };
 
 export const GRADE_SCALE: { grade: string; points: number }[] = [
-  { grade: "A+", points: 4 },
   { grade: "A", points: 4 },
-  { grade: "A-", points: 3.7 },
-  { grade: "B+", points: 3.3 },
+  { grade: "A-", points: 3.67 },
+  { grade: "B+", points: 3.33 },
   { grade: "B", points: 3 },
-  { grade: "B-", points: 2.7 },
-  { grade: "C+", points: 2.3 },
+  { grade: "B-", points: 2.67 },
+  { grade: "C+", points: 2.33 },
   { grade: "C", points: 2 },
-  { grade: "C-", points: 1.7 },
-  { grade: "D+", points: 1.3 },
+  { grade: "C-", points: 1.67 },
+  { grade: "D+", points: 1.33 },
   { grade: "D", points: 1 },
   { grade: "F", points: 0 },
+  { grade: "FA", points: 0 },
 ];
 
 export function pointsFor(grade: string | null) {
@@ -46,14 +46,17 @@ export const norm = (v: string) => v.replace(/\s+/g, "").toUpperCase();
 /**
  * Capstone 1 has a university-wide unit requirement (96+ completed credit hours) on top of any
  * normal prerequisite courses. There's no dedicated "min credit hours" field in the schema, so
- * this is detected by name/code — matches "Capstone 1", "كابستون 1"/"كابستون ١" (Arabic-Indic or
- * Latin digit), with or without a space before the number.
+ * this is detected by name — matches names ending in "1"/"١" that mention "capstone"/"كابستون"
+ * somewhere before it, so "Capstone 1", "Capstone Design 1", and "كابستون تصميم ١" all match,
+ * while "Capstone Design 2" doesn't.
  */
-const CAPSTONE_ONE_PATTERN = /capstone\s*1\b|كابستون\s*[1١]\b/i;
+const CAPSTONE_WORD = /capstone|كابستون/i;
+const ENDS_WITH_ONE = /(?:^|[\s-])(1|١)\s*$/;
 export const CAPSTONE_ONE_MIN_CREDITS = 96;
 
 export function isCapstoneOne(course: Pick<Course, "code" | "name">): boolean {
-  return CAPSTONE_ONE_PATTERN.test(course.code ?? "") || CAPSTONE_ONE_PATTERN.test(course.name);
+  const name = (course.name ?? "").trim();
+  return CAPSTONE_WORD.test(name) && ENDS_WITH_ONE.test(name);
 }
 
 /** Sum of credit hours across all courses marked "completed". */

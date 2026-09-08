@@ -227,7 +227,8 @@
     background: #fff !important;
     color: #111 !important;
   }
-  .print-hide {
+  .print-hide,
+  [data-sonner-toaster] {
     display: none !important;
   }
   .print-panel {

@@ -104,6 +104,7 @@ const dict = {
     en: "Your database doesn't seem to have the latest update yet — apply the new migrations (see EMERGENCE.md) and try again.",
   },
   resetZoom: { ar: "إعادة الحجم الطبيعي", en: "Reset zoom" },
+  expandChart: { ar: "تكبير الخريطة لكامل الشاشة", en: "Expand to fullscreen" },
   zoomIn: { ar: "تكبير", en: "Zoom in" },
   zoomOut: { ar: "تصغير", en: "Zoom out" },
   prev: { ar: "السابق", en: "Previous" },
@@ -658,6 +659,11 @@ const dict = {
     en: "This is a retake of a course I've taken before",
   },
   previousAttempt: { ar: "المحاولة السابقة", en: "Previous attempt" },
+  retakeCourse: { ar: "إعادة المادة", en: "Retake course" },
+  retakeCreated: {
+    ar: "أضفنا المادة كمادة مستقبلية للإعادة — سجّلها لما يجي وقتها.",
+    en: "Added the course as a future retake — register it when the time comes.",
+  },
   previousAttemptHint: {
     ar: "المحاولة القديمة تُستثنى تلقائياً من حساب المعدل التراكمي — يُحسب فقط آخر محاولة.",
     en: "The old attempt is automatically excluded from your GPA — only the latest attempt counts.",
