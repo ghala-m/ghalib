@@ -113,6 +113,11 @@ const dict = {
     ar: "أنهِ فصلين على الأقل مع تسجيل المعدل لرؤية الرسم البياني.",
     en: "Finish at least two terms with a recorded GPA to see the chart.",
   },
+  gpaTrendMissingData: {
+    ar: "عندك أكثر من فصلين، لكن معدلات بعض الفصول غير مسجّلة بعد. أضف معدلات فصولك السابقة لرؤية تطور معدلك.",
+    en: "You have more than two terms, but some terms are missing a recorded GPA. Add your past terms' GPAs to see your trend.",
+  },
+  gpaTrendAddData: { ar: "إضافة معدلات الفصول", en: "Add term GPAs" },
   nicknames: { ar: "الأسماء المختصرة", en: "Nicknames" },
   addNickname: { ar: "إضافة اسم مختصر", en: "Add nickname" },
   dangerZone: { ar: "منطقة الخطر", en: "Danger zone" },
@@ -128,7 +133,10 @@ const dict = {
   noChatsYet: { ar: "لا توجد محادثات سابقة بعد", en: "No past conversations yet" },
   untitledChat: { ar: "محادثة بدون عنوان", en: "Untitled chat" },
   aiFailed: { ar: "تعذّر تحليل الملف", en: "Could not analyze the file" },
-  aiRateLimit: { ar: "تم تجاوز حد الطلبات، حاول بعد قليل.", en: "Rate limit reached, try again shortly." },
+  aiRateLimit: {
+    ar: "تم تجاوز حد الطلبات، حاول بعد قليل.",
+    en: "Rate limit reached, try again shortly.",
+  },
   aiKeyMissing: {
     ar: "مفتاح الذكاء الاصطناعي (LOVABLE_API_KEY) غير مُعرَّف بالسيرفر — أضفه لملف .env المحلي عندك وأعد تشغيل npm run dev.",
     en: "The AI key (LOVABLE_API_KEY) isn't set on the server — add it to your local .env and restart npm run dev.",
@@ -136,7 +144,10 @@ const dict = {
   aiCredits: { ar: "نفدت أرصدة الذكاء الاصطناعي.", en: "AI credits exhausted." },
   none: { ar: "غير محدد", en: "Not set" },
   taskDone: { ar: "مكتمل", en: "Done" },
-  featuresTitle: { ar: "كل ما يحتاجه الطالب في مكان واحد", en: "Everything a student needs, in one place" },
+  featuresTitle: {
+    ar: "كل ما يحتاجه الطالب في مكان واحد",
+    en: "Everything a student needs, in one place",
+  },
   f1t: { ar: "استخراج ذكي", en: "AI extraction" },
   f1b: {
     ar: "ارفع ملف الخطة الدراسية فيستخرج النظام المواعيد والاختبارات والواجبات وتوزيع الدرجات.",
@@ -168,7 +179,10 @@ const dict = {
   themeDark: { ar: "داكن", en: "Dark" },
   themeSystem: { ar: "النظام", en: "System" },
   accentColor: { ar: "لون الواجهة", en: "Accent colour" },
-  accentHint: { ar: "اختر اللون الذي يناسبك، ويُطبَّق على الموقع كاملاً.", en: "Pick the colour that suits you; it applies across the whole app." },
+  accentHint: {
+    ar: "اختر اللون الذي يناسبك، ويُطبَّق على الموقع كاملاً.",
+    en: "Pick the colour that suits you; it applies across the whole app.",
+  },
   customColor: { ar: "لون مخصص", en: "Custom colour" },
   navAcademic: { ar: "أكاديمي", en: "Academic" },
   navTools: { ar: "أدوات", en: "Tools" },
@@ -190,7 +204,10 @@ const dict = {
   major_elective: { ar: "مواد تخصص اختيارية", en: "Major electives" },
   // --- Files ---
   onlyPdfWord: { ar: "يُقبل ملف PDF أو Word فقط", en: "PDF or Word files only" },
-  invalidFile: { ar: "نوع الملف غير مدعوم. ارفع ملف PDF أو Word.", en: "Unsupported file type. Upload a PDF or Word file." },
+  invalidFile: {
+    ar: "نوع الملف غير مدعوم. ارفع ملف PDF أو Word.",
+    en: "Unsupported file type. Upload a PDF or Word file.",
+  },
   readFailed: { ar: "تعذّرت قراءة الملف", en: "Could not read the file" },
   // --- Onboarding ---
   onboarding: { ar: "الإعداد الأولي", en: "Getting started" },
@@ -205,7 +222,10 @@ const dict = {
   stepProgress: { ar: "ما أنجزته", en: "Your progress" },
   stepDone: { ar: "جاهز", en: "Ready" },
   reviewPlanTitle: { ar: "راجع المواد المستخرجة", en: "Review the extracted courses" },
-  reviewPlanHint: { ar: "عدّل القسم أو الساعات عند الحاجة قبل الحفظ.", en: "Adjust category or credits if needed before saving." },
+  reviewPlanHint: {
+    ar: "عدّل القسم أو الساعات عند الحاجة قبل الحفظ.",
+    en: "Adjust category or credits if needed before saving.",
+  },
   markProgressTitle: { ar: "أي مواد أنهيتها؟", en: "Which courses have you completed?" },
   markProgressHint: {
     ar: "اختر المواد التي أنهيتها وأدخل تقديرك والفصل الذي أنهيتها فيه. باقي المواد ستُصنّف كخطة مستقبلية.",
@@ -250,7 +270,10 @@ const dict = {
   clearChat: { ar: "مسح المحادثة", en: "Clear chat" },
   thinking: { ar: "يفكر…", en: "Thinking…" },
   suggestion1: { ar: "ابنِ لي خطة مذاكرة لهذا الأسبوع", en: "Build me a study plan for this week" },
-  suggestion2: { ar: "ما المواد التي يجب أن أسجلها الفصل القادم؟", en: "Which courses should I register next term?" },
+  suggestion2: {
+    ar: "ما المواد التي يجب أن أسجلها الفصل القادم؟",
+    en: "Which courses should I register next term?",
+  },
   suggestion3: { ar: "كيف أرفع معدلي التراكمي؟", en: "How can I raise my GPA?" },
   // --- Misc ---
   quickActions: { ar: "إجراءات سريعة", en: "Quick actions" },
@@ -258,7 +281,10 @@ const dict = {
   creditsDone: { ar: "ساعة مكتملة", en: "credits completed" },
   overview: { ar: "نظرة عامة", en: "Overview" },
   tools: { ar: "أدوات الدراسة", en: "Study tools" },
-  studyToolsHint: { ar: "أدوات ذكاء اصطناعي تساعدك في المذاكرة والبحث.", en: "AI tools that help you study and research." },
+  studyToolsHint: {
+    ar: "أدوات ذكاء اصطناعي تساعدك في المذاكرة والبحث.",
+    en: "AI tools that help you study and research.",
+  },
   openTool: { ar: "فتح", en: "Open" },
   backToDashboard: { ar: "العودة للوحة", en: "Back to dashboard" },
   loading: { ar: "جارٍ التحميل…", en: "Loading…" },
@@ -266,10 +292,16 @@ const dict = {
   edit: { ar: "تعديل", en: "Edit" },
   editCourse: { ar: "تعديل المادة", en: "Edit course" },
   delete: { ar: "حذف", en: "Delete" },
-  deleteConfirm: { ar: "هل تريد حذف هذه المادة نهائياً؟ سيتم حذف مهامها ودرجاتها.", en: "Delete this course permanently? Its tasks and weights will be removed too." },
+  deleteConfirm: {
+    ar: "هل تريد حذف هذه المادة نهائياً؟ سيتم حذف مهامها ودرجاتها.",
+    en: "Delete this course permanently? Its tasks and weights will be removed too.",
+  },
   deleted: { ar: "تم الحذف", en: "Deleted" },
   nickname: { ar: "الاسم المختصر", en: "Nickname" },
-  nicknameHint: { ar: "الاختصار الذي تستخدمه بين الطلبة — يظهر في البحث.", en: "The short name students use — it works in search too." },
+  nicknameHint: {
+    ar: "الاختصار الذي تستخدمه بين الطلبة — يظهر في البحث.",
+    en: "The short name students use — it works in search too.",
+  },
   altGroup: { ar: "مجموعة البدائل", en: "Alternatives group" },
   altGroupHint: {
     ar: "المواد التي تحمل نفس اسم المجموعة تعتبر بدائل: إذا أكملت واحدة تُشطَب البقية.",
@@ -284,7 +316,10 @@ const dict = {
   dueTime: { ar: "الوقت", en: "Time" },
   description: { ar: "الوصف", en: "Description" },
   courseCalendar: { ar: "تقويم المادة", en: "Course calendar" },
-  courseCalendarHint: { ar: "كل ما يخص هذه المادة فقط — يومي وأسبوعي وشهري.", en: "Only this course — day, week and month views." },
+  courseCalendarHint: {
+    ar: "كل ما يخص هذه المادة فقط — يومي وأسبوعي وشهري.",
+    en: "Only this course — day, week and month views.",
+  },
   // --- Events & reminders ---
   addEvent: { ar: "إضافة حدث", en: "Add event" },
   editEvent: { ar: "تعديل الحدث", en: "Edit event" },
@@ -299,7 +334,10 @@ const dict = {
   remind1440: { ar: "قبل يوم", en: "1 day before" },
   enableNotifications: { ar: "تفعيل التنبيهات", en: "Enable notifications" },
   notificationsOn: { ar: "التنبيهات مفعّلة", en: "Notifications enabled" },
-  notificationsBlocked: { ar: "التنبيهات محظورة من المتصفح", en: "Notifications are blocked by the browser" },
+  notificationsBlocked: {
+    ar: "التنبيهات محظورة من المتصفح",
+    en: "Notifications are blocked by the browser",
+  },
   linkedCourse: { ar: "المادة المرتبطة", en: "Linked course" },
   noCourseLink: { ar: "بدون مادة", en: "No course" },
   // --- Terms ---
@@ -311,19 +349,31 @@ const dict = {
   startDate: { ar: "تاريخ البداية", en: "Start date" },
   endDate: { ar: "تاريخ النهاية", en: "End date" },
   termGpa: { ar: "معدل الفصل", en: "Term GPA" },
+  zeroGpaQuestion: {
+    ar: "معدل هذا الفصل ٠.٠ — هل هو فصل تمهيدي (بدون كردت) أم فصل عادي عليه كردت؟",
+    en: "This term's GPA is 0.0 — is it a prep term (no credit hours) or a regular term with credit hours?",
+  },
+  zeroGpaPrep: { ar: "تمهيدي (بدون كردت)", en: "Prep (no credit)" },
+  zeroGpaRegular: { ar: "عادي (عليه كردت)", en: "Regular (with credit)" },
   activeTerm: { ar: "الفصل النشط", en: "Active term" },
   noActiveTerm: { ar: "لا يوجد فصل نشط", en: "No active term" },
   endTermHint: {
     ar: "عند إنهاء الفصل تُنقل موادك الحالية إلى «مكتملة»، ويُسجَّل معدلك، وتُرحَّل إلى الفصل التالي.",
     en: "Ending a term moves your current courses to “completed”, records your GPA and advances you to the next term.",
   },
-  startTermHint: { ar: "سجّل بيانات الفصل الجديد واختر المواد التي ستدرسها فيه.", en: "Record the new term and pick the courses you will study in it." },
+  startTermHint: {
+    ar: "سجّل بيانات الفصل الجديد واختر المواد التي ستدرسها فيه.",
+    en: "Record the new term and pick the courses you will study in it.",
+  },
   selectCourses: { ar: "اختر المواد", en: "Select courses" },
   termStarted: { ar: "بدأ الفصل الجديد", en: "New term started" },
   termEnded: { ar: "تم إنهاء الفصل", en: "Term closed" },
   history: { ar: "السجل", en: "History" },
   viewTermCalendar: { ar: "كالندر الفصل", en: "Term calendar" },
-  academicCalendarExtract: { ar: "استخراج من الكالندر الجامعي", en: "Extract from the university calendar" },
+  academicCalendarExtract: {
+    ar: "استخراج من الكالندر الجامعي",
+    en: "Extract from the university calendar",
+  },
   academicCalendarExtractHint: {
     ar: "ارفع صورة أو PDF للكالندر الجامعي الرسمي، أو الصق تفاصيله كنص — وسيملأ الذكاء الاصطناعي التواريخ والإجازات وأسبوع الاختبارات تلقائياً.",
     en: "Upload a photo or PDF of the official university calendar, or paste its details as text — AI will fill in the dates, holidays and finals week automatically.",
@@ -335,7 +385,10 @@ const dict = {
     ar: "أو الصق هنا تفاصيل الكالندر الجامعي (بداية الفصل، الإجازات، أسبوع الاختبارات...)",
     en: "Or paste the university calendar details here (term start, holidays, finals week...)",
   },
-  uploadOrPasteCalendar: { ar: "ارفع ملفاً أو الصق نصاً أولاً", en: "Upload a file or paste text first" },
+  uploadOrPasteCalendar: {
+    ar: "ارفع ملفاً أو الصق نصاً أولاً",
+    en: "Upload a file or paste text first",
+  },
   calendarExtracted: { ar: "تم استخراج بيانات الكالندر", en: "Calendar data extracted" },
   extractedMilestones: { ar: "أحداث مستخرجة", en: "Extracted events" },
   weeksCountLabel: { ar: "عدد الأسابيع", en: "Weeks" },
@@ -379,8 +432,14 @@ const dict = {
   simSelected: { ar: "المواد المختارة", en: "Selected courses" },
   simUnlocks: { ar: "ستفتح لك", en: "Will unlock for you" },
   simUnlockCount: { ar: "مادة جديدة ستتاح", en: "new courses will open" },
-  simNothingYet: { ar: "اختر مادة واحدة على الأقل لرؤية ما ستفتحه.", en: "Pick at least one course to see what it unlocks." },
-  simNoUnlocks: { ar: "هذه التشكيلة لا تفتح مواد جديدة حالياً.", en: "This selection doesn't unlock new courses yet." },
+  simNothingYet: {
+    ar: "اختر مادة واحدة على الأقل لرؤية ما ستفتحه.",
+    en: "Pick at least one course to see what it unlocks.",
+  },
+  simNoUnlocks: {
+    ar: "هذه التشكيلة لا تفتح مواد جديدة حالياً.",
+    en: "This selection doesn't unlock new courses yet.",
+  },
   simBestTitle: { ar: "أفضل تشكيلة", en: "Best combination" },
   simBestHint: {
     ar: "يقترح التشكيلة التي تفتح أكبر عدد من المواد المستقبلية ضمن حد الوحدات.",
@@ -389,12 +448,21 @@ const dict = {
   simMaxCredits: { ar: "الحد الأقصى للوحدات", en: "Max credits" },
   simNoLimit: { ar: "بدون حد", en: "No limit" },
   simSuggest: { ar: "اقترح أفضل تشكيلة", en: "Suggest best combination" },
-  simNoAvailable: { ar: "لا توجد مواد متاحة للتسجيل حالياً — أنهِ متطلباتها أولاً.", en: "No courses available to register right now — finish their prerequisites first." },
+  simNoAvailable: {
+    ar: "لا توجد مواد متاحة للتسجيل حالياً — أنهِ متطلباتها أولاً.",
+    en: "No courses available to register right now — finish their prerequisites first.",
+  },
   simCredits: { ar: "وحدة", en: "credits" },
   // --- Advisor / profile redesign ---
-  aiChatFailed: { ar: "تعذّر الرد من المرشد، حاول مرة أخرى.", en: "The advisor could not reply, please try again." },
+  aiChatFailed: {
+    ar: "تعذّر الرد من المرشد، حاول مرة أخرى.",
+    en: "The advisor could not reply, please try again.",
+  },
   advisorSidebarTitle: { ar: "سياق المحادثة", en: "Conversation context" },
-  advisorContextHint: { ar: "غالِـب يرى هذه المعلومات عند الإجابة.", en: "Ghalib sees this information when answering." },
+  advisorContextHint: {
+    ar: "غالِـب يرى هذه المعلومات عند الإجابة.",
+    en: "Ghalib sees this information when answering.",
+  },
   newChat: { ar: "محادثة جديدة", en: "New chat" },
   academicSummary: { ar: "الملخص الأكاديمي", en: "Academic summary" },
   personalInfo: { ar: "المعلومات الشخصية", en: "Personal info" },
@@ -407,15 +475,30 @@ const dict = {
   // --- Study tools ---
   studyTools: { ar: "أدوات الدراسة", en: "Study tools" },
   toolSummarize: { ar: "ملخّص سريع", en: "Quick summary" },
-  toolSummarizeBody: { ar: "الصق نصاً أو ارفع ملفاً واحصل على ملخص منظّم بنقاط.", en: "Paste text or upload a file and get a structured bullet summary." },
+  toolSummarizeBody: {
+    ar: "الصق نصاً أو ارفع ملفاً واحصل على ملخص منظّم بنقاط.",
+    en: "Paste text or upload a file and get a structured bullet summary.",
+  },
   toolFlashcards: { ar: "بطاقات مراجعة", en: "Flashcards" },
-  toolFlashcardsBody: { ar: "حوّل مادتك إلى بطاقات سؤال وجواب للمراجعة السريعة.", en: "Turn your material into question-and-answer cards." },
+  toolFlashcardsBody: {
+    ar: "حوّل مادتك إلى بطاقات سؤال وجواب للمراجعة السريعة.",
+    en: "Turn your material into question-and-answer cards.",
+  },
   toolQuiz: { ar: "اختبار تجريبي", en: "Practice quiz" },
-  toolQuizBody: { ar: "أسئلة اختيار من متعدد مع الإجابات لتقيس فهمك.", en: "Multiple-choice questions with answers to test yourself." },
+  toolQuizBody: {
+    ar: "أسئلة اختيار من متعدد مع الإجابات لتقيس فهمك.",
+    en: "Multiple-choice questions with answers to test yourself.",
+  },
   toolExplain: { ar: "اشرح لي ببساطة", en: "Explain simply" },
-  toolExplainBody: { ar: "اشرح مفهوماً صعباً بلغة بسيطة مع أمثلة.", en: "Break a hard concept down with simple language and examples." },
+  toolExplainBody: {
+    ar: "اشرح مفهوماً صعباً بلغة بسيطة مع أمثلة.",
+    en: "Break a hard concept down with simple language and examples.",
+  },
   toolStudyPlan: { ar: "خطة مذاكرة", en: "Study plan" },
-  toolStudyPlanBody: { ar: "جدول مذاكرة مقسّم على الأيام حتى موعد الاختبار.", en: "A day-by-day schedule up to your exam date." },
+  toolStudyPlanBody: {
+    ar: "جدول مذاكرة مقسّم على الأيام حتى موعد الاختبار.",
+    en: "A day-by-day schedule up to your exam date.",
+  },
   pasteMaterial: { ar: "الصق المادة الدراسية هنا…", en: "Paste your study material here…" },
   orUploadDoc: { ar: "أو ارفع ملف PDF / Word", en: "Or upload a PDF / Word file" },
   run: { ar: "تشغيل", en: "Run" },
@@ -424,7 +507,10 @@ const dict = {
   copied: { ar: "تم النسخ", en: "Copied" },
   emptyInput: { ar: "أدخل نصاً أو ارفع ملفاً أولاً", en: "Add text or upload a file first" },
   // --- Flow chart interaction ---
-  clickNodeHint: { ar: "اضغط على أي مادة لإبراز مسبقاتها والمواد التي تفتحها.", en: "Click any course to highlight its prerequisites and what it unlocks." },
+  clickNodeHint: {
+    ar: "اضغط على أي مادة لإبراز مسبقاتها والمواد التي تفتحها.",
+    en: "Click any course to highlight its prerequisites and what it unlocks.",
+  },
   clearSelection: { ar: "إلغاء التحديد", en: "Clear selection" },
   // --- Grade calculator ---
   scoreLabel: { ar: "درجتك %", en: "Your score %" },
@@ -453,7 +539,10 @@ const dict = {
   newCreditsSummary: { ar: "ساعة جديدة قد تتفتح", en: "new credits could unlock" },
   // --- Calendar export ---
   exportIcs: { ar: "تصدير الجدول لتقويمك (iCal)", en: "Export schedule to your calendar (iCal)" },
-  icsExported: { ar: "تم تجهيز الملف — استورده في تطبيق التقويم عندك", en: "File ready — import it into your calendar app" },
+  icsExported: {
+    ar: "تم تجهيز الملف — استورده في تطبيق التقويم عندك",
+    en: "File ready — import it into your calendar app",
+  },
   // --- Reimport major sheet ---
   reimportTitle: { ar: "إعادة تحليل الميجر شيت", en: "Re-analyze major sheet" },
   reimportHint: {
@@ -463,8 +552,14 @@ const dict = {
   reimportUpload: { ar: "رفع نسخة محدّثة", en: "Upload updated sheet" },
   reimportNewCourses: { ar: "مواد جديدة", en: "New courses" },
   reimportChangedCourses: { ar: "مواد فيها فرق", en: "Courses with differences" },
-  reimportUnchanged: { ar: "مادة بدون أي تغيير (تم تجاهلها تلقائياً)", en: "courses with no changes (skipped automatically)" },
-  reimportNoDiff: { ar: "لا يوجد جديد — خطتك مطابقة تماماً للملف المرفوع.", en: "Nothing new — your plan already matches the uploaded file." },
+  reimportUnchanged: {
+    ar: "مادة بدون أي تغيير (تم تجاهلها تلقائياً)",
+    en: "courses with no changes (skipped automatically)",
+  },
+  reimportNoDiff: {
+    ar: "لا يوجد جديد — خطتك مطابقة تماماً للملف المرفوع.",
+    en: "Nothing new — your plan already matches the uploaded file.",
+  },
   reimportCreditsWas: { ar: "كانت", en: "was" },
   reimportLevelWas: { ar: "المستوى", en: "level" },
   reimportPrereqsWas: { ar: "المتطلبات", en: "prerequisites" },
@@ -478,7 +573,10 @@ const dict = {
     ar: "تفعيل هذا يوصّلك تذكيرات المهام والأحداث حتى لو التطبيق أو المتصفح مسكر تماماً.",
     en: "Turning this on delivers task and event reminders even when the app or browser is fully closed.",
   },
-  pushUnsupported: { ar: "متصفحك أو جهازك لا يدعم التنبيهات الحقيقية.", en: "Your browser or device doesn't support real push notifications." },
+  pushUnsupported: {
+    ar: "متصفحك أو جهازك لا يدعم التنبيهات الحقيقية.",
+    en: "Your browser or device doesn't support real push notifications.",
+  },
   pushEnable: { ar: "تفعيل التنبيهات", en: "Enable notifications" },
   pushDisable: { ar: "إيقاف التنبيهات", en: "Disable notifications" },
   pushActive: { ar: "مفعّلة على هذا الجهاز", en: "Active on this device" },
@@ -503,8 +601,14 @@ const dict = {
     ar: "إشعار قبل محاضراتك بساعة: وقت الخروج المثالي حسب الزحمة، الطقس، عدد المحاضرات، وأي اختبار اليوم.",
     en: "A notification an hour before your first class: ideal departure time based on traffic, weather, class count, and any exam today.",
   },
-  briefingNeedsLocation: { ar: "حدد موقع بيتك وجامعتك أول عشان تفعّل البريفنج.", en: "Set your home and university location first to enable the briefing." },
-  briefingNeedsPush: { ar: "فعّل التنبيهات الحقيقية أول عشان تفعّل البريفنج.", en: "Enable real push notifications first to enable the briefing." },
+  briefingNeedsLocation: {
+    ar: "حدد موقع بيتك وجامعتك أول عشان تفعّل البريفنج.",
+    en: "Set your home and university location first to enable the briefing.",
+  },
+  briefingNeedsPush: {
+    ar: "فعّل التنبيهات الحقيقية أول عشان تفعّل البريفنج.",
+    en: "Enable real push notifications first to enable the briefing.",
+  },
   homeLocation: { ar: "موقع البيت", en: "Home location" },
   universityLocation: { ar: "موقع الجامعة", en: "University location" },
   universityLocationHint: {
@@ -512,8 +616,14 @@ const dict = {
     en: "Open Google Maps, long-press your university's location, and paste the coordinates here.",
   },
   useMyLocation: { ar: "استخدم موقعي الحالي", en: "Use my current location" },
-  locationUnsupported: { ar: "متصفحك لا يدعم تحديد الموقع.", en: "Your browser doesn't support location." },
-  locationFailed: { ar: "تعذّر تحديد موقعك — تأكد من إعطاء الإذن.", en: "Couldn't get your location — make sure you've granted permission." },
+  locationUnsupported: {
+    ar: "متصفحك لا يدعم تحديد الموقع.",
+    en: "Your browser doesn't support location.",
+  },
+  locationFailed: {
+    ar: "تعذّر تحديد موقعك — تأكد من إعطاء الإذن.",
+    en: "Couldn't get your location — make sure you've granted permission.",
+  },
   notSet: { ar: "غير محدد", en: "Not set" },
   latitude: { ar: "خط العرض", en: "Latitude" },
   longitude: { ar: "خط الطول", en: "Longitude" },
@@ -529,15 +639,24 @@ const dict = {
   walking: { ar: "مشي", en: "Walking" },
   transit: { ar: "مواصلات عامة", en: "Transit" },
   bicycling: { ar: "دراجة", en: "Bicycling" },
-  briefingLeadMinutes: { ar: "إرسال البريفنج قبل المحاضرة بـ(دقيقة)", en: "Send briefing this many minutes before class" },
+  briefingLeadMinutes: {
+    ar: "إرسال البريفنج قبل المحاضرة بـ(دقيقة)",
+    en: "Send briefing this many minutes before class",
+  },
   briefingBufferMinutes: { ar: "هامش أمان الوصول (دقيقة)", en: "Arrival safety buffer (minutes)" },
   expectedEndDate: { ar: "تاريخ النهاية المتوقع", en: "Expected end date" },
   expectedEndDateHint: {
     ar: "يحدد آخر يوم تتكرر فيه محاضراتك بالتقويم — عدّله لاحقاً عند إنهاء الفصل لو تغيّر التاريخ الفعلي.",
     en: "Bounds how far your recurring class times repeat on the calendar — you can adjust it later when you actually end the term.",
   },
-  fileTooLarge: { ar: "الملف كبير جداً (الحد الأقصى ~6.5 ميغا) — جرّب تصغّره أو ترفع نسخة أقل صفحات.", en: "File is too large (max ~6.5MB) — try compressing it or uploading fewer pages." },
-  isRetake: { ar: "هذي إعادة لمادة سبق دراستها", en: "This is a retake of a course I've taken before" },
+  fileTooLarge: {
+    ar: "الملف كبير جداً (الحد الأقصى ~6.5 ميغا) — جرّب تصغّره أو ترفع نسخة أقل صفحات.",
+    en: "File is too large (max ~6.5MB) — try compressing it or uploading fewer pages.",
+  },
+  isRetake: {
+    ar: "هذي إعادة لمادة سبق دراستها",
+    en: "This is a retake of a course I've taken before",
+  },
   previousAttempt: { ar: "المحاولة السابقة", en: "Previous attempt" },
   previousAttemptHint: {
     ar: "المحاولة القديمة تُستثنى تلقائياً من حساب المعدل التراكمي — يُحسب فقط آخر محاولة.",
@@ -550,8 +669,8 @@ const dict = {
   discardDraft: { ar: "تجاهل وابدأ من جديد", en: "Discard and start over" },
   unresolvedPrereqsTitle: { ar: "متطلبات ما قدرنا نطابقها", en: "Prerequisites we couldn't match" },
   unresolvedPrereqsHint: {
-    ar: "الأكواد هذي مذكورة كمتطلب لمادة، لكن ما لقينا مادة بنفس الكود بالقائمة — المادة المرتبطة بيها بتضل \"مقفلة\" لين تصححها يدوياً من صفحة المادة بعد الحفظ.",
-    en: "These codes are listed as a prerequisite for some course, but no course with that code was found in the list — the course depending on it will stay \"locked\" until you fix it manually from the course page after saving.",
+    ar: 'الأكواد هذي مذكورة كمتطلب لمادة، لكن ما لقينا مادة بنفس الكود بالقائمة — المادة المرتبطة بيها بتضل "مقفلة" لين تصححها يدوياً من صفحة المادة بعد الحفظ.',
+    en: 'These codes are listed as a prerequisite for some course, but no course with that code was found in the list — the course depending on it will stay "locked" until you fix it manually from the course page after saving.',
   },
   flipCard: { ar: "اضغط على البطاقة لقلبها", en: "Tap the card to flip it" },
   quizScore: { ar: "نتيجتك", en: "Your score" },
@@ -574,10 +693,16 @@ const dict = {
     ar: "جرّب درجات مختلفة وشوف تأثيرها على معدلك قبل ما تصير رسمية — هذا محاكاة فقط، ولا يُحفظ في ملفك.",
     en: "Try different grades and see the effect on your GPA before they're final — this is just a simulation, nothing is saved to your profile.",
   },
-  currentGpaLabel: { ar: "معدلك الحالي (المواد المكتملة)", en: "Your current GPA (completed courses)" },
+  currentGpaLabel: {
+    ar: "معدلك الحالي (المواد المكتملة)",
+    en: "Your current GPA (completed courses)",
+  },
   simulateSection: { ar: "محاكاة درجات محددة", en: "Simulate specific grades" },
   projectedGpaLabel: { ar: "المعدل المتوقع", en: "Projected GPA" },
-  noRemainingCourses: { ar: "لا توجد مواد حالية أو مستقبلية لمحاكاتها.", en: "No current or future courses to simulate." },
+  noRemainingCourses: {
+    ar: "لا توجد مواد حالية أو مستقبلية لمحاكاتها.",
+    en: "No current or future courses to simulate.",
+  },
   noCompletedCourses: {
     ar: "أضف درجات موادك المكتملة أولاً (من «إنهاء الفصل» أو تعديل المادة) لتفعيل الحاسبة.",
     en: "Add grades for your completed courses first (via “End term” or editing a course) to use this calculator.",
@@ -585,7 +710,10 @@ const dict = {
   targetSection: { ar: "الوصول لهدف معيّن", en: "Reach a target GPA" },
   targetGpaLabel: { ar: "المعدل المستهدف", en: "Target GPA" },
   remainingCreditsLabel: { ar: "الساعات المتبقية", en: "Remaining credits" },
-  requiredAverageLabel: { ar: "المعدل المطلوب في الساعات المتبقية", en: "Required average in remaining credits" },
+  requiredAverageLabel: {
+    ar: "المعدل المطلوب في الساعات المتبقية",
+    en: "Required average in remaining credits",
+  },
   targetImpossible: {
     ar: "غير ممكن رياضياً بهذا العدد من الساعات — قلّل الهدف أو زد الساعات المتبقية.",
     en: "Not mathematically possible with this many credits — lower the target or add more remaining credits.",
@@ -597,6 +725,54 @@ const dict = {
   // --- Plan export / print ---
   exportPlan: { ar: "تصدير الخطة", en: "Export plan" },
   planPrintTitle: { ar: "الخطة الدراسية", en: "Academic plan" },
+  transcriptTitle: { ar: "كشف الدرجات", en: "Transcript" },
+  basicInfoTitle: { ar: "المعلومات الأساسية", en: "Basic information" },
+  achievementsTitle: { ar: "الإنجازات والشارات", en: "Achievements" },
+  achievementsHint: {
+    ar: "شارات تُفتح تلقائيًا مع تقدمك الدراسي.",
+    en: "Badges that unlock automatically as you progress.",
+  },
+  achievementsUnlockedOf: { ar: "شارة مفتوحة", en: "badges unlocked" },
+  toggleSound: { ar: "الصوت", en: "Sound" },
+  ach_firstCourse_title: { ar: "أول خطوة", en: "First step" },
+  ach_firstCourse_desc: { ar: "أنهيت أول مادة لك.", en: "You completed your first course." },
+  ach_firstTerm_title: { ar: "نهاية الفصل", en: "Term complete" },
+  ach_firstTerm_desc: { ar: "أنهيت أول فصل دراسي.", en: "You finished your first term." },
+  ach_credits30_title: { ar: "٣٠ وحدة", en: "30 credits" },
+  ach_credits30_desc: { ar: "اجتزت ٣٠ وحدة دراسية.", en: "You've passed 30 credit hours." },
+  ach_credits60_title: { ar: "منتصف الطريق", en: "Halfway" },
+  ach_credits60_desc: { ar: "اجتزت ٦٠ وحدة دراسية.", en: "You've passed 60 credit hours." },
+  ach_credits96_title: { ar: "على أعتاب الكابستون", en: "Capstone-ready" },
+  ach_credits96_desc: {
+    ar: "اجتزت ٩٦ وحدة — فتحت كابستون ١.",
+    en: "You've passed 96 credit hours — Capstone 1 is unlocked.",
+  },
+  ach_highGpa_title: { ar: "تفوّق", en: "Dean's list" },
+  ach_highGpa_desc: {
+    ar: "معدلك التراكمي ٣.٥ فأعلى.",
+    en: "Your cumulative GPA is 3.5 or higher.",
+  },
+  ach_streak7_title: { ar: "أسبوع متواصل", en: "7-day streak" },
+  ach_streak7_desc: {
+    ar: "سبعة أيام متتالية من تسجيل المذاكرة.",
+    en: "7 days in a row logging study time.",
+  },
+  ach_streak30_title: { ar: "شهر متواصل", en: "30-day streak" },
+  ach_streak30_desc: {
+    ar: "ثلاثون يوم متتالي من تسجيل المذاكرة.",
+    en: "30 days in a row logging study time.",
+  },
+  exportTranscript: { ar: "كشف الدرجات", en: "Transcript" },
+  transcriptEmpty: {
+    ar: "ما عندك مواد مكتملة بعد — أنهِ فصل عشان يظهر هنا.",
+    en: "No completed courses yet — finish a term to see it here.",
+  },
+  cgpa: { ar: "المعدل التراكمي", en: "CGPA" },
+  termsCompleted: { ar: "الفصول المكتملة", en: "Terms completed" },
+  accumPoint: { ar: "مجموع النقاط التراكمي", en: "Accum. points" },
+  semCh: { ar: "وحدات الفصل", en: "Sem. CH" },
+  accumCh: { ar: "الوحدات التراكمية", en: "Accum. CH" },
+  noTerm: { ar: "بدون فصل", en: "No term" },
   generatedOn: { ar: "أُنشئت بتاريخ", en: "Generated on" },
   printOrSave: { ar: "طباعة / حفظ كـPDF", en: "Print / Save as PDF" },
   backToProfile: { ar: "رجوع", en: "Back" },

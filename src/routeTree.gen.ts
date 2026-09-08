@@ -23,6 +23,7 @@ import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authent
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
 import { Route as AuthenticatedTermCalendarRouteImport } from './routes/_authenticated/term-calendar'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedTranscriptRouteImport } from './routes/_authenticated/transcript'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -96,6 +97,11 @@ const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTranscriptRoute = AuthenticatedTranscriptRouteImport.update({
+  id: '/transcript',
+  path: '/transcript',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCoursesCourseIdRoute =
   AuthenticatedCoursesCourseIdRouteImport.update({
     id: '/courses/$courseId',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/transcript': typeof AuthenticatedTranscriptRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/transcript': typeof AuthenticatedTranscriptRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
   '/_authenticated/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
+  '/_authenticated/transcript': typeof AuthenticatedTranscriptRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRouteTypes {
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/term-calendar'
     | '/tools'
+    | '/transcript'
     | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/term-calendar'
     | '/tools'
+    | '/transcript'
     | '/courses/$courseId'
   id:
     | '__root__'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/_authenticated/simulator'
     | '/_authenticated/term-calendar'
     | '/_authenticated/tools'
+    | '/_authenticated/transcript'
     | '/_authenticated/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/transcript': {
+      id: '/_authenticated/transcript'
+      path: '/transcript'
+      fullPath: '/transcript'
+      preLoaderRoute: typeof AuthenticatedTranscriptRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/courses/$courseId': {
       id: '/_authenticated/courses/$courseId'
       path: '/courses/$courseId'
@@ -333,6 +352,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
   AuthenticatedTermCalendarRoute: typeof AuthenticatedTermCalendarRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
+  AuthenticatedTranscriptRoute: typeof AuthenticatedTranscriptRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
 }
 
@@ -348,6 +368,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
   AuthenticatedTermCalendarRoute: AuthenticatedTermCalendarRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
+  AuthenticatedTranscriptRoute: AuthenticatedTranscriptRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
 }
 

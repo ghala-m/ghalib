@@ -1,9 +1,30 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookMarked, CalendarDays, CalendarRange, Calculator, CheckCircle2, ChevronDown, FlaskConical, LogOut, Menu, MessageSquareHeart, ScrollText, Search, Sparkles, UserRound, Wrench } from "lucide-react";
+import {
+  BookMarked,
+  CalendarDays,
+  CalendarRange,
+  Calculator,
+  CheckCircle2,
+  ChevronDown,
+  FlaskConical,
+  LogOut,
+  Menu,
+  MessageSquareHeart,
+  ScrollText,
+  Search,
+  Sparkles,
+  UserRound,
+  Wrench,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { blockedByAlternative, coursesQuery, matchesCourse, type CourseStatus } from "@/lib/queries";
+import {
+  blockedByAlternative,
+  coursesQuery,
+  matchesCourse,
+  type CourseStatus,
+} from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,15 +83,17 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
   const { t } = useI18n();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [collapsed, setCollapsed] = useState<Record<CourseStatus, boolean>>({ current: false, completed: false, future: true });
+  const [collapsed, setCollapsed] = useState<Record<CourseStatus, boolean>>({
+    current: false,
+    completed: false,
+    future: true,
+  });
   const { data: courses = [] } = useQuery(coursesQuery());
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return courses
-      .filter((c) => !c.archived)
-      .filter((c) => matchesCourse(c, q));
+    return courses.filter((c) => !c.archived).filter((c) => matchesCourse(c, q));
   }, [courses, search]);
 
   async function signOut() {
@@ -92,18 +115,63 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
 
       <nav className="space-y-4 px-3">
         <div className="space-y-1">
-          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">{t("navAcademic")}</p>
-          <SideLink to="/dashboard" active={pathname === "/dashboard"} icon={Sparkles} label={t("dashboard")} onNavigate={onNavigate} />
-          <SideLink to="/calendar" active={pathname === "/calendar"} icon={CalendarDays} label={t("calendar")} onNavigate={onNavigate} />
-          <SideLink to="/term-calendar" active={pathname === "/term-calendar"} icon={CalendarRange} label={t("termCalendarNav")} onNavigate={onNavigate} />
-          <SideLink to="/profile" active={pathname === "/profile"} icon={UserRound} label={t("profile")} onNavigate={onNavigate} />
+          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">
+            {t("navAcademic")}
+          </p>
+          <SideLink
+            to="/dashboard"
+            active={pathname === "/dashboard"}
+            icon={Sparkles}
+            label={t("dashboard")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/calendar"
+            active={pathname === "/calendar"}
+            icon={CalendarDays}
+            label={t("calendar")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/profile"
+            active={pathname === "/profile"}
+            icon={UserRound}
+            label={t("profile")}
+            onNavigate={onNavigate}
+          />
         </div>
         <div className="space-y-1">
-          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">{t("navTools")}</p>
-          <SideLink to="/advisor" active={pathname === "/advisor"} icon={MessageSquareHeart} label={t("advisor")} onNavigate={onNavigate} />
-          <SideLink to="/tools" active={pathname === "/tools"} icon={Wrench} label={t("studyTools")} onNavigate={onNavigate} />
-          <SideLink to="/gpa-planner" active={pathname === "/gpa-planner"} icon={Calculator} label={t("gpaPlanner")} onNavigate={onNavigate} />
-          <SideLink to="/simulator" active={pathname === "/simulator"} icon={FlaskConical} label={t("simulator")} onNavigate={onNavigate} />
+          <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">
+            {t("navTools")}
+          </p>
+          <SideLink
+            to="/advisor"
+            active={pathname === "/advisor"}
+            icon={MessageSquareHeart}
+            label={t("advisor")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/tools"
+            active={pathname === "/tools"}
+            icon={Wrench}
+            label={t("studyTools")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/gpa-planner"
+            active={pathname === "/gpa-planner"}
+            icon={Calculator}
+            label={t("gpaPlanner")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/simulator"
+            active={pathname === "/simulator"}
+            icon={FlaskConical}
+            label={t("simulator")}
+            onNavigate={onNavigate}
+          />
         </div>
       </nav>
 
@@ -140,7 +208,9 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
                 {t(status)}
                 <span className="ms-auto flex items-center gap-1.5">
                   {list.length}
-                  <ChevronDown className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")} />
+                  <ChevronDown
+                    className={cn("size-3.5 transition-transform", isCollapsed && "-rotate-90")}
+                  />
                 </span>
               </button>
               {!isCollapsed && (
@@ -154,11 +224,14 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
                         className={cn(
                           "block truncate rounded-lg px-3 py-2 text-sm transition-colors hover:bg-sidebar-accent",
                           pathname === `/courses/${c.id}` && "bg-sidebar-accent font-medium",
-                          blockedByAlternative(c, courses) && "text-sidebar-foreground/45 line-through",
+                          blockedByAlternative(c, courses) &&
+                            "text-sidebar-foreground/45 line-through",
                         )}
                         title={blockedByAlternative(c, courses) ? t("blockedByAlt") : undefined}
                       >
-                        {c.code ? <span className="text-sidebar-foreground/60">{c.code} · </span> : null}
+                        {c.code ? (
+                          <span className="text-sidebar-foreground/60">{c.code} · </span>
+                        ) : null}
                         {c.name}
                         {c.is_retake ? (
                           <span className="ms-2 rounded bg-sidebar-primary/20 px-1.5 py-0.5 text-[10px] text-sidebar-primary">
@@ -193,7 +266,8 @@ function SideLink({
   label,
   onNavigate,
 }: {
-  to: "/dashboard" | "/profile" | "/calendar" | "/term-calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
+  to:
+    "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
   active: boolean;
   icon: typeof BookMarked;
   label: string;

@@ -21,6 +21,9 @@ function SimulatorPage() {
   const { data: courses = [] } = useQuery(coursesQuery());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [maxCredits, setMaxCredits] = useState<string>("");
+  // Remembers past "suggest" results (this session only) so repeated clicks favor a fresh
+  // combination instead of repeating the same one.
+  const [suggestionHistory, setSuggestionHistory] = useState<Set<string>[]>([]);
 
   // Candidates: future courses registerable today (same "available" definition as the flow chart).
   const candidates = useMemo(() => {
@@ -53,8 +56,9 @@ function SimulatorPage() {
 
   const suggest = () => {
     const limit = maxCredits.trim() === "" ? null : Math.max(0, Number(maxCredits) || 0);
-    const { picked } = bestCombination(courses, candidates, limit);
+    const { picked } = bestCombination(courses, candidates, limit, suggestionHistory);
     setSelected(new Set(picked.map((p) => p.id)));
+    setSuggestionHistory((prev) => [...prev, new Set(picked.map((p) => p.id))].slice(-10));
   };
 
   const selectedCourses = candidates.filter((c) => selected.has(c.id));
@@ -114,14 +118,23 @@ function SimulatorPage() {
                     aria-pressed={active}
                     className={cn(
                       "flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors",
-                      active ? "border-accent bg-accent/10 font-medium" : "border-border hover:bg-muted/50",
+                      active
+                        ? "border-accent bg-accent/10 font-medium"
+                        : "border-border hover:bg-muted/50",
                     )}
                   >
-                    <i className="size-2 rounded-full" style={{ background: CATEGORY_META[c.category].color }} />
+                    <i
+                      className="size-2 rounded-full"
+                      style={{ background: CATEGORY_META[c.category].color }}
+                    />
                     <span className="max-w-48 truncate">{c.name}</span>
-                    {c.credits ? <span className="text-xs text-muted-foreground">{c.credits}</span> : null}
+                    {c.credits ? (
+                      <span className="text-xs text-muted-foreground">{c.credits}</span>
+                    ) : null}
                     {!active && gain > 0 ? (
-                      <span className="rounded-full bg-accent/15 px-1.5 text-xs text-accent">+{gain}</span>
+                      <span className="rounded-full bg-accent/15 px-1.5 text-xs text-accent">
+                        +{gain}
+                      </span>
                     ) : null}
                     {active ? <Check className="size-3.5 text-accent" /> : null}
                   </button>
@@ -148,9 +161,17 @@ function SimulatorPage() {
         ) : (
           <ul className="mt-3 flex flex-wrap gap-2">
             {selectedCourses.map((c) => (
-              <li key={c.id} className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-sm">
+              <li
+                key={c.id}
+                className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1 text-sm"
+              >
                 <span className="max-w-40 truncate">{c.code || c.name}</span>
-                <button type="button" onClick={() => toggle(c.id)} aria-label={c.name} className="text-muted-foreground hover:text-foreground">
+                <button
+                  type="button"
+                  onClick={() => toggle(c.id)}
+                  aria-label={c.name}
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <X className="size-3.5" />
                 </button>
               </li>
@@ -178,7 +199,10 @@ function SimulatorPage() {
                   params={{ courseId: c.id }}
                   className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2.5 text-sm transition-colors hover:bg-muted/50"
                 >
-                  <i className="size-2.5 shrink-0 rounded-full" style={{ background: CATEGORY_META[c.category].color }} />
+                  <i
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ background: CATEGORY_META[c.category].color }}
+                  />
                   <span className="min-w-0 flex-1 truncate">{c.name}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{c.code || "—"}</span>
                 </Link>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Calculator, TrendingDown, TrendingUp } from "lucide-react";
@@ -6,7 +6,13 @@ import { coursesQuery } from "@/lib/queries";
 import { completedGpa, nearestGradeAtLeast, requiredAverage, simulateGpa } from "@/lib/gpa";
 import { GRADE_SCALE } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
@@ -16,7 +22,11 @@ export const Route = createFileRoute("/_authenticated/gpa-planner")({
   head: () => ({
     meta: [
       { title: "GPA Planner — Ghalib" },
-      { name: "description", content: "Simulate hypothetical grades and see their effect on your overall GPA before they're final." },
+      {
+        name: "description",
+        content:
+          "Simulate hypothetical grades and see their effect on your overall GPA before they're final.",
+      },
     ],
   }),
   component: GpaPlannerPage,
@@ -26,22 +36,11 @@ function GpaPlannerPage() {
   const { t } = useI18n();
   const { data: courses = [] } = useQuery(coursesQuery());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
-  // Persisted across page navigation — re-deriving a target every visit was the exact
-  // frustration being fixed here, since this is meant to be a "keep checking in on my goal"
-  // tool, not a one-shot calculator.
-  const [targetGpa, setTargetGpa] = useState(() => (typeof window !== "undefined" && localStorage.getItem("ghalib.targetGpa")) || "3.5");
-  const [remainingCredits, setRemainingCredits] = useState<string | null>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("ghalib.targetRemainingCredits") : null,
-  );
-
-  useEffect(() => {
-    localStorage.setItem("ghalib.targetGpa", targetGpa);
-  }, [targetGpa]);
-
-  useEffect(() => {
-    if (remainingCredits === null) localStorage.removeItem("ghalib.targetRemainingCredits");
-    else localStorage.setItem("ghalib.targetRemainingCredits", remainingCredits);
-  }, [remainingCredits]);
+  // Deliberately NOT persisted (in state or storage) across navigation — every time this page
+  // is left and reopened it should start from a clean, unfilled default rather than remembering
+  // the last target that was typed in.
+  const [targetGpa, setTargetGpa] = useState("3.5");
+  const [remainingCredits, setRemainingCredits] = useState<string | null>(null);
 
   const active = courses.filter((c) => !c.archived);
   const completed = active.filter((c) => c.status === "completed");
@@ -50,7 +49,10 @@ function GpaPlannerPage() {
   const base = useMemo(() => completedGpa(completed), [completed]);
   // Only *this term's* courses are simulated — future-plan courses don't have real grades to
   // guess at yet, and including them made the projection noisy and less actionable.
-  const projected = useMemo(() => simulateGpa(base, currentTerm, overrides), [base, currentTerm, overrides]);
+  const projected = useMemo(
+    () => simulateGpa(base, currentTerm, overrides),
+    [base, currentTerm, overrides],
+  );
 
   const defaultRemaining = currentTerm.reduce((s, c) => s + (c.credits ?? 3), 0);
   const remaining = remainingCredits === null ? defaultRemaining : Number(remainingCredits) || 0;
@@ -78,14 +80,18 @@ function GpaPlannerPage() {
         </header>
 
         {base.credits === 0 ? (
-          <p className="panel p-8 text-center text-sm text-muted-foreground">{t("noCompletedCourses")}</p>
+          <p className="panel p-8 text-center text-sm text-muted-foreground">
+            {t("noCompletedCourses")}
+          </p>
         ) : (
           <>
             {/* Current vs projected summary */}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="panel p-5">
                 <p className="text-xs text-muted-foreground">{t("currentGpaLabel")}</p>
-                <p className="mt-2 text-3xl font-bold tabular-nums">{base.gpa?.toFixed(2) ?? "—"}</p>
+                <p className="mt-2 text-3xl font-bold tabular-nums">
+                  {base.gpa?.toFixed(2) ?? "—"}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {base.credits} {t("credits")}
                 </p>
@@ -93,14 +99,21 @@ function GpaPlannerPage() {
               <div className="panel p-5">
                 <p className="text-xs text-muted-foreground">{t("projectedGpaLabel")}</p>
                 <div className="mt-2 flex items-center gap-2">
-                  <p className="text-3xl font-bold tabular-nums text-accent">{projected.gpa?.toFixed(2) ?? "—"}</p>
+                  <p className="text-3xl font-bold tabular-nums text-accent">
+                    {projected.gpa?.toFixed(2) ?? "—"}
+                  </p>
                   {delta !== null && Math.abs(delta) >= 0.005 && (
                     <span
                       className={
-                        "flex items-center gap-0.5 text-sm font-medium " + (delta > 0 ? "text-cat-general" : "text-destructive")
+                        "flex items-center gap-0.5 text-sm font-medium " +
+                        (delta > 0 ? "text-cat-general" : "text-destructive")
                       }
                     >
-                      {delta > 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+                      {delta > 0 ? (
+                        <TrendingUp className="size-4" />
+                      ) : (
+                        <TrendingDown className="size-4" />
+                      )}
                       {delta > 0 ? "+" : ""}
                       {delta.toFixed(2)}
                     </span>
@@ -164,7 +177,14 @@ function GpaPlannerPage() {
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>{t("targetGpaLabel")}</Label>
-                  <Input type="number" min={0} max={4} step="0.01" value={targetGpa} onChange={(e) => setTargetGpa(e.target.value)} />
+                  <Input
+                    type="number"
+                    min={0}
+                    max={4}
+                    step="0.01"
+                    value={targetGpa}
+                    onChange={(e) => setTargetGpa(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>{t("remainingCreditsLabel")}</Label>
@@ -188,7 +208,10 @@ function GpaPlannerPage() {
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="text-sm font-medium">{t("requiredAverageLabel")}</p>
                     <p className="text-2xl font-bold tabular-nums text-accent">
-                      {required.toFixed(2)} {requiredLetter ? <span className="text-base text-muted-foreground">({requiredLetter}+)</span> : null}
+                      {required.toFixed(2)}{" "}
+                      {requiredLetter ? (
+                        <span className="text-base text-muted-foreground">({requiredLetter}+)</span>
+                      ) : null}
                     </p>
                   </div>
                 )}

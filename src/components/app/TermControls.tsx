@@ -2,7 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CalendarPlus, CalendarRange, FlagOff, Pencil, Plus, Search, Sparkles, Trash2, Upload, X } from "lucide-react";
+import {
+  CalendarPlus,
+  CalendarRange,
+  FlagOff,
+  Pencil,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +40,13 @@ import {
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, profileQuery, termCalendarEventsQuery, termsQuery, type TermRow } from "@/lib/queries";
+import {
+  coursesQuery,
+  profileQuery,
+  termCalendarEventsQuery,
+  termsQuery,
+  type TermRow,
+} from "@/lib/queries";
 import { GRADE_SCALE, pointsFor } from "@/lib/plan";
 import { completedGpa } from "@/lib/gpa";
 import { parseAcademicCalendar, type AcademicCalendar } from "@/lib/academic-calendar.functions";
@@ -398,11 +415,18 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [end, setEnd] = useState(new Date().toISOString().slice(0, 10));
   const [grades, setGrades] = useState<Record<string, string>>({});
+  // When the computed term GPA lands exactly on 0.0, we don't know yet whether that's a real
+  // 0.0 (should count toward the cumulative GPA with full credit) or a zero-GPA "prep"/foundation
+  // term that shouldn't carry credit hours at all — so we ask before saving.
+  const [zeroGpaChoice, setZeroGpaChoice] = useState<"regular" | "prep" | null>(null);
 
   const current = courses.filter((c) => c.status === "current" && !c.archived);
 
   useEffect(() => {
-    if (open) setGrades(Object.fromEntries(current.map((c) => [c.id, c.final_grade ?? ""])));
+    if (open) {
+      setGrades(Object.fromEntries(current.map((c) => [c.id, c.final_grade ?? ""])));
+      setZeroGpaChoice(null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -419,10 +443,15 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
     return cr ? { gpa: pts / cr, credits: cr } : null;
   })();
 
+  const isZeroGpa = termGpa !== null && termGpa.gpa === 0;
+
   const run = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
       const termName = profile?.current_term ?? null;
+      // A "prep" term (no credit hours) still records each course's final grade for the
+      // record, but doesn't count its credits/GPA toward the term or cumulative totals.
+      const treatAsPrep = isZeroGpa && zeroGpaChoice === "prep";
       for (const c of current) {
         const grade = grades[c.id]?.trim() || null;
         await supabase
@@ -440,8 +469,8 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
         .update({
           is_active: false,
           end_date: end || null,
-          gpa: termGpa?.gpa ?? null,
-          credits: termGpa?.credits ?? null,
+          gpa: treatAsPrep ? null : (termGpa?.gpa ?? null),
+          credits: treatAsPrep ? 0 : (termGpa?.credits ?? null),
         })
         .eq("id", termId);
 
@@ -449,12 +478,12 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
       const merged = [...completed, ...current].map((c) =>
         current.some((x) => x.id === c.id) ? { ...c, final_grade: grades[c.id] || null } : c,
       );
-      const totals = completedGpa(merged);
+      const totals = treatAsPrep ? completedGpa(completed) : completedGpa(merged);
       await supabase
         .from("profiles")
         .update({
           overall_gpa: totals.gpa !== null ? Number(totals.gpa.toFixed(2)) : null,
-          semester_gpa: termGpa ? Number(termGpa.gpa.toFixed(2)) : null,
+          semester_gpa: treatAsPrep ? null : termGpa ? Number(termGpa.gpa.toFixed(2)) : null,
           total_credits: totals.credits,
           term_number: (profile?.term_number ?? 1) + 1,
         })
@@ -468,6 +497,11 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
     onError: (e: Error) =>
       toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
+
+  function handleConfirm() {
+    if (isZeroGpa && zeroGpaChoice === null) return; // must answer the prep/regular question first
+    run.mutate();
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -520,12 +554,38 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
               {t("termGpa")}: <strong className="tabular-nums">{termGpa.gpa.toFixed(2)}</strong>
             </p>
           ) : null}
+          {isZeroGpa ? (
+            <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+              <p className="text-sm font-medium">{t("zeroGpaQuestion")}</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={zeroGpaChoice === "prep" ? "default" : "outline"}
+                  onClick={() => setZeroGpaChoice("prep")}
+                >
+                  {t("zeroGpaPrep")}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={zeroGpaChoice === "regular" ? "default" : "outline"}
+                  onClick={() => setZeroGpaChoice("regular")}
+                >
+                  {t("zeroGpaRegular")}
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <Button disabled={run.isPending} onClick={() => run.mutate()}>
+          <Button
+            disabled={run.isPending || (isZeroGpa && zeroGpaChoice === null)}
+            onClick={handleConfirm}
+          >
             {t("endTerm")}
           </Button>
         </DialogFooter>
@@ -574,7 +634,9 @@ function EditTermDialog({ term, onDone }: { term: TermRow; onDone: () => void })
   };
 
   const termCourses = courses.filter((c) => c.status === "current" && !c.archived);
-  const otherCourses = courses.filter((c) => !c.archived && c.status !== "current" && c.status !== "completed");
+  const otherCourses = courses.filter(
+    (c) => !c.archived && c.status !== "current" && c.status !== "completed",
+  );
 
   const saveDetails = useMutation({
     mutationFn: async () => {
@@ -597,7 +659,13 @@ function EditTermDialog({ term, onDone }: { term: TermRow; onDone: () => void })
         .eq("id", user.id);
       // keep the term label on its courses in sync
       if (termCourses.length)
-        await supabase.from("courses").update({ term: termName }).in("id", termCourses.map((c) => c.id));
+        await supabase
+          .from("courses")
+          .update({ term: termName })
+          .in(
+            "id",
+            termCourses.map((c) => c.id),
+          );
     },
     onSuccess: () => {
       refresh();
@@ -694,7 +762,12 @@ function EditTermDialog({ term, onDone }: { term: TermRow; onDone: () => void })
             </div>
             <div className="space-y-1.5">
               <Label>{t("termNumber")}</Label>
-              <Input type="number" min={1} value={number} onChange={(e) => setNumber(e.target.value)} />
+              <Input
+                type="number"
+                min={1}
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label>{t("startDate")}</Label>

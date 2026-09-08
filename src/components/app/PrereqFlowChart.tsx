@@ -13,6 +13,7 @@ const GAP_X = 90;
 const GAP_Y = 22;
 const MIN_SCALE = 0.4;
 const MAX_SCALE = 1.5;
+const clampScale = (v: number) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, v));
 
 type Placed = GraphNode & { x: number; y: number };
 
@@ -58,10 +59,22 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
     };
   }, [courses]);
 
-  // Wide plans (many prerequisite levels) start zoomed out enough to see the whole shape at a
-  // glance, instead of opening already cut off — the original complaint this whole feature fixes.
-  const [scale, setScale] = useState(() => (width > 900 ? Math.max(MIN_SCALE, 900 / width) : 1));
+  // Always starts at 100% by default. If the user manually zooms in/out, that choice is
+  // remembered (per browser) and reused the next time the chart is opened — until they change
+  // it again or hit "reset zoom", which puts it back to the 100% default.
+  const [scale, setScaleState] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const saved = Number(localStorage.getItem("ghalib.prereqZoom"));
+    return Number.isFinite(saved) && saved > 0 ? clampScale(saved) : 1;
+  });
   const clamp = (v: number) => Math.min(MAX_SCALE, Math.max(MIN_SCALE, v));
+  const setScale = (updater: number | ((prev: number) => number)) => {
+    setScaleState((prev) => {
+      const next = clamp(typeof updater === "function" ? updater(prev) : updater);
+      if (typeof window !== "undefined") localStorage.setItem("ghalib.prereqZoom", String(next));
+      return next;
+    });
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     const el = scrollRef.current;
@@ -81,7 +94,9 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
   };
 
   if (!placed.length) {
-    return <p className="panel-glass p-8 text-center text-sm text-muted-foreground">{t("noPlanYet")}</p>;
+    return (
+      <p className="panel-glass p-8 text-center text-sm text-muted-foreground">{t("noPlanYet")}</p>
+    );
   }
 
   return (
@@ -93,14 +108,38 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1" dir="ltr">
-            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomOut")} onClick={() => setScale((s) => clamp(s - 0.15))}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-7"
+              aria-label={t("zoomOut")}
+              onClick={() => setScale((s) => clamp(s - 0.15))}
+            >
               <Minus className="size-3.5" />
             </Button>
-            <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">{Math.round(scale * 100)}%</span>
-            <Button variant="outline" size="icon" className="size-7" aria-label={t("zoomIn")} onClick={() => setScale((s) => clamp(s + 0.15))}>
+            <span className="w-10 text-center text-xs tabular-nums text-muted-foreground">
+              {Math.round(scale * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-7"
+              aria-label={t("zoomIn")}
+              onClick={() => setScale((s) => clamp(s + 0.15))}
+            >
               <Plus className="size-3.5" />
             </Button>
-            <Button variant="outline" size="icon" className="size-7" title={t("resetZoom")} aria-label={t("resetZoom")} onClick={() => setScale(1)}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-7"
+              title={t("resetZoom")}
+              aria-label={t("resetZoom")}
+              onClick={() => {
+                if (typeof window !== "undefined") localStorage.removeItem("ghalib.prereqZoom");
+                setScale(1);
+              }}
+            >
               <Maximize2 className="size-3.5" />
             </Button>
           </div>
@@ -124,12 +163,19 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
         onPointerUp={stopDrag}
         onPointerLeave={stopDrag}
       >
-        <div className="relative" style={{ width: width * scale, height: height * scale, minWidth: "100%" }}>
+        <div
+          className="relative"
+          style={{ width: width * scale, height: height * scale, minWidth: "100%" }}
+        >
           <div style={{ width, height, transform: `scale(${scale})`, transformOrigin: "0 0" }}>
             <svg className="pointer-events-none absolute inset-0" width={width} height={height}>
               <defs>
                 <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                  <path d="M0,0 L8,4 L0,8 z" fill="currentColor" className="text-muted-foreground/60" />
+                  <path
+                    d="M0,0 L8,4 L0,8 z"
+                    fill="currentColor"
+                    className="text-muted-foreground/60"
+                  />
                 </marker>
               </defs>
               {edges.map(({ from, to }, i) => {

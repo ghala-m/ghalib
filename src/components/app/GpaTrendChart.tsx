@@ -1,9 +1,19 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Link } from "@tanstack/react-router";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { TrendingUp } from "lucide-react";
 import { termsQuery } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 
 export function GpaTrendChart() {
   const { t } = useI18n();
@@ -18,6 +28,10 @@ export function GpaTrendChart() {
     [terms],
   );
 
+  // More than two terms exist, but not enough of them have a recorded GPA to plot a trend —
+  // that's a data gap worth calling out, not just a quiet "not enough data yet".
+  const hasMissingData = terms.length > 2 && data.length < 2;
+
   return (
     <section className="panel p-5">
       <h2 className="flex items-center gap-2 font-semibold">
@@ -25,14 +39,27 @@ export function GpaTrendChart() {
         {t("gpaTrend")}
       </h2>
       {data.length < 2 ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t("gpaTrendEmpty")}</p>
+        <div className="mt-3">
+          <p className="text-sm text-muted-foreground">
+            {hasMissingData ? t("gpaTrendMissingData") : t("gpaTrendEmpty")}
+          </p>
+          {hasMissingData ? (
+            <Button size="sm" variant="outline" className="mt-3" asChild>
+              <Link to="/dashboard">{t("gpaTrendAddData")}</Link>
+            </Button>
+          ) : null}
+        </div>
       ) : (
         <div className="mt-4 h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 5, right: 8, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <YAxis domain={[0, 4]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis
+                domain={[0, 4]}
+                tick={{ fontSize: 11 }}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
