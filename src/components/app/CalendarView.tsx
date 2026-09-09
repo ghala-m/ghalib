@@ -38,9 +38,13 @@ function startOfWeek(d: Date) {
 }
 
 /** Shared calendar. Pass `courseId` to scope every view to a single course. */
-export function CalendarView({ courseId, compact }: { courseId?: string; compact?: boolean } = {}) {
+export function CalendarView({
+  courseId,
+  compact,
+  defaultView = "month",
+}: { courseId?: string; compact?: boolean; defaultView?: View } = {}) {
   const { t, lang } = useI18n();
-  const [view, setView] = useState<View>("month");
+  const [view, setView] = useState<View>(defaultView);
   const [cursor, setCursor] = useState(() => new Date());
   const { data: allItems = [] } = useQuery(allItemsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());

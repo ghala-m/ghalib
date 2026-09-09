@@ -13,7 +13,7 @@ import {
 import { SemesterGrid } from "@/components/app/SemesterGrid";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { exportElementToPdf } from "@/lib/export-pdf";
+import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
 
 export const Route = createFileRoute("/_authenticated/term-calendar")({
   head: () => ({
@@ -37,8 +37,8 @@ function TermCalendarPage() {
     setDownloading(true);
     try {
       await exportElementToPdf(contentRef.current, "term-calendar.pdf");
-    } catch {
-      toast.error(t("pdfExportFailed"));
+    } catch (e) {
+      toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);
     }

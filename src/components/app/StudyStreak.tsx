@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 
 const LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4, string> = {
   0: "bg-muted",
-  1: "bg-cat-general/30",
-  2: "bg-cat-general/55",
-  3: "bg-cat-general/80",
-  4: "bg-cat-general",
+  1: "bg-accent/30",
+  2: "bg-accent/55",
+  3: "bg-accent/80",
+  4: "bg-accent",
 };
 
 const DAY_LABEL_ROWS = [1, 3, 5]; // Mon, Wed, Fri — matches the reference layout, rest stay blank
@@ -24,7 +24,10 @@ function Cell({ day, label }: { day: StreakDay; label: string }) {
   return (
     <div
       title={`${label} · ${day.count}`}
-      className={cn("size-[11px] rounded-[3px] transition-transform hover:scale-125", LEVEL_CLASS[day.level])}
+      className={cn(
+        "size-[11px] rounded-[3px] transition-transform hover:scale-125",
+        LEVEL_CLASS[day.level],
+      )}
     />
   );
 }
@@ -45,15 +48,22 @@ export function StudyStreak() {
       qc.invalidateQueries({ queryKey: ["streak"] });
       toast.success(t("streakLogged"));
     },
-    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
+    onError: (e: Error) =>
+      toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
   });
 
   const { weeks, monthLabels } = buildStreakGrid(entries, weeksBack);
   const { current, longest } = computeStreaks(entries);
   const totalDays = entries.filter((e) => e.count > 0).length;
 
-  const monthFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en", { month: "short", calendar: "gregory" });
-  const weekdayFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en", { weekday: "short", calendar: "gregory" });
+  const monthFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en", {
+    month: "short",
+    calendar: "gregory",
+  });
+  const weekdayFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en", {
+    weekday: "short",
+    calendar: "gregory",
+  });
   const dayFmt = new Intl.DateTimeFormat(lang === "ar" ? "ar" : "en", {
     weekday: "long",
     year: "numeric",
@@ -112,17 +122,28 @@ export function StudyStreak() {
             </div>
             <div
               className="grid gap-[3px]"
-              style={{ gridTemplateRows: "repeat(7, 11px)", gridAutoFlow: "column", gridAutoColumns: "11px" }}
+              style={{
+                gridTemplateRows: "repeat(7, 11px)",
+                gridAutoFlow: "column",
+                gridAutoColumns: "11px",
+              }}
             >
               {weeks.flat().map((day) => (
-                <Cell key={day.date} day={day} label={dayFmt.format(new Date(`${day.date}T00:00:00`))} />
+                <Cell
+                  key={day.date}
+                  day={day}
+                  label={dayFmt.format(new Date(`${day.date}T00:00:00`))}
+                />
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground" dir="ltr">
+      <div
+        className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground"
+        dir="ltr"
+      >
         <span>{t("streakLess")}</span>
         {([0, 1, 2, 3, 4] as const).map((l) => (
           <div key={l} className={cn("size-[10px] rounded-[2px]", LEVEL_CLASS[l])} />

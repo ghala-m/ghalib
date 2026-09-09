@@ -820,6 +820,10 @@ const dict = {
     ar: "تعذّر إنشاء ملف PDF (يحتاج اتصال إنترنت لأول مرة) — جرّب الطباعة كبديل.",
     en: "Couldn't generate the PDF (needs an internet connection the first time) — try Print instead.",
   },
+  pdfExportFailedGeneric: {
+    ar: "تعذّر إنشاء ملف PDF لسبب غير متوقع — جرّب الطباعة كبديل، وإذا استمرت المشكلة أخبرنا.",
+    en: "Couldn't generate the PDF for an unexpected reason — try Print instead, and let us know if it keeps happening.",
+  },
   backToProfile: { ar: "رجوع", en: "Back" },
 } as const;
 

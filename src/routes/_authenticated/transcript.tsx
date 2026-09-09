@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { exportElementToPdf } from "@/lib/export-pdf";
+import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/transcript")({
@@ -148,8 +148,8 @@ function TranscriptPage() {
     setDownloading(true);
     try {
       await exportElementToPdf(contentRef.current, "transcript.pdf");
-    } catch {
-      toast.error(t("pdfExportFailed"));
+    } catch (e) {
+      toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);
     }

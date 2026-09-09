@@ -18,9 +18,15 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Ghalib Academic Assistant" },
-      { name: "description", content: "Your semester at a glance: GPA, credits, courses and upcoming deadlines." },
+      {
+        name: "description",
+        content: "Your semester at a glance: GPA, credits, courses and upcoming deadlines.",
+      },
       { property: "og:title", content: "Dashboard — Ghalib Academic Assistant" },
-      { property: "og:description", content: "Track GPA, credits, courses and upcoming deadlines in one view." },
+      {
+        property: "og:description",
+        content: "Track GPA, credits, courses and upcoming deadlines in one view.",
+      },
     ],
   }),
   component: DashboardPage,
@@ -89,7 +95,7 @@ function DashboardPage() {
 
       <section className="mt-10">
         <h2 className="mb-4 text-lg font-semibold">{t("calendar")}</h2>
-        <CalendarView />
+        <CalendarView defaultView="week" />
       </section>
 
       <section className="mt-10">

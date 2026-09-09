@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import type { Course, CourseStatus } from "@/lib/queries";
-import { exportElementToPdf } from "@/lib/export-pdf";
+import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
 
 export const Route = createFileRoute("/_authenticated/plan-print")({
   head: () => ({
@@ -41,8 +41,8 @@ function PlanPrintPage() {
     setDownloading(true);
     try {
       await exportElementToPdf(contentRef.current, "academic-plan.pdf");
-    } catch {
-      toast.error(t("pdfExportFailed"));
+    } catch (e) {
+      toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);
     }
