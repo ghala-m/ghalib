@@ -73,6 +73,28 @@ export function meetsExtraUnlockConditions(
   return true;
 }
 
+/**
+ * Detects lecture/lab pairs by name (e.g. "Chemistry I" + "Chemistry I Lab", or "Physics Lab I"
+ * + "Physics I") — stripping the standalone word "Lab" from the lab's name should leave the
+ * lecture course's name. Many universities (including this one) let a lab be registered the
+ * same term as its lecture rather than requiring the lecture to already be completed, so this
+ * powers a co-requisite exception to normal prerequisite gating (see `buildPrereqGraph`).
+ */
+function stripLabWord(name: string): string {
+  return name
+    .replace(/\blab\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+export function isLabPairOf(lab: Pick<Course, "name">, lecture: Pick<Course, "name">): boolean {
+  const labName = lab.name ?? "";
+  const lectureName = lecture.name ?? "";
+  if (!/\blab\b/i.test(labName) || /\blab\b/i.test(lectureName)) return false;
+  return stripLabWord(labName) === lectureName.trim().toLowerCase();
+}
+
 /** Builds prerequisite layers: depth = longest prerequisite chain leading to the course. */
 export function buildPrereqGraph(courses: Course[]): {
   nodes: GraphNode[];
@@ -122,8 +144,41 @@ export function buildPrereqGraph(courses: Course[]): {
     }
   }
 
+  // Second pass: a lab can be registered the same term as its lecture rather than only after
+  // the lecture is completed (a real co-requisite exception at this university) — so a lab
+  // whose only blocker is a lecture that's itself available/in-progress right now unlocks too.
+  for (const node of byKey.values()) {
+    if (node.state !== "locked") continue;
+    const prereqs = node.course.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const prereqsMet = prereqs.every((p) => {
+      const target = byKey.get(p)!;
+      if (target.course.status === "completed") return true;
+      return (
+        isLabPairOf(node.course, target.course) &&
+        (target.state === "available" || target.state === "current")
+      );
+    });
+    if (prereqsMet && meetsExtraUnlockConditions(node.course, totalCompletedCredits))
+      node.state = "available";
+  }
+
   const nodes = [...byKey.values()].sort((a, b) => a.depth - b.depth || a.key.localeCompare(b.key));
   return { nodes, byKey, maxDepth: nodes.reduce((m, n) => Math.max(m, n.depth), 0) };
+}
+
+/** Is `prereq` satisfied *today* as a prerequisite of `dependent` — completed, or (lab
+ *  co-requisite exception) a lecture that's itself registrable today? */
+function prereqSatisfiedNow(
+  dependent: Course,
+  prereq: Course,
+  byKey: Map<string, Course>,
+): boolean {
+  if (prereq.status === "completed") return true;
+  if (isLabPairOf(dependent, prereq)) {
+    const lecturePrereqs = prereq.prerequisites.map(norm).filter((p) => byKey.has(p));
+    return lecturePrereqs.every((p) => byKey.get(p)!.status === "completed");
+  }
+  return false;
 }
 
 /**
@@ -147,7 +202,7 @@ export function nextTermPreview(courses: Course[]): Course[] {
     if (c.status !== "future") continue;
     if (!meetsExtraUnlockConditions(c, totalCompletedCredits)) continue;
     const prereqs = c.prerequisites.map(norm).filter((p) => byKey.has(p));
-    const availableToday = prereqs.every((p) => byKey.get(p)!.status === "completed");
+    const availableToday = prereqs.every((p) => prereqSatisfiedNow(c, byKey.get(p)!, byKey));
     if (availableToday) continue;
     const availableNextTerm = prereqs.every((p) => {
       const status = byKey.get(p)!.status;
@@ -182,7 +237,7 @@ export function simulateUnlocks(courses: Course[], selectedIds: string[]): Cours
     if (c.status !== "future" || assumed.has(c.id)) continue;
     if (!meetsExtraUnlockConditions(c, totalCompletedCredits)) continue;
     const prereqs = c.prerequisites.map(norm).filter((p) => byKey.has(p));
-    const availableToday = prereqs.every((p) => byKey.get(p)!.status === "completed");
+    const availableToday = prereqs.every((p) => prereqSatisfiedNow(c, byKey.get(p)!, byKey));
     if (availableToday) continue;
     const unlocked = prereqs.every((p) => {
       const pre = byKey.get(p)!;

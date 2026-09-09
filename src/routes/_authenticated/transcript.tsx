@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowRight, Award, GraduationCap, Printer } from "lucide-react";
+import { ArrowRight, Award, Download, GraduationCap, Loader2, Printer } from "lucide-react";
 import { coursesQuery, profileQuery, termsQuery, type Course, type TermRow } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { exportElementToPdf } from "@/lib/export-pdf";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/transcript")({
   head: () => ({
@@ -139,12 +141,26 @@ function TranscriptPage() {
     ? groups[groups.length - 1]!.accumCh
     : (profile?.total_credits ?? 0);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+  const download = async () => {
+    if (!contentRef.current) return;
+    setDownloading(true);
+    try {
+      await exportElementToPdf(contentRef.current, "transcript.pdf");
+    } catch {
+      toast.error(t("pdfExportFailed"));
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div
       dir={dir}
       className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10 print:max-w-none print:px-0 print:py-0"
     >
-      <div className="print-hide mb-6 flex items-center justify-between gap-3">
+      <div className="print-hide mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
           to="/profile"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -152,61 +168,73 @@ function TranscriptPage() {
           <ArrowRight className="size-4 rtl:rotate-180" />
           {t("backToProfile")}
         </Link>
-        <Button onClick={() => window.print()}>
-          <Printer className="size-4" />
-          {t("printOrSave")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="size-4" />
+            {t("printAction")}
+          </Button>
+          <Button onClick={download} disabled={downloading}>
+            {downloading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Download className="size-4" />
+            )}
+            {t("downloadPdf")}
+          </Button>
+        </div>
       </div>
 
-      {/* Header */}
-      <header className="print-panel panel mb-6 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-br from-accent/15 via-accent/5 to-transparent px-6 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-sm">
-              <GraduationCap className="size-6" />
+      <div ref={contentRef}>
+        {/* Header */}
+        <header className="print-panel panel mb-6 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-br from-accent/15 via-accent/5 to-transparent px-6 py-6">
+            <div className="flex items-center gap-3">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-sm">
+                <GraduationCap className="size-6" />
+              </div>
+              <div>
+                <h1 className="font-display text-2xl font-bold">{t("transcriptTitle")}</h1>
+                <p className="text-sm text-muted-foreground">
+                  {profile?.full_name || user?.email} · {profile?.major || t("none")}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-display text-2xl font-bold">{t("transcriptTitle")}</h1>
-              <p className="text-sm text-muted-foreground">
-                {profile?.full_name || user?.email} · {profile?.major || t("none")}
-              </p>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("generatedOn")} {today}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {t("generatedOn")} {today}
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
-          <SummaryStat label={t("cgpa")} value={finalCgpa?.toFixed(3) ?? "—"} highlight />
-          <SummaryStat label={t("totalCredits")} value={String(finalCredits)} />
-          <SummaryStat label={t("termsCompleted")} value={String(groups.length)} />
-          <SummaryStat
-            label={t("accumPoint")}
-            value={groups.length ? groups[groups.length - 1]!.accumPoints.toFixed(3) : "0.000"}
-          />
-        </div>
-      </header>
+          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
+            <SummaryStat label={t("cgpa")} value={finalCgpa?.toFixed(3) ?? "—"} highlight />
+            <SummaryStat label={t("totalCredits")} value={String(finalCredits)} />
+            <SummaryStat label={t("termsCompleted")} value={String(groups.length)} />
+            <SummaryStat
+              label={t("accumPoint")}
+              value={groups.length ? groups[groups.length - 1]!.accumPoints.toFixed(3) : "0.000"}
+            />
+          </div>
+        </header>
 
-      {!groups.length ? (
-        <div className="panel flex flex-col items-center gap-3 p-10 text-center">
-          <Award className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">{t("transcriptEmpty")}</p>
-        </div>
-      ) : (
-        byYear.map(([year, yearGroups]) => (
-          <section key={year} className="mb-8">
-            <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold">
-              <span className="h-5 w-1.5 rounded-full bg-accent" />
-              {year}
-            </h2>
-            <div className="space-y-5">
-              {yearGroups.map((g) => (
-                <TermCard key={g.term?.id ?? g.label} group={g} />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
+        {!groups.length ? (
+          <div className="panel flex flex-col items-center gap-3 p-10 text-center">
+            <Award className="size-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">{t("transcriptEmpty")}</p>
+          </div>
+        ) : (
+          byYear.map(([year, yearGroups]) => (
+            <section key={year} className="mb-8">
+              <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold">
+                <span className="h-5 w-1.5 rounded-full bg-accent" />
+                {year}
+              </h2>
+              <div className="space-y-5">
+                {yearGroups.map((g) => (
+                  <TermCard key={g.term?.id ?? g.label} group={g} />
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -31,6 +31,7 @@ import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { AchievementsBadges } from "@/components/app/AchievementsBadges";
+import { GpaHistoryManager } from "@/components/app/GpaHistoryManager";
 import { AccentPicker, ThemeModeToggle } from "@/components/app/ThemeControls";
 import { cn } from "@/lib/utils";
 import {
@@ -111,6 +112,7 @@ function SectionCard({
   description,
   action,
   className,
+  id,
   children,
 }: {
   icon: ComponentType<{ className?: string }>;
@@ -118,10 +120,11 @@ function SectionCard({
   description?: string;
   action?: ReactNode;
   className?: string;
+  id?: string;
   children: ReactNode;
 }) {
   return (
-    <div className={cn("panel p-6", className)}>
+    <div id={id} className={cn("panel p-6 scroll-mt-6", className)}>
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
@@ -373,6 +376,17 @@ function ProfilePage() {
         className="mt-6"
       >
         <AchievementsBadges />
+      </SectionCard>
+
+      {/* Manually fix/backfill historical term GPA data */}
+      <SectionCard
+        id="gpa-history"
+        icon={TrendingUp}
+        title={t("gpaHistoryTitle")}
+        description={t("gpaHistoryDesc")}
+        className="mt-6"
+      >
+        <GpaHistoryManager />
       </SectionCard>
 
       {/* Morning commute briefing */}

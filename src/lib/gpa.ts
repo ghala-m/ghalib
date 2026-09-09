@@ -36,10 +36,16 @@ export function completedGpa(
  * Projects the overall GPA if the given hypothetical letter grades were earned in the listed
  * (not-yet-completed) courses, added on top of `base` (already-completed work).
  * `overrides` maps course id -> letter grade; courses without an entry are left out of the projection.
+ *
+ * A course may set `retakeOf` (an already-completed course it's hypothetically retaking) — its
+ * old grade's contribution is *replaced*, not stacked on top, matching how a real retake works
+ * once graded (see `completedGpa`'s superseded-attempt exclusion).
  */
 export function simulateGpa(
   base: GpaTotals,
-  courses: Pick<Course, "id" | "credits">[],
+  courses: (Pick<Course, "id" | "credits"> & {
+    retakeOf?: Pick<Course, "credits" | "final_grade"> | null;
+  })[],
   overrides: Record<string, string>,
 ): GpaTotals & { simulatedCredits: number } {
   let credits = base.credits;
@@ -50,6 +56,13 @@ export function simulateGpa(
     if (!grade) continue;
     const p = pointsFor(grade);
     if (p === null) continue;
+    if (c.retakeOf) {
+      const oldPoints = pointsFor(c.retakeOf.final_grade);
+      if (oldPoints !== null) {
+        credits -= creditsOf(c.retakeOf);
+        points -= oldPoints * creditsOf(c.retakeOf);
+      }
+    }
     const cr = creditsOf(c);
     credits += cr;
     points += p * cr;

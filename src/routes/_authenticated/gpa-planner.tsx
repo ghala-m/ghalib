@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Calculator, TrendingDown, TrendingUp } from "lucide-react";
+import { Calculator, Plus, RotateCcw, TrendingDown, TrendingUp, X } from "lucide-react";
 import { coursesQuery } from "@/lib/queries";
 import { completedGpa, nearestGradeAtLeast, requiredAverage, simulateGpa } from "@/lib/gpa";
-import { GRADE_SCALE } from "@/lib/plan";
+import { GRADE_SCALE, pointsFor } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
 import {
   Select,
@@ -13,6 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
@@ -36,6 +43,9 @@ function GpaPlannerPage() {
   const { t } = useI18n();
   const { data: courses = [] } = useQuery(coursesQuery());
   const [overrides, setOverrides] = useState<Record<string, string>>({});
+  // Which completed (C- or below) courses the student has added as a "what-if retake" —
+  // deliberately session-only state, same as everything else on this page.
+  const [retakeIds, setRetakeIds] = useState<string[]>([]);
   // Deliberately NOT persisted (in state or storage) across navigation — every time this page
   // is left and reopened it should start from a clean, unfilled default rather than remembering
   // the last target that was typed in.
@@ -46,12 +56,37 @@ function GpaPlannerPage() {
   const completed = active.filter((c) => c.status === "completed");
   const currentTerm = active.filter((c) => c.status === "current");
 
+  const cMinusPoints = pointsFor("C-") ?? 1.67;
+  const alreadyRetaken = new Set(
+    active.map((c) => c.previous_attempt_id).filter((id): id is string => !!id),
+  );
+  const retakeCandidates = useMemo(
+    () =>
+      completed.filter((c) => {
+        const p = pointsFor(c.final_grade);
+        return (
+          p !== null && p <= cMinusPoints && !alreadyRetaken.has(c.id) && !retakeIds.includes(c.id)
+        );
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [completed, retakeIds],
+  );
+  const activeRetakes = completed.filter((c) => retakeIds.includes(c.id));
+
   const base = useMemo(() => completedGpa(completed), [completed]);
-  // Only *this term's* courses are simulated — future-plan courses don't have real grades to
-  // guess at yet, and including them made the projection noisy and less actionable.
+  // Only *this term's* courses (plus any what-if retakes added) are simulated — future-plan
+  // courses don't have real grades to guess at yet, and including them made the projection
+  // noisy and less actionable.
+  const simCourses = useMemo(
+    () => [
+      ...currentTerm,
+      ...activeRetakes.map((c) => ({ id: c.id, credits: c.credits, retakeOf: c })),
+    ],
+    [currentTerm, activeRetakes],
+  );
   const projected = useMemo(
-    () => simulateGpa(base, currentTerm, overrides),
-    [base, currentTerm, overrides],
+    () => simulateGpa(base, simCourses, overrides),
+    [base, simCourses, overrides],
   );
 
   const defaultRemaining = currentTerm.reduce((s, c) => s + (c.credits ?? 3), 0);
@@ -127,13 +162,90 @@ function GpaPlannerPage() {
 
             {/* Simulate specific courses */}
             <section className="panel mt-6 overflow-hidden">
-              <div className="border-b border-border px-5 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-4">
                 <p className="font-semibold">{t("simulateSection")}</p>
+                {retakeCandidates.length ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <RotateCcw className="size-3.5" />
+                        {t("addRetakeWhatIf")}
+                        <Plus className="size-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {retakeCandidates.map((c) => (
+                        <DropdownMenuItem
+                          key={c.id}
+                          onClick={() => setRetakeIds((s) => [...s, c.id])}
+                        >
+                          {c.name} · {c.final_grade}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
               </div>
-              {currentTerm.length === 0 ? (
+              {currentTerm.length === 0 && activeRetakes.length === 0 ? (
                 <p className="p-5 text-sm text-muted-foreground">{t("noRemainingCourses")}</p>
               ) : (
                 <ul className="divide-y divide-border">
+                  {activeRetakes.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex flex-wrap items-center gap-3 bg-accent/5 px-5 py-3"
+                    >
+                      <div className="min-w-40 flex-1">
+                        <p className="flex items-center gap-1.5 text-sm font-medium">
+                          <RotateCcw className="size-3.5 text-accent" />
+                          {c.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.code || "—"} · {c.credits ?? 3} {t("credits")} · {t("previousGrade")}:{" "}
+                          {c.final_grade}
+                        </p>
+                      </div>
+                      <Select
+                        value={overrides[c.id] ?? "__none"}
+                        onValueChange={(v) =>
+                          setOverrides((s) => {
+                            const next = { ...s };
+                            if (v === "__none") delete next[c.id];
+                            else next[c.id] = v;
+                            return next;
+                          })
+                        }
+                      >
+                        <SelectTrigger className="w-28">
+                          <SelectValue placeholder="—" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none">—</SelectItem>
+                          {GRADE_SCALE.map((g) => (
+                            <SelectItem key={g.grade} value={g.grade}>
+                              {g.grade}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0"
+                        aria-label={t("remove")}
+                        onClick={() => {
+                          setRetakeIds((s) => s.filter((id) => id !== c.id));
+                          setOverrides((s) => {
+                            const next = { ...s };
+                            delete next[c.id];
+                            return next;
+                          });
+                        }}
+                      >
+                        <X className="size-4" />
+                      </Button>
+                    </li>
+                  ))}
                   {currentTerm.map((c) => (
                     <li key={c.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
                       <div className="min-w-40 flex-1">

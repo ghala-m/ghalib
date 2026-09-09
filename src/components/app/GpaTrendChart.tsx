@@ -23,8 +23,14 @@ export function GpaTrendChart() {
 
   const history = useMemo(() => deriveTermHistory(courses, terms), [courses, terms]);
   const data = useMemo(
-    () => history.filter((h) => h.gpa != null).map((h) => ({ name: h.label, gpa: Number(h.gpa) })),
-    [history],
+    () =>
+      history
+        .filter((h) => h.gpa != null)
+        .map((h) => ({
+          name: /^\d+$/.test(h.label) ? `${t("termLabel")} ${h.label}` : h.label,
+          gpa: Number(h.gpa),
+        })),
+    [history, t],
   );
 
   // More than two terms exist, but not enough of them have a recorded GPA to plot a trend —
@@ -44,7 +50,9 @@ export function GpaTrendChart() {
           </p>
           {hasMissingData ? (
             <Button size="sm" variant="outline" className="mt-3" asChild>
-              <Link to="/dashboard">{t("gpaTrendAddData")}</Link>
+              <Link to="/profile" hash="gpa-history">
+                {t("gpaTrendAddData")}
+              </Link>
             </Button>
           ) : null}
         </div>

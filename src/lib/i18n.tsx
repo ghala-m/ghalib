@@ -704,6 +704,9 @@ const dict = {
     en: "Your current GPA (completed courses)",
   },
   simulateSection: { ar: "محاكاة درجات محددة", en: "Simulate specific grades" },
+  addRetakeWhatIf: { ar: "ماذا لو — إعادة مادة", en: "What if — retake a course" },
+  previousGrade: { ar: "الدرجة السابقة", en: "Previous grade" },
+  remove: { ar: "إزالة", en: "Remove" },
   projectedGpaLabel: { ar: "المعدل المتوقع", en: "Projected GPA" },
   noRemainingCourses: {
     ar: "لا توجد مواد حالية أو مستقبلية لمحاكاتها.",
@@ -739,6 +742,36 @@ const dict = {
     en: "Badges that unlock automatically as you progress.",
   },
   achievementsUnlockedOf: { ar: "شارة مفتوحة", en: "badges unlocked" },
+  termLabel: { ar: "الفصل", en: "Term" },
+  gpaHistoryTitle: { ar: "تطوّر المعدل — تصحيح البيانات", en: "GPA history — fix data" },
+  gpaHistoryDesc: {
+    ar: "الفصول القديمة اللي استوردتها ما فيها اسم فصل حقيقي أو معدل مسجل بدقة. أضفها يدويًا أو استوردها من صورة/ملف كشف الدرجات.",
+    en: "Historical terms you imported may be missing a real name or an accurate GPA. Add them manually, or import from a transcript photo/file.",
+  },
+  gpaHistoryEmpty: { ar: "ما فيه فصول مسجلة بعد.", en: "No terms recorded yet." },
+  gpaHistoryAdd: { ar: "إضافة / تعديل فصل يدويًا", en: "Add / edit a term manually" },
+  gpaHistoryHint: {
+    ar: "أدخل اسم الفصل ومعدله ووحداته يدويًا.",
+    en: "Enter the term's name, GPA, and credits manually.",
+  },
+  gpaHistoryImportFromFile: {
+    ar: "استيراد من صورة أو ملف كشف الدرجات",
+    en: "Import from a transcript photo or file",
+  },
+  gpaHistoryImportReview: { ar: "راجع الفصول المستخرجة", en: "Review extracted terms" },
+  gpaHistoryImportReviewHint: {
+    ar: "تحقق من البيانات قبل الحفظ — تقدر تلغي تحديد أي فصل ما تبيه.",
+    en: "Check the data before saving — uncheck any term you don't want.",
+  },
+  gpaHistoryImportNothingFound: {
+    ar: "ما قدرنا نطلع أي فصول واضحة من هذا الملف. جرّب صورة أوضح أو أدخل البيانات يدويًا.",
+    en: "Couldn't make out any clear terms from that file. Try a clearer photo, or enter the data manually.",
+  },
+  gpaHistoryImportApply: { ar: "حفظ الفصول المحددة", en: "Save selected terms" },
+  gpaHistoryImportApplied: {
+    ar: "تم تحديث بيانات فصولك.",
+    en: "Your term history has been updated.",
+  },
   toggleSound: { ar: "الصوت", en: "Sound" },
   ach_firstCourse_title: { ar: "أول خطوة", en: "First step" },
   ach_firstCourse_desc: { ar: "أنهيت أول مادة لك.", en: "You completed your first course." },
@@ -781,6 +814,12 @@ const dict = {
   noTerm: { ar: "بدون فصل", en: "No term" },
   generatedOn: { ar: "أُنشئت بتاريخ", en: "Generated on" },
   printOrSave: { ar: "طباعة / حفظ كـPDF", en: "Print / Save as PDF" },
+  printAction: { ar: "طباعة", en: "Print" },
+  downloadPdf: { ar: "تحميل PDF", en: "Download PDF" },
+  pdfExportFailed: {
+    ar: "تعذّر إنشاء ملف PDF (يحتاج اتصال إنترنت لأول مرة) — جرّب الطباعة كبديل.",
+    en: "Couldn't generate the PDF (needs an internet connection the first time) — try Print instead.",
+  },
   backToProfile: { ar: "رجوع", en: "Back" },
 } as const;
 
