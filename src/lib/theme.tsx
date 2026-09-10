@@ -17,6 +17,12 @@ export type AccentPreset = {
   swatch: string;
   light: { accent: string; accentFg: string; primary: string; primaryFg: string };
   dark: { accent: string; accentFg: string; primary: string; primaryFg: string };
+  /** Full "colour combination" presets (background matches the accent, not just the buttons) —
+   * a hue (0-360) applied to every background-family token (page bg, cards, sidebar, muted,
+   * borders), keeping each token's existing lightness/chroma so contrast stays exactly as
+   * tested today and only the hue shifts. Omitted for the plain accent-only presets, which
+   * keep this app's default navy background untouched. */
+  bgHue?: number;
 };
 
 export const ACCENTS: AccentPreset[] = [
@@ -129,28 +135,34 @@ export const ACCENTS: AccentPreset[] = [
     },
   },
   {
+    // "Raspberry & Lemon": the whole background shifts to a deep raspberry tone, with pale
+    // lemon as the accent/button colour — matching the reference exactly rather than just
+    // recolouring buttons on the usual navy background.
     id: "raspberry",
-    labelAr: "توت العليق",
-    labelEn: "Raspberry",
-    swatch: "oklch(0.55 0.18 0)",
+    labelAr: "توت العليق وليمون",
+    labelEn: "Raspberry & Lemon",
+    swatch: "oklch(0.4 0.15 10)",
+    bgHue: 10,
     light: {
-      accent: "oklch(0.55 0.18 0)",
-      accentFg: "oklch(0.97 0.03 95)",
-      primary: "oklch(0.4 0.17 0)",
-      primaryFg: "oklch(0.97 0.03 95)",
+      accent: "oklch(0.92 0.06 95)",
+      accentFg: "oklch(0.35 0.15 10)",
+      primary: "oklch(0.4 0.15 10)",
+      primaryFg: "oklch(0.95 0.04 95)",
     },
     dark: {
-      accent: "oklch(0.72 0.18 0)",
-      accentFg: "oklch(0.2 0.04 0)",
-      primary: "oklch(0.72 0.18 0)",
-      primaryFg: "oklch(0.2 0.04 0)",
+      accent: "oklch(0.92 0.06 95)",
+      accentFg: "oklch(0.3 0.14 10)",
+      primary: "oklch(0.92 0.06 95)",
+      primaryFg: "oklch(0.3 0.14 10)",
     },
   },
   {
+    // "Citron & Tyrian Purple": background shifts to a deep purple, citron stays the accent.
     id: "citron",
-    labelAr: "ليموني",
-    labelEn: "Citron",
+    labelAr: "ليموني وبنفسجي",
+    labelEn: "Citron & Tyrian Purple",
     swatch: "oklch(0.85 0.13 115)",
+    bgHue: 330,
     light: {
       accent: "oklch(0.8 0.14 115)",
       accentFg: "oklch(0.25 0.08 330)",
@@ -162,6 +174,27 @@ export const ACCENTS: AccentPreset[] = [
       accentFg: "oklch(0.22 0.07 330)",
       primary: "oklch(0.85 0.13 115)",
       primaryFg: "oklch(0.22 0.07 330)",
+    },
+  },
+  {
+    // "Blue, Butter & Chocopie": background shifts to a warm chocolate brown, butter yellow is
+    // the accent, and the cool powder blue becomes the secondary/primary colour.
+    id: "chocopie",
+    labelAr: "شوكوبايْ وزبدي",
+    labelEn: "Chocopie & Butter",
+    swatch: "oklch(0.3 0.05 45)",
+    bgHue: 45,
+    light: {
+      accent: "oklch(0.9 0.07 95)",
+      accentFg: "oklch(0.3 0.05 45)",
+      primary: "oklch(0.78 0.05 230)",
+      primaryFg: "oklch(0.25 0.04 45)",
+    },
+    dark: {
+      accent: "oklch(0.9 0.07 95)",
+      accentFg: "oklch(0.28 0.05 45)",
+      primary: "oklch(0.78 0.05 230)",
+      primaryFg: "oklch(0.25 0.04 45)",
     },
   },
   {
@@ -256,9 +289,45 @@ export function isCustomAccent(id: string): boolean {
   return /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(id);
 }
 
+const BG_TOKENS_DARK: Record<string, [l: number, c: number]> = {
+  "--background": [0.19, 0.03],
+  "--card": [0.235, 0.035],
+  "--popover": [0.235, 0.035],
+  "--muted": [0.28, 0.035],
+  "--secondary": [0.3, 0.04],
+  "--sidebar": [0.165, 0.03],
+  "--sidebar-accent": [0.26, 0.035],
+};
+const BG_TOKENS_LIGHT: Record<string, [l: number, c: number]> = {
+  "--background": [0.985, 0.006],
+  "--muted": [0.955, 0.008],
+  "--border": [0.9, 0.012],
+  "--sidebar": [0.24, 0.04],
+  "--sidebar-accent": [0.3, 0.045],
+  "--sidebar-border": [0.33, 0.04],
+};
+
+/** Re-hues every background-family token toward `hue`, keeping each one's existing
+ * lightness/chroma so contrast is unaffected — see AccentPreset.bgHue. */
+function applyBgTint(hue: number, resolved: "light" | "dark") {
+  const root = document.documentElement.style;
+  const tokens = resolved === "dark" ? BG_TOKENS_DARK : BG_TOKENS_LIGHT;
+  for (const [prop, [l, c]] of Object.entries(tokens)) {
+    root.setProperty(prop, `oklch(${l} ${c} ${hue})`);
+  }
+}
+
+function clearBgTint() {
+  const root = document.documentElement.style;
+  for (const prop of new Set([...Object.keys(BG_TOKENS_DARK), ...Object.keys(BG_TOKENS_LIGHT)])) {
+    root.removeProperty(prop);
+  }
+}
+
 function applyAccent(id: string, resolved: "light" | "dark") {
   const root = document.documentElement.style;
   if (isCustomAccent(id)) {
+    clearBgTint();
     const fg = hexLuminance(id) > 0.5 ? "oklch(0.2 0.02 260)" : "oklch(0.98 0.005 260)";
     for (const [prop, val] of [
       ["--accent", id],
@@ -276,6 +345,8 @@ function applyAccent(id: string, resolved: "light" | "dark") {
     return;
   }
   const preset = ACCENTS.find((a) => a.id === id) ?? ACCENTS[0]!;
+  if (preset.bgHue != null) applyBgTint(preset.bgHue, resolved);
+  else clearBgTint();
   const v = resolved === "dark" ? preset.dark : preset.light;
   root.setProperty("--accent", v.accent);
   root.setProperty("--accent-foreground", v.accentFg);

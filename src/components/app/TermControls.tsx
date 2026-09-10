@@ -47,7 +47,7 @@ import {
   termsQuery,
   type TermRow,
 } from "@/lib/queries";
-import { GRADE_SCALE, pointsFor } from "@/lib/plan";
+import { SELECTABLE_GRADES, pointsFor } from "@/lib/plan";
 import { completedGpa } from "@/lib/gpa";
 import { parseAcademicCalendar, type AcademicCalendar } from "@/lib/academic-calendar.functions";
 import {
@@ -535,9 +535,9 @@ function EndTermDialog({ termId, onDone }: { termId: string; onDone: () => void 
                       <SelectValue placeholder="—" />
                     </SelectTrigger>
                     <SelectContent>
-                      {GRADE_SCALE.map((g) => (
-                        <SelectItem key={g.grade} value={g.grade}>
-                          {g.grade}
+                      {SELECTABLE_GRADES.map((g) => (
+                        <SelectItem key={g} value={g}>
+                          {g}
                         </SelectItem>
                       ))}
                     </SelectContent>

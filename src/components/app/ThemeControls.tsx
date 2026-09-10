@@ -4,7 +4,11 @@ import { ACCENTS, isCustomAccent, useTheme, type ThemeMode } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const MODES: { id: ThemeMode; icon: typeof Sun; key: "themeLight" | "themeDark" | "themeSystem" }[] = [
+const MODES: {
+  id: ThemeMode;
+  icon: typeof Sun;
+  key: "themeLight" | "themeDark" | "themeSystem";
+}[] = [
   { id: "light", icon: Sun, key: "themeLight" },
   { id: "dark", icon: Moon, key: "themeDark" },
   { id: "system", icon: Monitor, key: "themeSystem" },
@@ -25,7 +29,9 @@ export function ThemeModeToggle({ className }: { className?: string }) {
           aria-pressed={mode === id}
           className={cn(
             "flex size-8 items-center justify-center rounded-full transition-colors",
-            mode === id ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground",
+            mode === id
+              ? "bg-accent text-accent-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           <Icon className="size-4" />
@@ -56,7 +62,12 @@ export function AccentPicker() {
               "size-9 rounded-full border-2 transition-transform hover:scale-110",
               accent === a.id ? "border-foreground" : "border-transparent",
             )}
-            style={{ background: a.swatch }}
+            style={{
+              background:
+                a.bgHue != null
+                  ? `linear-gradient(135deg, oklch(0.235 0.035 ${a.bgHue}) 50%, ${a.dark.accent} 50%)`
+                  : a.swatch,
+            }}
           />
         ))}
         <label
@@ -77,8 +88,11 @@ export function AccentPicker() {
           />
         </label>
       </div>
-      {custom && <p className="mt-2 text-xs text-muted-foreground">{t("customColor")}: {accent}</p>}
+      {custom && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {t("customColor")}: {accent}
+        </p>
+      )}
     </div>
   );
 }
-

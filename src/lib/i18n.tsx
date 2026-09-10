@@ -749,6 +749,10 @@ const dict = {
     en: "Historical terms you imported may be missing a real name or an accurate GPA. Add them manually, or import from a transcript photo/file.",
   },
   gpaHistoryEmpty: { ar: "ما فيه فصول مسجلة بعد.", en: "No terms recorded yet." },
+  gpaHistoryUnlabeled: {
+    ar: "فصل بدون اسم — على الأغلب فصلك الأول (مواد مستوردة بدون تسمية فصل)",
+    en: "Unlabeled term — likely your first term (courses imported with no term name)",
+  },
   gpaHistoryAdd: { ar: "إضافة / تعديل فصل يدويًا", en: "Add / edit a term manually" },
   gpaHistoryHint: {
     ar: "أدخل اسم الفصل ومعدله ووحداته يدويًا.",

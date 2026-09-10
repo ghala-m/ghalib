@@ -103,8 +103,12 @@ export function deriveTermHistory(
   const completed = courses.filter((c) => c.status === "completed" && !c.archived);
   const byLabel = new Map<string, typeof completed>();
   for (const c of completed) {
-    const label = (c.completed_term || c.term || "").trim();
-    if (!label) continue;
+    // A completed course with no term label at all (e.g. imported during onboarding without
+    // one) used to be silently dropped here — invisible from the transcript, the GPA trend,
+    // and the "completed a term" achievement alike. It still belongs to *some* term the
+    // student actually took, so it's grouped under a dedicated "unlabeled" bucket instead of
+    // being discarded; the student can rename it via the GPA-history manual editor.
+    const label = (c.completed_term || c.term || "").trim() || "__unlabeled__";
     const list = byLabel.get(label) ?? [];
     list.push(c);
     byLabel.set(label, list);
@@ -112,13 +116,19 @@ export function deriveTermHistory(
 
   const rows: TermHistoryRow[] = [];
   for (const [label, list] of byLabel) {
+    const isUnlabeled = label === "__unlabeled__";
     const totals = completedGpa(list);
-    const matchingTerm = terms.find((t) => t.name === label);
+    const matchingTerm = isUnlabeled ? undefined : terms.find((t) => t.name === label);
     const asNumber = Number(label);
     rows.push({
       key: label,
-      label,
-      termNumber: matchingTerm?.term_number ?? (Number.isFinite(asNumber) ? asNumber : null),
+      label: isUnlabeled ? "" : label,
+      // An unlabeled bucket has no way to know its real order — but it's virtually always the
+      // earliest coursework (onboarding-imported history), so it's sorted first rather than
+      // last, where it'd wrongly look like the most recent term.
+      termNumber: isUnlabeled
+        ? 0
+        : (matchingTerm?.term_number ?? (Number.isFinite(asNumber) ? asNumber : null)),
       gpa: matchingTerm?.gpa ?? totals.gpa,
       credits: matchingTerm?.credits ?? totals.credits,
     });

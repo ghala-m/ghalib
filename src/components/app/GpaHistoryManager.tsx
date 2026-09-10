@@ -14,6 +14,7 @@ import {
 } from "@/lib/files";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,7 @@ export function GpaHistoryManager() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editing, setEditing] = useState<{
     termNumber: number | null;
     name: string;
@@ -54,9 +56,10 @@ export function GpaHistoryManager() {
   } | null>(null);
 
   const openFor = (row?: (typeof history)[number]) => {
+    setEditingKey(row?.key ?? null);
     setEditing({
       termNumber: row?.termNumber ?? null,
-      name: row?.label && !/^\d+$/.test(row.label) ? row.label : "",
+      name: row?.label ?? "",
       gpa: row?.gpa != null ? String(row.gpa) : "",
       credits: row?.credits != null ? String(row.credits) : "",
     });
@@ -96,7 +99,7 @@ export function GpaHistoryManager() {
 
   const save = useMutation({
     mutationFn: async () => {
-      if (!editing) throw new Error("no editing");
+      if (!editing || !user) throw new Error("no editing");
       const name = editing.name.trim();
       if (!name) throw new Error("name required");
       await upsertTerm({
@@ -105,9 +108,28 @@ export function GpaHistoryManager() {
         gpa: editing.gpa.trim() === "" ? null : Number(editing.gpa),
         credits: editing.credits.trim() === "" ? null : Number(editing.credits),
       });
+      // This row started out as the "no term label at all" bucket — tag every course that
+      // landed there with the real name the student just gave it, so it becomes a proper term
+      // instead of reappearing as "unlabeled" next time.
+      if (editingKey === "__unlabeled__") {
+        const orphanIds = courses
+          .filter(
+            (c) =>
+              c.status === "completed" && !c.archived && !(c.completed_term || c.term || "").trim(),
+          )
+          .map((c) => c.id);
+        if (orphanIds.length) {
+          const { error } = await supabase
+            .from("courses")
+            .update({ completed_term: name })
+            .in("id", orphanIds);
+          if (error) throw error;
+        }
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["terms"] });
+      qc.invalidateQueries({ queryKey: ["courses"] });
       setOpen(false);
       toast.success(t("save"));
     },
@@ -170,9 +192,19 @@ export function GpaHistoryManager() {
       {history.length ? (
         <ul className="mb-4 divide-y divide-border overflow-hidden rounded-xl border border-border">
           {history.map((row) => (
-            <li key={row.key} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+            <li
+              key={row.key}
+              className={cn(
+                "flex items-center justify-between gap-3 px-3 py-2 text-sm",
+                !row.label && "bg-amber-500/10",
+              )}
+            >
               <span className="min-w-0 truncate">
-                {/^\d+$/.test(row.label) ? `${t("termLabel")} ${row.label}` : row.label}
+                {!row.label
+                  ? t("gpaHistoryUnlabeled")
+                  : /^\d+$/.test(row.label)
+                    ? `${t("termLabel")} ${row.label}`
+                    : row.label}
               </span>
               <span className="shrink-0 tabular-nums text-muted-foreground">
                 {row.gpa != null ? row.gpa.toFixed(2) : "—"} · {row.credits.toFixed(0)}{" "}

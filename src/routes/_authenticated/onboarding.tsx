@@ -7,14 +7,26 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMajorSheet, type MajorSheet, type PlanCourse } from "@/lib/majorsheet.functions";
 import { ACCEPTED_DOCS, isAcceptedDoc, prepareDocument } from "@/lib/files";
-import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE, pointsFor, unresolvedPrerequisites } from "@/lib/plan";
+import {
+  CATEGORY_META,
+  CATEGORY_ORDER,
+  SELECTABLE_GRADES,
+  pointsFor,
+  unresolvedPrerequisites,
+} from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LangToggle } from "@/components/LangToggle";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import type { CourseCategory, CourseStatus } from "@/lib/queries";
@@ -24,9 +36,15 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
       { title: "Set up your study plan — Ghalib" },
-      { name: "description", content: "Upload your major sheet and let Ghalib build your degree plan automatically." },
+      {
+        name: "description",
+        content: "Upload your major sheet and let Ghalib build your degree plan automatically.",
+      },
       { property: "og:title", content: "Set up your study plan — Ghalib" },
-      { property: "og:description", content: "Upload your major sheet and let Ghalib build your degree plan automatically." },
+      {
+        property: "og:description",
+        content: "Upload your major sheet and let Ghalib build your degree plan automatically.",
+      },
     ],
   }),
   component: OnboardingPage,
@@ -65,7 +83,6 @@ function OnboardingPage() {
     } catch {
       // corrupted draft — ignore and start fresh rather than crash onboarding
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftKey]);
 
   useEffect(() => {
@@ -85,12 +102,20 @@ function OnboardingPage() {
     mutationFn: async (file: File) => {
       if (!isAcceptedDoc(file)) throw new Error("INVALID_FILE");
       const doc = await prepareDocument(file);
-      const payload = doc.kind === "pdf" ? { base64: doc.base64, mediaType: doc.mediaType } : { text: doc.text };
+      const payload =
+        doc.kind === "pdf" ? { base64: doc.base64, mediaType: doc.mediaType } : { text: doc.text };
       return (await parse({ data: payload })) as MajorSheet;
     },
     onSuccess: (data) => {
       setSheet(data);
-      setRows(data.courses.map((c) => ({ ...c, status: "future" as CourseStatus, grade: "", completedTerm: "" })));
+      setRows(
+        data.courses.map((c) => ({
+          ...c,
+          status: "future" as CourseStatus,
+          grade: "",
+          completedTerm: "",
+        })),
+      );
       setStage(2);
     },
     onError: (e: Error) => {
@@ -124,9 +149,13 @@ function OnboardingPage() {
         if (error) throw error;
       }
 
-      const done = rows.filter((r) => r.status === "completed" && r.credits && pointsFor(r.grade) !== null);
+      const done = rows.filter(
+        (r) => r.status === "completed" && r.credits && pointsFor(r.grade) !== null,
+      );
       const credits = done.reduce((s, r) => s + (r.credits ?? 0), 0);
-      const gpa = credits ? done.reduce((s, r) => s + (pointsFor(r.grade) ?? 0) * (r.credits ?? 0), 0) / credits : null;
+      const gpa = credits
+        ? done.reduce((s, r) => s + (pointsFor(r.grade) ?? 0) * (r.credits ?? 0), 0) / credits
+        : null;
 
       const { error: pErr } = await supabase
         .from("profiles")
@@ -148,7 +177,8 @@ function OnboardingPage() {
     onError: () => toast.error(t("saveFailed")),
   });
 
-  const update = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const update = (i: number, patch: Partial<Row>) =>
+    setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   const unresolved = useMemo(() => unresolvedPrerequisites(rows), [rows]);
 
   return (
@@ -156,7 +186,9 @@ function OnboardingPage() {
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-accent uppercase">{t("onboarding")}</p>
+            <p className="text-xs font-semibold tracking-wide text-accent uppercase">
+              {t("onboarding")}
+            </p>
             <h1 className="font-display text-3xl font-bold">{t("onboardingTitle")}</h1>
           </div>
           <div className="flex items-center gap-2">
@@ -171,7 +203,9 @@ function OnboardingPage() {
               key={label}
               className={cn(
                 "rounded-full border px-3 py-1",
-                stage >= i + 1 ? "border-accent bg-accent/10 text-foreground" : "border-border text-muted-foreground",
+                stage >= i + 1
+                  ? "border-accent bg-accent/10 text-foreground"
+                  : "border-border text-muted-foreground",
               )}
             >
               {t("step")} {i + 1} · {label}
@@ -201,7 +235,9 @@ function OnboardingPage() {
         {stage === 1 && (
           <div className="panel-glass p-8 text-center">
             <Sparkles className="mx-auto size-8 text-accent" />
-            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">{t("onboardingBody")}</p>
+            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
+              {t("onboardingBody")}
+            </p>
             <input
               ref={inputRef}
               type="file"
@@ -213,8 +249,17 @@ function OnboardingPage() {
                 e.target.value = "";
               }}
             />
-            <Button className="mt-6" size="lg" disabled={run.isPending} onClick={() => inputRef.current?.click()}>
-              {run.isPending ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            <Button
+              className="mt-6"
+              size="lg"
+              disabled={run.isPending}
+              onClick={() => inputRef.current?.click()}
+            >
+              {run.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
               {run.isPending ? t("analyzing") : t("uploadMajorSheet")}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">{t("onlyPdfWord")}</p>
@@ -235,7 +280,9 @@ function OnboardingPage() {
 
             {unresolved.length > 0 && (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-                <p className="font-medium text-amber-600 dark:text-amber-400">{t("unresolvedPrereqsTitle")}</p>
+                <p className="font-medium text-amber-600 dark:text-amber-400">
+                  {t("unresolvedPrereqsTitle")}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">{t("unresolvedPrereqsHint")}</p>
                 <p className="mt-2 font-mono text-xs">{unresolved.join(" · ")}</p>
               </div>
@@ -243,12 +290,19 @@ function OnboardingPage() {
 
             <div className="panel-glass overflow-hidden">
               <div className="border-b border-border px-5 py-4">
-                <p className="font-semibold">{stage === 2 ? t("reviewPlanTitle") : t("markProgressTitle")}</p>
-                <p className="text-xs text-muted-foreground">{stage === 2 ? t("reviewPlanHint") : t("markProgressHint")}</p>
+                <p className="font-semibold">
+                  {stage === 2 ? t("reviewPlanTitle") : t("markProgressTitle")}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {stage === 2 ? t("reviewPlanHint") : t("markProgressHint")}
+                </p>
               </div>
               <ul className="max-h-[26rem] divide-y divide-border overflow-y-auto">
                 {rows.map((r, i) => (
-                  <li key={`${r.code}-${i}`} className="flex flex-wrap items-center gap-3 px-5 py-3">
+                  <li
+                    key={`${r.code}-${i}`}
+                    className="flex flex-wrap items-center gap-3 px-5 py-3"
+                  >
                     <span
                       className="size-2.5 shrink-0 rounded-full"
                       style={{ background: CATEGORY_META[r.category].color }}
@@ -257,12 +311,17 @@ function OnboardingPage() {
                       <p className="text-sm font-medium">{r.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {r.code || "—"} · {r.credits ?? "—"} · {t(CATEGORY_META[r.category].key)}
-                        {r.prerequisites.length ? ` · ${t("prerequisites")}: ${r.prerequisites.join(", ")}` : ""}
+                        {r.prerequisites.length
+                          ? ` · ${t("prerequisites")}: ${r.prerequisites.join(", ")}`
+                          : ""}
                       </p>
                     </div>
 
                     {stage === 2 ? (
-                      <Select value={r.category} onValueChange={(v) => update(i, { category: v as CourseCategory })}>
+                      <Select
+                        value={r.category}
+                        onValueChange={(v) => update(i, { category: v as CourseCategory })}
+                      >
                         <SelectTrigger className="w-44">
                           <SelectValue />
                         </SelectTrigger>
@@ -276,7 +335,10 @@ function OnboardingPage() {
                       </Select>
                     ) : (
                       <div className="flex flex-wrap items-center gap-2">
-                        <Select value={r.status} onValueChange={(v) => update(i, { status: v as CourseStatus })}>
+                        <Select
+                          value={r.status}
+                          onValueChange={(v) => update(i, { status: v as CourseStatus })}
+                        >
                           <SelectTrigger className="w-36">
                             <SelectValue />
                           </SelectTrigger>
@@ -293,9 +355,9 @@ function OnboardingPage() {
                                 <SelectValue placeholder={t("grade")} />
                               </SelectTrigger>
                               <SelectContent>
-                                {GRADE_SCALE.map((g) => (
-                                  <SelectItem key={g.grade} value={g.grade}>
-                                    {g.grade}
+                                {SELECTABLE_GRADES.map((g) => (
+                                  <SelectItem key={g} value={g}>
+                                    {g}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -331,7 +393,12 @@ function OnboardingPage() {
                 <Checkbox
                   checked={rows.every((r) => r.status === "completed")}
                   onCheckedChange={(v) =>
-                    setRows((rs) => rs.map((r) => ({ ...r, status: v ? ("completed" as CourseStatus) : ("future" as CourseStatus) })))
+                    setRows((rs) =>
+                      rs.map((r) => ({
+                        ...r,
+                        status: v ? ("completed" as CourseStatus) : ("future" as CourseStatus),
+                      })),
+                    )
                   }
                 />
                 {t("completed")}

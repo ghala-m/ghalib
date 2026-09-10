@@ -33,8 +33,13 @@ export function GpaTrendChart() {
       .map((h) => {
         cumCredits += h.credits;
         cumPoints += Number(h.gpa) * h.credits;
+        const name = !h.label
+          ? t("noTerm")
+          : /^\d+$/.test(h.label)
+            ? `${t("termLabel")} ${h.label}`
+            : h.label;
         return {
-          name: /^\d+$/.test(h.label) ? `${t("termLabel")} ${h.label}` : h.label,
+          name,
           gpa: Number(Number(h.gpa).toFixed(2)),
           cgpa: cumCredits ? Number((cumPoints / cumCredits).toFixed(2)) : null,
         };

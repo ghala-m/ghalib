@@ -18,11 +18,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
-import { CATEGORY_META, CATEGORY_ORDER, GRADE_SCALE } from "@/lib/plan";
+import { CATEGORY_META, CATEGORY_ORDER, SELECTABLE_GRADES } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
-import { coursesQuery, nicknameList, type Course, type CourseCategory, type CourseStatus } from "@/lib/queries";
+import {
+  coursesQuery,
+  nicknameList,
+  type Course,
+  type CourseCategory,
+  type CourseStatus,
+} from "@/lib/queries";
 
 type FormState = {
   name: string;
@@ -93,12 +105,17 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
     if (open) setForm(course ? fromCourse(course) : empty);
   }, [open, course]);
 
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((s) => ({ ...s, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
+    setForm((s) => ({ ...s, [k]: v }));
 
   const payload = () => ({
     name: form.name.trim(),
     code: form.code.trim() || null,
-    nickname: form.nicknames.map((n) => n.trim()).filter(Boolean).join(", ") || null,
+    nickname:
+      form.nicknames
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .join(", ") || null,
     instructor: form.instructor.trim() || null,
     location: form.location.trim() || null,
     term: form.term.trim() || null,
@@ -189,7 +206,9 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
                     onChange={(e) =>
                       set(
                         "nicknames",
-                        (form.nicknames.length ? form.nicknames : [""]).map((n, j) => (j === i ? e.target.value : n)),
+                        (form.nicknames.length ? form.nicknames : [""]).map((n, j) =>
+                          j === i ? e.target.value : n,
+                        ),
                       )
                     }
                   />
@@ -199,7 +218,12 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
                       variant="ghost"
                       size="icon"
                       aria-label={t("delete")}
-                      onClick={() => set("nicknames", form.nicknames.filter((_, j) => j !== i))}
+                      onClick={() =>
+                        set(
+                          "nicknames",
+                          form.nicknames.filter((_, j) => j !== i),
+                        )
+                      }
                     >
                       <X className="size-4" />
                     </Button>
@@ -210,7 +234,9 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => set("nicknames", [...(form.nicknames.length ? form.nicknames : [""]), ""])}
+                onClick={() =>
+                  set("nicknames", [...(form.nicknames.length ? form.nicknames : [""]), ""])
+                }
               >
                 <Plus className="size-4" />
                 {t("addNickname")}
@@ -232,7 +258,10 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
               </Select>
             </Field>
             <Field label={t("category")}>
-              <Select value={form.category} onValueChange={(v) => set("category", v as CourseCategory)}>
+              <Select
+                value={form.category}
+                onValueChange={(v) => set("category", v as CourseCategory)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -240,7 +269,10 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
                   {CATEGORY_ORDER.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       <span className="flex items-center gap-2">
-                        <i className="size-2.5 rounded-full" style={{ background: CATEGORY_META[cat].color }} />
+                        <i
+                          className="size-2.5 rounded-full"
+                          style={{ background: CATEGORY_META[cat].color }}
+                        />
                         {t(CATEGORY_META[cat].key)}
                       </span>
                     </SelectItem>
@@ -255,18 +287,26 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
               <Input value={form.term} onChange={(e) => set("term", e.target.value)} />
             </Field>
             <Field label={t("credits")}>
-              <Input type="number" min={0} value={form.credits} onChange={(e) => set("credits", e.target.value)} />
+              <Input
+                type="number"
+                min={0}
+                value={form.credits}
+                onChange={(e) => set("credits", e.target.value)}
+              />
             </Field>
             <Field label={t("finalGrade")}>
-              <Select value={form.final_grade || "none"} onValueChange={(v) => set("final_grade", v === "none" ? "" : v)}>
+              <Select
+                value={form.final_grade || "none"}
+                onValueChange={(v) => set("final_grade", v === "none" ? "" : v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
-                  {GRADE_SCALE.map((g) => (
-                    <SelectItem key={g.grade} value={g.grade}>
-                      {g.grade}
+                  {SELECTABLE_GRADES.map((g) => (
+                    <SelectItem key={g} value={g}>
+                      {g}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -284,11 +324,18 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
           </div>
 
           <Field label={t("prerequisites")} hint="MATH101, PHYS102">
-            <Input value={form.prerequisites} onChange={(e) => set("prerequisites", e.target.value)} />
+            <Input
+              value={form.prerequisites}
+              onChange={(e) => set("prerequisites", e.target.value)}
+            />
           </Field>
 
           <Field label={t("altGroup")} hint={t("altGroupHint")}>
-            <Input value={form.alt_group} onChange={(e) => set("alt_group", e.target.value)} placeholder="GEN-HUM" />
+            <Input
+              value={form.alt_group}
+              onChange={(e) => set("alt_group", e.target.value)}
+              placeholder="GEN-HUM"
+            />
           </Field>
 
           <div className="space-y-2 rounded-xl border border-border p-3">

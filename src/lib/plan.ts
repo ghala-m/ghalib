@@ -33,6 +33,12 @@ export function pointsFor(grade: string | null) {
   return GRADE_SCALE.find((g) => g.grade === grade)?.points ?? null;
 }
 
+/** Grades selectable for a real (already-taken) course beyond the GPA-bearing scale above —
+ * "P" for a pass/fail or no-credit course (e.g. an intensive English / prep course) that's
+ * genuinely ungraded and must never count toward GPA. `pointsFor("P")` correctly stays null. */
+export const NON_GPA_GRADES = ["P"] as const;
+export const SELECTABLE_GRADES: string[] = [...GRADE_SCALE.map((g) => g.grade), ...NON_GPA_GRADES];
+
 export type GraphNode = {
   course: Course;
   key: string;
