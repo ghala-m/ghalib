@@ -38,6 +38,7 @@ function TermCalendarPage() {
     try {
       await exportElementToPdf(contentRef.current, "term-calendar.pdf");
     } catch (e) {
+      console.error("[pdf-export]", e);
       toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);

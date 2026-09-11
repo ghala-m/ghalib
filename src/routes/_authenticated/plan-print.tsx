@@ -42,6 +42,7 @@ function PlanPrintPage() {
     try {
       await exportElementToPdf(contentRef.current, "academic-plan.pdf");
     } catch (e) {
+      console.error("[pdf-export]", e);
       toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);

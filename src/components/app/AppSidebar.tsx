@@ -13,6 +13,7 @@ import {
   Menu,
   MessageSquareHeart,
   ScrollText,
+  Route as RouteIcon,
   Search,
   Sparkles,
   UserRound,
@@ -130,6 +131,13 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
             active={pathname === "/calendar"}
             icon={CalendarDays}
             label={t("calendar")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
+            to="/roadmap"
+            active={pathname === "/roadmap"}
+            icon={RouteIcon}
+            label={t("roadmapTitle")}
             onNavigate={onNavigate}
           />
           <SideLink
@@ -267,7 +275,14 @@ function SideLink({
   onNavigate,
 }: {
   to:
-    "/dashboard" | "/profile" | "/calendar" | "/advisor" | "/tools" | "/gpa-planner" | "/simulator";
+    | "/dashboard"
+    | "/profile"
+    | "/calendar"
+    | "/roadmap"
+    | "/advisor"
+    | "/tools"
+    | "/gpa-planner"
+    | "/simulator";
   active: boolean;
   icon: typeof BookMarked;
   label: string;

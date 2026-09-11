@@ -46,6 +46,21 @@ export function GpaHistoryManager() {
   const parseFn = useServerFn(parseTranscript);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Real `terms` rows with no matching coursework at all — usually created by mistake (e.g. via
+  // "add a term" without picking which courses belong to it) rather than a genuine term. Shown
+  // separately with a delete action instead of mixed into the real history above.
+  const labelsWithCourses = new Set(
+    courses
+      .filter((c) => c.status === "completed" && !c.archived)
+      .map((c) => (c.completed_term || c.term || "").trim())
+      .filter(Boolean),
+  );
+  const emptyTerms = terms.filter((tRow) => !tRow.is_active && !labelsWithCourses.has(tRow.name));
+
+  const orphanCourses = courses.filter(
+    (c) => c.status === "completed" && !c.archived && !(c.completed_term || c.term || "").trim(),
+  );
+
   const [open, setOpen] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editing, setEditing] = useState<{
@@ -54,6 +69,10 @@ export function GpaHistoryManager() {
     gpa: string;
     credits: string;
   } | null>(null);
+  // Which orphan (no-term-label) courses to tag with this term on save — pre-checked when
+  // editing the synthetic "unlabeled" row, optional and unchecked otherwise (e.g. adding a
+  // brand new term shouldn't silently absorb unrelated orphan courses).
+  const [linkOrphans, setLinkOrphans] = useState<Record<string, boolean>>({});
 
   const openFor = (row?: (typeof history)[number]) => {
     setEditingKey(row?.key ?? null);
@@ -63,6 +82,9 @@ export function GpaHistoryManager() {
       gpa: row?.gpa != null ? String(row.gpa) : "",
       credits: row?.credits != null ? String(row.credits) : "",
     });
+    setLinkOrphans(
+      Object.fromEntries(orphanCourses.map((c) => [c.id, row?.key === "__unlabeled__"])),
+    );
     setOpen(true);
   };
 
@@ -108,23 +130,15 @@ export function GpaHistoryManager() {
         gpa: editing.gpa.trim() === "" ? null : Number(editing.gpa),
         credits: editing.credits.trim() === "" ? null : Number(editing.credits),
       });
-      // This row started out as the "no term label at all" bucket — tag every course that
-      // landed there with the real name the student just gave it, so it becomes a proper term
-      // instead of reappearing as "unlabeled" next time.
-      if (editingKey === "__unlabeled__") {
-        const orphanIds = courses
-          .filter(
-            (c) =>
-              c.status === "completed" && !c.archived && !(c.completed_term || c.term || "").trim(),
-          )
-          .map((c) => c.id);
-        if (orphanIds.length) {
-          const { error } = await supabase
-            .from("courses")
-            .update({ completed_term: name })
-            .in("id", orphanIds);
-          if (error) throw error;
-        }
+      const idsToLink = Object.entries(linkOrphans)
+        .filter(([, checked]) => checked)
+        .map(([id]) => id);
+      if (idsToLink.length) {
+        const { error } = await supabase
+          .from("courses")
+          .update({ completed_term: name })
+          .in("id", idsToLink);
+        if (error) throw error;
       }
     },
     onSuccess: () => {
@@ -132,6 +146,18 @@ export function GpaHistoryManager() {
       qc.invalidateQueries({ queryKey: ["courses"] });
       setOpen(false);
       toast.success(t("save"));
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const deleteEmptyTerm = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("terms").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["terms"] });
+      toast.success(t("gpaHistoryEmptyTermDeleted"));
     },
     onError: () => toast.error(t("saveFailed")),
   });
@@ -226,6 +252,30 @@ export function GpaHistoryManager() {
         <p className="mb-4 text-sm text-muted-foreground">{t("gpaHistoryEmpty")}</p>
       )}
 
+      {emptyTerms.length ? (
+        <div className="mb-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-3">
+          <p className="mb-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+            {t("gpaHistoryEmptyTermsHint")}
+          </p>
+          <ul className="space-y-1.5">
+            {emptyTerms.map((tRow) => (
+              <li key={tRow.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="min-w-0 truncate">{tRow.name}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 shrink-0 text-destructive hover:text-destructive"
+                  disabled={deleteEmptyTerm.isPending}
+                  onClick={() => deleteEmptyTerm.mutate(tRow.id)}
+                >
+                  {t("delete")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap gap-2">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -272,6 +322,22 @@ export function GpaHistoryManager() {
                     />
                   </div>
                 </div>
+                {orphanCourses.length ? (
+                  <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+                    <p className="text-xs font-medium">{t("gpaHistoryLinkOrphans")}</p>
+                    <ul className="max-h-32 space-y-1.5 overflow-y-auto">
+                      {orphanCourses.map((c) => (
+                        <li key={c.id} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={!!linkOrphans[c.id]}
+                            onCheckedChange={(v) => setLinkOrphans((s) => ({ ...s, [c.id]: !!v }))}
+                          />
+                          <span className="truncate">{c.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <DialogFooter>

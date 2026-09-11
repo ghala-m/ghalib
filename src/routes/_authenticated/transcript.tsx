@@ -121,7 +121,11 @@ function TranscriptPage() {
       });
     }
 
-    return rows;
+    // A term row with zero courses under it is either the term the student is currently in
+    // (worth showing, so they can see it's genuinely empty so far) or a stray/duplicate term
+    // entry that never got any coursework attached — the latter just clutters the transcript
+    // and skews "terms completed", so it's dropped here rather than displayed.
+    return rows.filter((g) => g.courses.length > 0 || g.term?.is_active);
   }, [courses, terms, t]);
 
   const byYear = useMemo(() => {
@@ -149,6 +153,7 @@ function TranscriptPage() {
     try {
       await exportElementToPdf(contentRef.current, "transcript.pdf");
     } catch (e) {
+      console.error("[pdf-export]", e);
       toast.error(t(pdfErrorKey(e)));
     } finally {
       setDownloading(false);
@@ -206,7 +211,10 @@ function TranscriptPage() {
           <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4">
             <SummaryStat label={t("cgpa")} value={finalCgpa?.toFixed(3) ?? "—"} highlight />
             <SummaryStat label={t("totalCredits")} value={String(finalCredits)} />
-            <SummaryStat label={t("termsCompleted")} value={String(groups.length)} />
+            <SummaryStat
+              label={t("termsCompleted")}
+              value={String(groups.filter((g) => g.courses.length > 0).length)}
+            />
             <SummaryStat
               label={t("accumPoint")}
               value={groups.length ? groups[groups.length - 1]!.accumPoints.toFixed(3) : "0.000"}

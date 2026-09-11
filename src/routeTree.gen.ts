@@ -24,6 +24,7 @@ import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTermCalendarRouteImport } from './routes/_authenticated/term-calendar'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTranscriptRouteImport } from './routes/_authenticated/transcript'
+import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -102,6 +103,11 @@ const AuthenticatedTranscriptRoute = AuthenticatedTranscriptRouteImport.update({
   path: '/transcript',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCoursesCourseIdRoute =
   AuthenticatedCoursesCourseIdRouteImport.update({
     id: '/courses/$courseId',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesById {
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/_authenticated/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transcript': typeof AuthenticatedTranscriptRoute
+  '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/term-calendar'
     | '/tools'
     | '/transcript'
+    | '/roadmap'
     | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/term-calendar'
     | '/tools'
     | '/transcript'
+    | '/roadmap'
     | '/courses/$courseId'
   id:
     | '__root__'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/term-calendar'
     | '/_authenticated/tools'
     | '/_authenticated/transcript'
+    | '/_authenticated/roadmap'
     | '/_authenticated/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
@@ -330,6 +342,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTranscriptRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/roadmap': {
+      id: '/_authenticated/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/courses/$courseId': {
       id: '/_authenticated/courses/$courseId'
       path: '/courses/$courseId'
@@ -353,6 +372,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTermCalendarRoute: typeof AuthenticatedTermCalendarRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTranscriptRoute: typeof AuthenticatedTranscriptRoute
+  AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
 }
 
@@ -369,6 +389,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTermCalendarRoute: AuthenticatedTermCalendarRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTranscriptRoute: AuthenticatedTranscriptRoute,
+  AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
 }
 

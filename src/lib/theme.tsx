@@ -197,64 +197,34 @@ export const ACCENTS: AccentPreset[] = [
       primaryFg: "oklch(0.25 0.04 45)",
     },
   },
-  {
-    // "Sapphire & Desert Peach": peach is the actual visible accent (a navy accent would
-    // vanish against this app's own navy-toned background) — navy becomes the text/primary
-    // pairing instead, which happens to already echo the app's default dark background.
-    id: "sapphire",
-    labelAr: "ياقوتي وخوخي",
-    labelEn: "Sapphire & Peach",
-    swatch: "oklch(0.85 0.06 20)",
-    light: {
-      accent: "oklch(0.85 0.06 20)",
-      accentFg: "oklch(0.25 0.07 260)",
-      primary: "oklch(0.25 0.07 260)",
-      primaryFg: "oklch(0.92 0.03 20)",
-    },
-    dark: {
-      accent: "oklch(0.82 0.07 20)",
-      accentFg: "oklch(0.2 0.06 260)",
-      primary: "oklch(0.82 0.07 20)",
-      primaryFg: "oklch(0.2 0.06 260)",
-    },
-  },
-  {
-    id: "sunshine",
-    labelAr: "مشمس",
-    labelEn: "Sunshine",
-    swatch: "oklch(0.88 0.14 95)",
-    light: {
-      accent: "oklch(0.85 0.15 95)",
-      accentFg: "oklch(0.3 0.06 60)",
-      primary: "oklch(0.62 0.13 165)",
-      primaryFg: "oklch(0.97 0.02 95)",
-    },
-    dark: {
-      accent: "oklch(0.88 0.14 95)",
-      accentFg: "oklch(0.25 0.05 60)",
-      primary: "oklch(0.88 0.14 95)",
-      primaryFg: "oklch(0.25 0.05 60)",
-    },
-  },
-  {
-    id: "orange",
-    labelAr: "برتقالي ووردي",
-    labelEn: "Orange & Neon pink",
-    swatch: "oklch(0.72 0.19 45)",
-    light: {
-      accent: "oklch(0.72 0.19 45)",
-      accentFg: "oklch(0.22 0.05 45)",
-      primary: "oklch(0.5 0.22 340)",
-      primaryFg: "oklch(0.97 0.03 340)",
-    },
-    dark: {
-      accent: "oklch(0.75 0.18 45)",
-      accentFg: "oklch(0.2 0.05 45)",
-      primary: "oklch(0.75 0.18 45)",
-      primaryFg: "oklch(0.2 0.05 45)",
-    },
-  },
 ];
+
+/**
+ * sRGB hex -> OKLCH hue (degrees), using Björn Ottosson's OKLab reference conversion. Used to
+ * let a fully custom background colour (picked as a hex swatch) re-hue the same background
+ * tokens `applyBgTint` uses for the (now-removed) built-in "combo" presets — so "pick your own
+ * background + accent" reuses the exact same, already-safe (lightness/chroma preserving)
+ * mechanism instead of a new one.
+ */
+function hexToOklchHue(hex: string): number {
+  const clean = hex.replace("#", "");
+  const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  const r = toLinear(parseInt(clean.slice(0, 2), 16) / 255);
+  const g = toLinear(parseInt(clean.slice(2, 4), 16) / 255);
+  const b = toLinear(parseInt(clean.slice(4, 6), 16) / 255);
+
+  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+  const l_ = Math.cbrt(l);
+  const m_ = Math.cbrt(m);
+  const s_ = Math.cbrt(s);
+
+  const a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_;
+  const bb = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_;
+  const hue = (Math.atan2(bb, a) * 180) / Math.PI;
+  return hue < 0 ? hue + 360 : hue;
+}
 
 type Ctx = {
   mode: ThemeMode;
@@ -262,6 +232,10 @@ type Ctx = {
   resolved: "light" | "dark";
   accent: string;
   setAccent: (id: string) => void;
+  /** Fully custom background hue (as a hex swatch) independent of the accent — see
+   * `applyBgTint`. Null means "no custom background, use whatever the accent preset implies". */
+  customBg: string | null;
+  setCustomBg: (hex: string | null) => void;
 };
 
 const ThemeContext = createContext<Ctx | null>(null);
@@ -362,14 +336,17 @@ function applyAccent(id: string, resolved: "light" | "dark") {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("system");
   const [accent, setAccentState] = useState<string>("amber");
+  const [customBg, setCustomBgState] = useState<string | null>(null);
   const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {
     const storedMode = window.localStorage.getItem("theme") as ThemeMode | null;
     const storedAccent = window.localStorage.getItem("accent");
+    const storedBg = window.localStorage.getItem("customBg");
     if (storedMode === "light" || storedMode === "dark" || storedMode === "system")
       setModeState(storedMode);
     if (storedAccent) setAccentState(storedAccent);
+    if (storedBg) setCustomBgState(storedBg);
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     setSystemDark(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
@@ -383,7 +360,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.classList.toggle("dark", resolved === "dark");
     document.documentElement.style.colorScheme = resolved;
     applyAccent(accent, resolved);
-  }, [resolved, accent]);
+    // A custom background is independent of which accent/preset is active — applied last so it
+    // always wins over whatever background a preset (or clearing one) just set.
+    if (customBg) applyBgTint(hexToOklchHue(customBg), resolved);
+  }, [resolved, accent, customBg]);
 
   const setMode = useCallback((m: ThemeMode) => {
     setModeState(m);
@@ -395,9 +375,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem("accent", id);
   }, []);
 
+  const setCustomBg = useCallback((hex: string | null) => {
+    setCustomBgState(hex);
+    if (hex) window.localStorage.setItem("customBg", hex);
+    else window.localStorage.removeItem("customBg");
+  }, []);
+
   const value = useMemo(
-    () => ({ mode, setMode, resolved, accent, setAccent }),
-    [mode, setMode, resolved, accent, setAccent],
+    () => ({ mode, setMode, resolved, accent, setAccent, customBg, setCustomBg }),
+    [mode, setMode, resolved, accent, setAccent, customBg, setCustomBg],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

@@ -172,6 +172,7 @@
   --cat-college: oklch(0.63 0.14 165);
   --cat-major: oklch(0.66 0.16 45);
   --cat-major_elective: oklch(0.6 0.15 305);
+  --cat-prep: oklch(0.55 0.015 250);
 }
 
 .dark {
@@ -179,6 +180,7 @@
   --cat-college: oklch(0.72 0.13 165);
   --cat-major: oklch(0.75 0.15 45);
   --cat-major_elective: oklch(0.7 0.15 305);
+  --cat-prep: oklch(0.65 0.015 250);
 }
 
 @theme inline {
@@ -186,6 +188,7 @@
   --color-cat-college: var(--cat-college);
   --color-cat-major: var(--cat-major);
   --color-cat-major_elective: var(--cat-major_elective);
+  --color-cat-prep: var(--cat-prep);
 }
 
 @utility panel-glass {

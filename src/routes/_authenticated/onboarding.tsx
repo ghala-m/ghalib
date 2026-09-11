@@ -50,7 +50,12 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   component: OnboardingPage,
 });
 
-type Row = PlanCourse & { status: CourseStatus; grade: string; completedTerm: string };
+type Row = Omit<PlanCourse, "category"> & {
+  category: CourseCategory; // widened beyond PlanCourse's AI-extraction categories so a row can be manually reclassified as "prep"
+  status: CourseStatus;
+  grade: string;
+  completedTerm: string;
+};
 
 function OnboardingPage() {
   const { t } = useI18n();

@@ -60,9 +60,14 @@ const COLOR_PROPS = [
 ] as const;
 
 function inlineResolvedColors(root: HTMLElement) {
+  // The clone html2canvas hands to onclone lives in a *different* document (usually a hidden
+  // iframe) — calling the outer window's getComputedStyle on an element from another document
+  // is invalid cross-realm usage and throws in some browsers, which was silently aborting the
+  // whole export. Must use that document's own window instead.
+  const view = root.ownerDocument.defaultView ?? window;
   const all: HTMLElement[] = [root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))];
   for (const el of all) {
-    const cs = window.getComputedStyle(el);
+    const cs = view.getComputedStyle(el);
     for (const prop of COLOR_PROPS) {
       const val = cs[prop];
       if (
@@ -167,7 +172,14 @@ export async function exportElementToPdf(el: HTMLElement, filename: string): Pro
       useCORS: true,
       onclone: (clonedDoc: Document) => {
         const clonedRoot = clonedDoc.body;
-        if (clonedRoot) inlineResolvedColors(clonedRoot);
+        if (clonedRoot) {
+          try {
+            inlineResolvedColors(clonedRoot);
+          } catch {
+            // Best-effort colour normalization — if it fails for any reason, let html2canvas
+            // proceed with the clone as-is rather than aborting the whole export over it.
+          }
+        }
       },
     } as Record<string, unknown>);
     const JsPDF = window.jspdf!.jsPDF;

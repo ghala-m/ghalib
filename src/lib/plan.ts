@@ -2,12 +2,19 @@ import type { Course, CourseCategory } from "@/lib/queries";
 import { blockedByAlternative } from "@/lib/queries";
 import type { PlanCourse } from "@/lib/majorsheet.functions";
 
-export const CATEGORY_ORDER: CourseCategory[] = ["general", "college", "major", "major_elective"];
+export const CATEGORY_ORDER: CourseCategory[] = [
+  "prep",
+  "general",
+  "college",
+  "major",
+  "major_elective",
+];
 
 export const CATEGORY_META: Record<
   CourseCategory,
-  { key: "general" | "college" | "majorReq" | "major_elective"; color: string }
+  { key: "general" | "college" | "majorReq" | "major_elective" | "prep"; color: string }
 > = {
+  prep: { key: "prep", color: "var(--cat-prep)" },
   general: { key: "general", color: "var(--cat-general)" },
   college: { key: "college", color: "var(--cat-college)" },
   major: { key: "majorReq", color: "var(--cat-major)" },

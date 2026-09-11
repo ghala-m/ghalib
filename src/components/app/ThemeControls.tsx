@@ -42,7 +42,7 @@ export function ThemeModeToggle({ className }: { className?: string }) {
 }
 
 export function AccentPicker() {
-  const { accent, setAccent } = useTheme();
+  const { accent, setAccent, customBg, setCustomBg } = useTheme();
   const { t, lang } = useI18n();
   const custom = isCustomAccent(accent);
   return (
@@ -62,12 +62,7 @@ export function AccentPicker() {
               "size-9 rounded-full border-2 transition-transform hover:scale-110",
               accent === a.id ? "border-foreground" : "border-transparent",
             )}
-            style={{
-              background:
-                a.bgHue != null
-                  ? `linear-gradient(135deg, oklch(0.235 0.035 ${a.bgHue}) 50%, ${a.dark.accent} 50%)`
-                  : a.swatch,
-            }}
+            style={{ background: a.swatch }}
           />
         ))}
         <label
@@ -93,6 +88,56 @@ export function AccentPicker() {
           {t("customColor")}: {accent}
         </p>
       )}
+
+      {/* Custom colour combination: background + accent picked independently, instead of
+          choosing from curated presets. */}
+      <div className="mt-4 rounded-xl border border-dashed border-border p-3">
+        <p className="text-sm font-medium">{t("customCombo")}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{t("customComboHint")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-5">
+          <div className="flex items-center gap-2">
+            <label
+              className="relative size-9 cursor-pointer overflow-hidden rounded-full border-2 border-border transition-transform hover:scale-110"
+              style={{ background: customBg ?? "var(--background)" }}
+              title={t("customComboBg")}
+            >
+              <input
+                type="color"
+                aria-label={t("customComboBg")}
+                value={customBg ?? "#1a2333"}
+                onChange={(e) => setCustomBg(e.target.value)}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              />
+            </label>
+            <span className="text-xs text-muted-foreground">{t("customComboBg")}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <label
+              className="relative size-9 cursor-pointer overflow-hidden rounded-full border-2 border-border transition-transform hover:scale-110"
+              style={{ background: custom ? accent : "var(--accent)" }}
+              title={t("customComboAccent")}
+            >
+              <input
+                type="color"
+                aria-label={t("customComboAccent")}
+                value={custom ? accent : "#f59e0b"}
+                onChange={(e) => setAccent(e.target.value)}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              />
+            </label>
+            <span className="text-xs text-muted-foreground">{t("customComboAccent")}</span>
+          </div>
+          {customBg ? (
+            <button
+              type="button"
+              onClick={() => setCustomBg(null)}
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+            >
+              {t("customComboReset")}
+            </button>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
