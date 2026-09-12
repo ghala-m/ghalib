@@ -20,43 +20,71 @@ type JsPdfDoc = {
 };
 
 /**
- * html2canvas's color parser doesn't understand modern CSS colour functions like oklch() — and
- * this app's entire design-token system (--accent, --border, --muted-foreground, etc., set in
- * styles.css) is defined in oklch(). Browsers can report computed styles back in oklch() format
- * too, so the very act of reading `getComputedStyle` during capture can hand html2canvas a
- * string it can't parse, breaking the capture on every single page that uses these tokens —
- * which matches "the PDF button fails everywhere" far better than a one-off network hiccup.
+ * html2canvas's colour parser doesn't understand modern CSS colour functions (oklch, oklab,
+ * lab, lch, color()) — and this app's entire design-token system (--accent, --border, etc.) is
+ * defined in oklch(). The browser can hand back computed styles in *any* of those formats too,
+ * so simply reading getComputedStyle during capture can feed html2canvas a string it can't
+ * parse — breaking the capture on every page that uses these tokens (which is all of them).
  *
- * Fix: the 2D canvas API is required by spec to normalize any colour it's given (including
- * oklch()) to a plain rgb()/rgba() string when read back — no colour-space math or extra
- * library needed. We resolve every element's colour/background/border to that plain form on a
- * *clone* of the captured subtree right before rendering, leaving the live page untouched.
+ * First attempt used `ctx.fillStyle` read-back to normalize colours, on the assumption the 2D
+ * canvas API always serializes to rgb()/rgba(). That assumption was wrong: some browsers echo
+ * wide-gamut colours back as oklab() too, which html2canvas *still* can't parse (this is
+ * exactly the "unsupported color function oklab" failure this was hit with). The fix that's
+ * actually guaranteed by spec: render the colour to a 1x1 canvas pixel and read the raw RGBA
+ * *bytes* back via getImageData — pixel data is always plain 0-255 integers, no colour-function
+ * ambiguity possible, regardless of what format the input was in.
  */
-const colorProbe: CanvasRenderingContext2D | null =
-  typeof document !== "undefined"
-    ? (document.createElement("canvas").getContext("2d") as CanvasRenderingContext2D | null)
-    : null;
+const probeCanvas: HTMLCanvasElement | null =
+  typeof document !== "undefined" ? document.createElement("canvas") : null;
+if (probeCanvas) {
+  probeCanvas.width = 1;
+  probeCanvas.height = 1;
+}
+const probeCtx: CanvasRenderingContext2D | null =
+  probeCanvas?.getContext("2d", { willReadFrequently: true }) ?? null;
 
-function toRgbString(value: string): string {
-  if (!colorProbe || !value) return value;
+function resolveOneColor(colorFn: string): string {
+  if (!probeCtx) return colorFn;
   try {
-    colorProbe.fillStyle = "#000"; // reset so an unparsable value below falls back predictably
-    colorProbe.fillStyle = value;
-    return colorProbe.fillStyle;
+    probeCtx.clearRect(0, 0, 1, 1);
+    probeCtx.fillStyle = "#000"; // reset so a value canvas can't parse falls back predictably, not to a stale colour
+    probeCtx.fillStyle = colorFn;
+    probeCtx.fillRect(0, 0, 1, 1);
+    const data = probeCtx.getImageData(0, 0, 1, 1).data;
+    const [r, g, b, a] = [data[0]!, data[1]!, data[2]!, data[3]!];
+    return a === 255 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${(a / 255).toFixed(3)})`;
   } catch {
-    return value;
+    return colorFn;
   }
 }
 
+// Matches one CSS colour-function call, allowing a single level of nested parens (needed for
+// color-mix(in oklch, ...) and similar) — used to find-and-replace every such call *inside* a
+// larger value like a gradient, not just when the whole property value is one colour.
+const COLOR_FN_RE = /(?:oklch|oklab|lch|lab|color)\((?:[^()]|\([^()]*\))*\)/gi;
+
+function normalizeColorFunctions(value: string): string {
+  if (!value || !COLOR_FN_RE.test(value)) return value;
+  COLOR_FN_RE.lastIndex = 0;
+  return value.replace(COLOR_FN_RE, (match) => resolveOneColor(match));
+}
+
+// Beyond the plain colour properties, background-image (gradients) and box-shadow embed colour
+// functions *inside* a larger value, and SVG fill/stroke can carry them too when set via CSS
+// (this app's charts and icons often are) rather than an inline attribute.
 const COLOR_PROPS = [
   "color",
   "backgroundColor",
+  "backgroundImage",
   "borderTopColor",
   "borderRightColor",
   "borderBottomColor",
   "borderLeftColor",
   "outlineColor",
   "textDecorationColor",
+  "boxShadow",
+  "fill",
+  "stroke",
 ] as const;
 
 function inlineResolvedColors(root: HTMLElement) {
@@ -70,16 +98,12 @@ function inlineResolvedColors(root: HTMLElement) {
     const cs = view.getComputedStyle(el);
     for (const prop of COLOR_PROPS) {
       const val = cs[prop];
-      if (
-        val &&
-        (val.includes("oklch") ||
-          val.includes("lab(") ||
-          val.includes("lch(") ||
-          val.includes("color("))
-      ) {
+      if (!val) continue;
+      const resolved = normalizeColorFunctions(val);
+      if (resolved !== val) {
         el.style.setProperty(
           prop.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase()),
-          toRgbString(val),
+          resolved,
           "important",
         );
       }

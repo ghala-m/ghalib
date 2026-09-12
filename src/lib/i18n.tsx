@@ -275,6 +275,8 @@ const dict = {
     ar: "مرشدك الذكي: خطط لمذاكرتك، لخّص المنهج، جهّز جدول مراجعة، أو اسأل عن أي مادة.",
     en: "Your AI advisor: plan your study, summarise material, build a revision schedule, or ask about any course.",
   },
+  advisorInsightsTitle: { ar: "لاحظت هذا بوضعك الحالي", en: "Noticed this about where you're at" },
+  advisorMoreQuestions: { ar: "أو اسأل عن شي ثاني", en: "Or ask something else" },
   askPlaceholder: { ar: "اكتب سؤالك…", en: "Type your question…" },
   send: { ar: "إرسال", en: "Send" },
   clearChat: { ar: "مسح المحادثة", en: "Clear chat" },

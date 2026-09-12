@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Maximize2, Minus, Plus, RotateCcw } from "lucide-react";
+import { CheckCircle2, Maximize2, Minus, Plus, RotateCcw } from "lucide-react";
 import { buildPrereqGraph, CATEGORY_META, type GraphNode } from "@/lib/plan";
 import { useI18n } from "@/lib/i18n";
-import type { Course } from "@/lib/queries";
+import type { Course, CourseCategory } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -76,6 +76,12 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
   // The Maximize2 button opens a real fullscreen view of the chart (its own icon promises
   // "expand", not "reset zoom") — zoom/pan state is shared with the inline chart via `scale`.
   const [expanded, setExpanded] = useState(false);
+  // Clicking a legend category dims everything else, turning the legend into a filter — makes
+  // it easy to trace just "what's left in my major electives", etc.
+  const [filterCategory, setFilterCategory] = useState<CourseCategory | null>(null);
+
+  const completedCount = placed.filter((n) => n.state === "completed").length;
+  const progressPct = placed.length ? Math.round((completedCount / placed.length) * 100) : 0;
 
   const expandedScrollRef = useRef<HTMLDivElement>(null);
   const expandedDrag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
@@ -149,13 +155,36 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
   );
 
   const legend = (
-    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+    <div className="flex flex-wrap gap-1" dir={dir}>
       {(["completed", "current", "available", "locked"] as const).map((s) => (
-        <span key={s} className="flex items-center gap-1.5">
+        <span key={s} className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground">
           <i className={cn("size-2.5 rounded-full", stateDot[s])} />
           {t(s === "completed" ? "completed" : s === "current" ? "current" : s)}
         </span>
       ))}
+      <span className="mx-1 w-px self-stretch bg-border" />
+      {Object.keys(CATEGORY_META).map((cat) => {
+        const category = cat as CourseCategory;
+        const meta = CATEGORY_META[category];
+        const active = filterCategory === category;
+        return (
+          <button
+            key={category}
+            type="button"
+            onClick={() => setFilterCategory((c) => (c === category ? null : category))}
+            aria-pressed={active}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-2 py-1 text-xs transition-colors",
+              active
+                ? "bg-muted font-medium text-foreground"
+                : "text-muted-foreground hover:bg-muted/60",
+            )}
+          >
+            <i className="size-2.5 rounded-full" style={{ background: meta.color }} />
+            {t(meta.key)}
+          </button>
+        );
+      })}
     </div>
   );
 
@@ -197,47 +226,65 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
                 const x2 = to.x;
                 const y2 = to.y + NODE_H / 2;
                 const mid = (x1 + x2) / 2;
+                const leadsToAvailable = to.state === "available" || to.state === "current";
+                const dimmed =
+                  filterCategory &&
+                  from.course.category !== filterCategory &&
+                  to.course.category !== filterCategory;
                 return (
                   <path
                     key={i}
                     d={`M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}`}
                     fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
+                    stroke={leadsToAvailable ? "var(--accent)" : "currentColor"}
+                    strokeWidth={leadsToAvailable ? 2 : 1.5}
                     markerEnd="url(#arrow)"
-                    className="text-muted-foreground/45"
+                    className={cn(
+                      leadsToAvailable
+                        ? "prereq-edge-active text-accent"
+                        : "text-muted-foreground/45",
+                      dimmed && "opacity-20",
+                    )}
                   />
                 );
               })}
             </svg>
 
-            {placed.map((n) => (
-              <Link
-                key={n.key}
-                to="/courses/$courseId"
-                params={{ courseId: n.course.id }}
-                dir={dir}
-                className={cn(
-                  "absolute flex flex-col justify-center rounded-xl border bg-card px-3 py-2 shadow-sm transition-shadow hover:shadow-[var(--shadow-lift)]",
-                  n.state === "locked" && "opacity-60",
-                )}
-                style={{
-                  width: NODE_W,
-                  height: NODE_H,
-                  left: n.x,
-                  top: n.y,
-                  borderInlineStartWidth: 4,
-                  borderInlineStartColor: CATEGORY_META[n.course.category].color,
-                }}
-              >
-                <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <i className={cn("size-2 rounded-full", stateDot[n.state])} />
-                  {n.course.code || t(CATEGORY_META[n.course.category].key)}
-                  {n.course.credits ? <span className="ms-auto">{n.course.credits}</span> : null}
-                </span>
-                <span className="line-clamp-2 text-xs font-medium">{n.course.name}</span>
-              </Link>
-            ))}
+            {placed.map((n) => {
+              const dimmed = filterCategory && n.course.category !== filterCategory;
+              return (
+                <Link
+                  key={n.key}
+                  to="/courses/$courseId"
+                  params={{ courseId: n.course.id }}
+                  dir={dir}
+                  className={cn(
+                    "absolute flex flex-col justify-center rounded-xl border bg-card px-3 py-2 shadow-sm transition-all hover:shadow-[var(--shadow-lift)]",
+                    n.state === "locked" && "opacity-60",
+                    n.state === "available" && "prereq-node-available",
+                    dimmed && "opacity-15",
+                  )}
+                  style={{
+                    width: NODE_W,
+                    height: NODE_H,
+                    left: n.x,
+                    top: n.y,
+                    borderInlineStartWidth: 4,
+                    borderInlineStartColor: CATEGORY_META[n.course.category].color,
+                  }}
+                >
+                  {n.state === "completed" ? (
+                    <CheckCircle2 className="absolute -top-1.5 -end-1.5 size-4 rounded-full bg-card text-cat-college" />
+                  ) : null}
+                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <i className={cn("size-2 rounded-full", stateDot[n.state])} />
+                    {n.course.code || t(CATEGORY_META[n.course.category].key)}
+                    {n.course.credits ? <span className="ms-auto">{n.course.credits}</span> : null}
+                  </span>
+                  <span className="line-clamp-2 text-xs font-medium">{n.course.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -247,9 +294,20 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
   return (
     <div className="panel-glass overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-        <div>
+        <div className="min-w-40 flex-1">
           <h2 className="font-semibold">{t("flowChart")}</h2>
           <p className="text-xs text-muted-foreground">{t("flowChartHint")}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-1.5 max-w-40 flex-1 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-cat-college transition-all"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {completedCount}/{placed.length} · {progressPct}%
+            </span>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           {zoomControls}

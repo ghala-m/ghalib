@@ -242,7 +242,27 @@
   }
 }
 
-/* Same overrides as @media print above, but toggled by JS (see export-pdf.ts) for the
+@keyframes prereq-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent) 0%, transparent);
+  }
+}
+.prereq-node-available {
+  animation: prereq-glow 2.4s ease-in-out infinite;
+}
+@keyframes prereq-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.prereq-edge-active {
+  stroke-dasharray: 5 4;
+  animation: prereq-flow 1.1s linear infinite;
+}
    html2canvas-based "Download PDF" capture, which renders normal screen media and so never
    matches @media print on its own. */
 .pdf-capturing,

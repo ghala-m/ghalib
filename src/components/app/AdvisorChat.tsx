@@ -1,33 +1,51 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  AlertTriangle,
   Bot,
   CalendarClock,
   Compass,
+  Lightbulb,
   Loader2,
   MessageSquare,
   MessageSquarePlus,
   SendHorizonal,
   Sparkles,
+  TrendingUp,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { askAdvisor } from "@/lib/advisor.functions";
 import {
+  allItemsQuery,
   chatMessagesQuery,
   chatSessionsQuery,
   coursesQuery,
   profileQuery,
+  streakQuery,
+  termsQuery,
   upcomingItemsQuery,
   type ChatSession,
 } from "@/lib/queries";
+import { computeInsights, type Insight } from "@/lib/insights";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+
+const TONE_ICON: Record<Insight["tone"], typeof Lightbulb> = {
+  tip: Lightbulb,
+  warning: AlertTriangle,
+  good: TrendingUp,
+};
+const TONE_CLASS: Record<Insight["tone"], string> = {
+  tip: "text-accent bg-accent/10",
+  warning: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+  good: "text-cat-college bg-cat-college/10",
+};
 
 function relativeDay(iso: string, lang: "ar" | "en") {
   const d = new Date(iso);
@@ -57,6 +75,14 @@ export function AdvisorChat() {
   const { data: courses = [] } = useQuery(coursesQuery());
   const { data: profile } = useQuery(profileQuery(user?.id));
   const { data: upcoming = [] } = useQuery(upcomingItemsQuery());
+  const { data: allItems = [] } = useQuery(allItemsQuery());
+  const { data: streak = [] } = useQuery(streakQuery());
+  const { data: terms = [] } = useQuery(termsQuery());
+
+  const insights = useMemo(
+    () => computeInsights({ courses, items: allItems, streak, terms, profile, lang }),
+    [courses, allItems, streak, terms, profile, lang],
+  );
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -233,24 +259,70 @@ export function AdvisorChat() {
 
         <div className="flex-1 space-y-4 overflow-y-auto p-5">
           {messages.length === 0 && (
-            <div className="grid gap-2 sm:grid-cols-3">
-              {(
-                [
-                  { key: "suggestion1", icon: Compass },
-                  { key: "suggestion2", icon: CalendarClock },
-                  { key: "suggestion3", icon: Sparkles },
-                ] as const
-              ).map(({ key, icon: Icon }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => submit(t(key))}
-                  className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card/60 p-3 text-start text-sm shadow-sm transition-colors hover:border-accent hover:shadow-md"
-                >
-                  <Icon className="size-4 text-accent" />
-                  {t(key)}
-                </button>
-              ))}
+            <div className="space-y-4">
+              {insights.length > 0 ? (
+                <div>
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Sparkles className="size-3.5 text-accent" />
+                    {t("advisorInsightsTitle")}
+                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {insights.map((ins) => {
+                      const Icon = TONE_ICON[ins.tone];
+                      return (
+                        <button
+                          key={ins.id}
+                          type="button"
+                          onClick={() => submit(ins.prompt)}
+                          className="flex items-start gap-2.5 rounded-xl border border-border bg-card/60 p-3 text-start text-sm shadow-sm transition-colors hover:border-accent hover:shadow-md"
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full",
+                              TONE_CLASS[ins.tone],
+                            )}
+                          >
+                            <Icon className="size-3.5" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-medium">{ins.title}</span>
+                            <span className="mt-0.5 block text-xs text-muted-foreground">
+                              {ins.body}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              <div>
+                {insights.length > 0 ? (
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    {t("advisorMoreQuestions")}
+                  </p>
+                ) : null}
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {(
+                    [
+                      { key: "suggestion1", icon: Compass },
+                      { key: "suggestion2", icon: CalendarClock },
+                      { key: "suggestion3", icon: Sparkles },
+                    ] as const
+                  ).map(({ key, icon: Icon }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => submit(t(key))}
+                      className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card/60 p-3 text-start text-sm shadow-sm transition-colors hover:border-accent hover:shadow-md"
+                    >
+                      <Icon className="size-4 text-accent" />
+                      {t(key)}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
