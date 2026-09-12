@@ -111,6 +111,82 @@ function inlineResolvedColors(root: HTMLElement) {
   }
 }
 
+/**
+ * Every colour this app uses ultimately traces back to one of these CSS custom properties
+ * (styles.css) — gradients, box-shadows, and SVG fill/stroke set via `currentColor` or `var()`
+ * all inherit from them too. So instead of chasing every element/property that might contain a
+ * colour function (the per-element walk above kept missing cases — a gradient here, an oklab
+ * readback there), patch the *source*: temporarily override each variable on <html> with its
+ * plain-rgb equivalent before capture. Every consumer picks up the fix automatically through
+ * normal CSS variable resolution, with nothing left to individually track down.
+ */
+const THEME_COLOR_VARS = [
+  "--accent",
+  "--accent-foreground",
+  "--background",
+  "--border",
+  "--card",
+  "--card-foreground",
+  "--cat-college",
+  "--cat-general",
+  "--cat-major",
+  "--cat-major_elective",
+  "--cat-prep",
+  "--chart-1",
+  "--chart-2",
+  "--chart-3",
+  "--chart-4",
+  "--chart-5",
+  "--destructive",
+  "--destructive-foreground",
+  "--foreground",
+  "--input",
+  "--muted",
+  "--muted-foreground",
+  "--popover",
+  "--popover-foreground",
+  "--primary",
+  "--primary-foreground",
+  "--ring",
+  "--secondary",
+  "--secondary-foreground",
+  "--sidebar",
+  "--sidebar-accent",
+  "--sidebar-accent-foreground",
+  "--sidebar-border",
+  "--sidebar-foreground",
+  "--sidebar-primary",
+  "--sidebar-primary-foreground",
+  "--sidebar-ring",
+  "--success",
+  "--success-foreground",
+  "--warning",
+  "--warning-foreground",
+] as const;
+
+async function withNormalizedThemeVars<T>(fn: () => Promise<T>): Promise<T> {
+  const root = document.documentElement;
+  const computed = getComputedStyle(root);
+  // Saves exactly what was there before (usually nothing — these are normally only set via the
+  // stylesheet's :root/.dark rules, except whichever ones the active accent/combo theme already
+  // overrides inline) so it can be restored byte-for-byte afterward, regardless of capture outcome.
+  const previousInline = THEME_COLOR_VARS.map(
+    (name) => [name, root.style.getPropertyValue(name)] as const,
+  );
+  for (const name of THEME_COLOR_VARS) {
+    const current = computed.getPropertyValue(name).trim();
+    if (current) root.style.setProperty(name, normalizeColorFunctions(current));
+  }
+  try {
+    return await fn();
+  } finally {
+    for (const [name, val] of previousInline) {
+      if (val) root.style.setProperty(name, val);
+      else root.style.removeProperty(name);
+    }
+  }
+}
+
 function loadScript(sources: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
     if (sources.some((src) => document.querySelector(`script[src="${src}"]`))) {
@@ -190,22 +266,13 @@ export async function exportElementToPdf(el: HTMLElement, filename: string): Pro
   await ensureLibs();
   document.documentElement.classList.add("pdf-capturing");
   try {
-    const canvas = await window.html2canvas!(el, {
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      backgroundColor: "#ffffff",
-      useCORS: true,
-      onclone: (clonedDoc: Document) => {
-        const clonedRoot = clonedDoc.body;
-        if (clonedRoot) {
-          try {
-            inlineResolvedColors(clonedRoot);
-          } catch {
-            // Best-effort colour normalization — if it fails for any reason, let html2canvas
-            // proceed with the clone as-is rather than aborting the whole export over it.
-          }
-        }
-      },
-    } as Record<string, unknown>);
+    const canvas = await withNormalizedThemeVars(() =>
+      window.html2canvas!(el, {
+        scale: Math.min(2, window.devicePixelRatio || 1.5),
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      } as Record<string, unknown>),
+    );
     const JsPDF = window.jspdf!.jsPDF;
     const pdf = new JsPDF({
       unit: "px",
