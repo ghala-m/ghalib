@@ -55,3 +55,25 @@ export function playUnlockChime() {
     osc.stop(start + 0.4);
   }
 }
+
+/** A single soft, low-key "tick" — smaller confirmations (logging today's streak, saving a
+ * quick note) that don't deserve the full unlock fanfare but still benefit from feedback. */
+export function playTickChime() {
+  if (!isSoundEnabled()) return;
+  const audio = getContext();
+  if (!audio) return;
+  if (audio.state === "suspended") void audio.resume();
+
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = "sine";
+  osc.frequency.value = 720;
+  const start = audio.currentTime;
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(0.11, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+  osc.connect(gain);
+  gain.connect(audio.destination);
+  osc.start(start);
+  osc.stop(start + 0.2);
+}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { Flame, Plus, Trophy } from "lucide-react";
@@ -8,6 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { playTickChime } from "@/lib/sound";
+import { ConfettiBurst } from "@/components/app/ConfettiBurst";
 
 const LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4, string> = {
   0: "bg-muted",
@@ -38,6 +41,7 @@ export function StudyStreak() {
   const qc = useQueryClient();
   const { data: entries = [] } = useQuery(streakQuery());
   const weeksBack = 53;
+  const [burst, setBurst] = useState(0);
 
   const log = useMutation({
     mutationFn: async () => {
@@ -47,6 +51,8 @@ export function StudyStreak() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["streak"] });
       toast.success(t("streakLogged"));
+      playTickChime();
+      setBurst((n) => n + 1);
     },
     onError: (e: Error) =>
       toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
@@ -73,7 +79,8 @@ export function StudyStreak() {
   });
 
   return (
-    <div className="panel p-6">
+    <div className="panel relative overflow-hidden p-6">
+      <ConfettiBurst trigger={burst} className="pointer-events-none absolute inset-0 z-10" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-semibold">

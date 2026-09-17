@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ConfettiBurst } from "@/components/app/ConfettiBurst";
 
 const SEEN_KEY = "ghalib.seenAchievements";
 
@@ -33,6 +34,7 @@ export function AchievementsBadges() {
   const { data: streak = [] } = useQuery(streakQuery());
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [soundOn, setSoundOn] = useState(true);
+  const [burst, setBurst] = useState(0);
 
   useEffect(() => {
     setSoundOn(isSoundEnabled());
@@ -55,6 +57,7 @@ export function AchievementsBadges() {
         toast.success(t(`ach_${id}_title` as never), { description: t(`ach_${id}_desc` as never) });
       }
       playUnlockChime();
+      setBurst((n) => n + 1);
       saveSeen(new Set([...seen, ...unlocked]));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +71,8 @@ export function AchievementsBadges() {
   };
 
   return (
-    <div className="mt-5">
+    <div className="relative mt-5">
+      <ConfettiBurst trigger={burst} />
       <div className="mb-3 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {unlocked.size}/{ACHIEVEMENTS.length} {t("achievementsUnlockedOf")}

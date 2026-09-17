@@ -20,11 +20,11 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPlanPrintRouteImport } from './routes/_authenticated/plan-print'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authenticated/reimport-plan'
+import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
 import { Route as AuthenticatedTermCalendarRouteImport } from './routes/_authenticated/term-calendar'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTranscriptRouteImport } from './routes/_authenticated/transcript'
-import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -82,6 +82,11 @@ const AuthenticatedReimportPlanRoute =
     path: '/reimport-plan',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSimulatorRoute = AuthenticatedSimulatorRouteImport.update({
   id: '/simulator',
   path: '/simulator',
@@ -103,11 +108,6 @@ const AuthenticatedTranscriptRoute = AuthenticatedTranscriptRouteImport.update({
   path: '/transcript',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedRoadmapRoute = AuthenticatedRoadmapRouteImport.update({
-  id: '/roadmap',
-  path: '/roadmap',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCoursesCourseIdRoute =
   AuthenticatedCoursesCourseIdRouteImport.update({
     id: '/courses/$courseId',
@@ -126,11 +126,11 @@ export interface FileRoutesByFullPath {
   '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
-  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
@@ -144,11 +144,11 @@ export interface FileRoutesByTo {
   '/plan-print': typeof AuthenticatedPlanPrintRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
-  '/roadmap': typeof AuthenticatedRoadmapRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRoutesById {
@@ -164,11 +164,11 @@ export interface FileRoutesById {
   '/_authenticated/plan-print': typeof AuthenticatedPlanPrintRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reimport-plan': typeof AuthenticatedReimportPlanRoute
+  '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
   '/_authenticated/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transcript': typeof AuthenticatedTranscriptRoute
-  '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
 }
 export interface FileRouteTypes {
@@ -184,11 +184,11 @@ export interface FileRouteTypes {
     | '/plan-print'
     | '/profile'
     | '/reimport-plan'
+    | '/roadmap'
     | '/simulator'
     | '/term-calendar'
     | '/tools'
     | '/transcript'
-    | '/roadmap'
     | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -202,11 +202,11 @@ export interface FileRouteTypes {
     | '/plan-print'
     | '/profile'
     | '/reimport-plan'
+    | '/roadmap'
     | '/simulator'
     | '/term-calendar'
     | '/tools'
     | '/transcript'
-    | '/roadmap'
     | '/courses/$courseId'
   id:
     | '__root__'
@@ -221,11 +221,11 @@ export interface FileRouteTypes {
     | '/_authenticated/plan-print'
     | '/_authenticated/profile'
     | '/_authenticated/reimport-plan'
+    | '/_authenticated/roadmap'
     | '/_authenticated/simulator'
     | '/_authenticated/term-calendar'
     | '/_authenticated/tools'
     | '/_authenticated/transcript'
-    | '/_authenticated/roadmap'
     | '/_authenticated/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
@@ -314,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReimportPlanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/roadmap': {
+      id: '/_authenticated/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/simulator': {
       id: '/_authenticated/simulator'
       path: '/simulator'
@@ -342,13 +349,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTranscriptRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/roadmap': {
-      id: '/_authenticated/roadmap'
-      path: '/roadmap'
-      fullPath: '/roadmap'
-      preLoaderRoute: typeof AuthenticatedRoadmapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/courses/$courseId': {
       id: '/_authenticated/courses/$courseId'
       path: '/courses/$courseId'
@@ -368,11 +368,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlanPrintRoute: typeof AuthenticatedPlanPrintRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReimportPlanRoute: typeof AuthenticatedReimportPlanRoute
+  AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
   AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
   AuthenticatedTermCalendarRoute: typeof AuthenticatedTermCalendarRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTranscriptRoute: typeof AuthenticatedTranscriptRoute
-  AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
 }
 
@@ -385,11 +385,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlanPrintRoute: AuthenticatedPlanPrintRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReimportPlanRoute: AuthenticatedReimportPlanRoute,
+  AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
   AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
   AuthenticatedTermCalendarRoute: AuthenticatedTermCalendarRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTranscriptRoute: AuthenticatedTranscriptRoute,
-  AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
 }
 

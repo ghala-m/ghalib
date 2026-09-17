@@ -1,23 +1,21 @@
 /**
- * Loads html2canvas + jsPDF from a CDN at runtime instead of as npm dependencies. Why: this
- * avoids the two hard problems with generating a real PDF client-side for this app —
- * (1) jsPDF's built-in fonts have no Arabic glyphs and no bidi/shaping support, so Arabic text
- * would render broken; capturing the already-shaped DOM as an image sidesteps that entirely.
- * (2) it keeps the bundle free of a PDF-drawing library most pages never touch.
- * Both scripts are widely-used, versioned, and loaded once (cached on `window`).
+ * Uses html2canvas + jsPDF, imported as real npm dependencies and code-split via dynamic
+ * `import()` (so pages that never export a PDF don't pay for either library in their bundle).
+ *
+ * Why not draw the PDF directly with jsPDF: jsPDF's built-in fonts have no Arabic glyphs and no
+ * bidi/shaping support, so Arabic text would render broken; capturing the already-shaped DOM as
+ * an image sidesteps that entirely.
+ *
+ * Previously both libraries were loaded from a CDN (`<script>` tags at runtime) instead of being
+ * npm dependencies. That meant export silently failed with PDF_LIB_LOAD_FAILED for anyone whose
+ * browser/network blocks cdnjs.cloudflare.com and cdn.jsdelivr.net (ad blockers, corporate/school
+ * firewalls, some privacy extensions) — which is indistinguishable, from the user's side, from
+ * "the export button doesn't work". Bundling them as dependencies removes that failure mode
+ * entirely: nothing is fetched from a third-party host at export time.
  */
+import type jsPDFType from "jspdf";
 
-declare global {
-  interface Window {
-    html2canvas?: (el: HTMLElement, opts?: Record<string, unknown>) => Promise<HTMLCanvasElement>;
-    jspdf?: { jsPDF: new (opts: Record<string, unknown>) => JsPdfDoc };
-  }
-}
-
-type JsPdfDoc = {
-  addImage: (data: string, format: string, x: number, y: number, w: number, h: number) => void;
-  save: (filename: string) => void;
-};
+type JsPdfDoc = InstanceType<typeof jsPDFType>;
 
 /**
  * html2canvas's colour parser doesn't understand modern CSS colour functions (oklch, oklab,
@@ -187,60 +185,27 @@ async function withNormalizedThemeVars<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-function loadScript(sources: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (sources.some((src) => document.querySelector(`script[src="${src}"]`))) {
-      resolve();
-      return;
-    }
-    let i = 0;
-    const tryNext = () => {
-      if (i >= sources.length) {
-        reject(new Error("PDF_LIB_LOAD_FAILED"));
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = sources[i]!;
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => {
-        script.remove();
-        i += 1;
-        tryNext();
-      };
-      document.head.appendChild(script);
-    };
-    tryNext();
-  });
-}
+let loading: Promise<{
+  html2canvas: (el: HTMLElement, opts?: Record<string, unknown>) => Promise<HTMLCanvasElement>;
+  JsPDF: new (opts: Record<string, unknown>) => JsPdfDoc;
+}> | null = null;
 
-let loading: Promise<void> | null = null;
-
-async function ensureLibs(): Promise<void> {
+async function ensureLibs() {
   if (typeof window === "undefined") throw new Error("NO_WINDOW");
-  if (window.html2canvas && window.jspdf?.jsPDF) return;
   if (!loading) {
-    // Two CDNs per library — if the first is blocked or a version 404s, fall back to the second
-    // instead of failing outright.
-    loading = Promise.all([
-      loadScript([
-        "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
-        "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
-      ]),
-      loadScript([
-        "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
-        "https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js",
-      ]),
-    ]).then(() => undefined);
+    loading = Promise.all([import("html2canvas"), import("jspdf")])
+      .then(([html2canvasMod, jsPdfMod]) => ({
+        html2canvas: html2canvasMod.default,
+        JsPDF: jsPdfMod.jsPDF,
+      }))
+      .catch((e) => {
+        loading = null; // allow retrying on the next click instead of permanently failing
+        throw e;
+      });
   }
   try {
-    await loading;
+    return await loading;
   } catch {
-    loading = null; // allow retrying on the next click instead of permanently failing
-    throw new Error("PDF_LIB_LOAD_FAILED");
-  }
-  if (!window.html2canvas || !window.jspdf?.jsPDF) {
-    loading = null;
     throw new Error("PDF_LIB_LOAD_FAILED");
   }
 }
@@ -251,9 +216,8 @@ async function ensureLibs(): Promise<void> {
  * class on <html> first so print-only styling (white background, hidden buttons — see
  * styles.css) applies during the capture without needing an actual print dialog.
  *
- * Throws Error("PDF_LIB_LOAD_FAILED") if the CDN scripts can't be fetched (no internet, or the
- * network/browser is blocking cdnjs.cloudflare.com and cdn.jsdelivr.net) — callers should point
- * at Print as a fallback, since that needs no network calls at all.
+ * Throws Error("PDF_LIB_LOAD_FAILED") if the lazy-loaded chunk fails for some other reason (e.g.
+ * an interrupted page load) — callers should point at Print as a fallback in that case.
  */
 /** Which toast copy to show for a failed export — network/CDN issue vs. anything else. */
 export function pdfErrorKey(e: unknown): "pdfExportFailed" | "pdfExportFailedGeneric" {
@@ -263,17 +227,16 @@ export function pdfErrorKey(e: unknown): "pdfExportFailed" | "pdfExportFailedGen
 }
 
 export async function exportElementToPdf(el: HTMLElement, filename: string): Promise<void> {
-  await ensureLibs();
+  const { html2canvas, JsPDF } = await ensureLibs();
   document.documentElement.classList.add("pdf-capturing");
   try {
     const canvas = await withNormalizedThemeVars(() =>
-      window.html2canvas!(el, {
+      html2canvas(el, {
         scale: Math.min(2, window.devicePixelRatio || 1.5),
         backgroundColor: "#ffffff",
         useCORS: true,
       } as Record<string, unknown>),
     );
-    const JsPDF = window.jspdf!.jsPDF;
     const pdf = new JsPDF({
       unit: "px",
       format: [canvas.width, canvas.height],
