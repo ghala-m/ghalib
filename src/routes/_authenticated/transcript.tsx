@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
+import { exportTranscriptPdfNative } from "@/lib/transcript-pdf";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/transcript")({
@@ -32,7 +32,7 @@ function academicYearOf(startDate: string | null): string {
   return d.getMonth() >= 7 ? `${y}/${y + 1}` : `${y - 1}/${y}`;
 }
 
-type TermGroup = {
+export type TermGroup = {
   term: TermRow | null;
   label: string;
   academicYear: string;
@@ -148,13 +148,20 @@ function TranscriptPage() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const download = async () => {
-    if (!contentRef.current) return;
     setDownloading(true);
     try {
-      await exportElementToPdf(contentRef.current, "transcript.pdf");
+      await exportTranscriptPdfNative({
+        studentName: profile?.full_name || user?.email || "",
+        major: profile?.major || "",
+        university: profile?.university || "",
+        generatedOn: today,
+        groups,
+        finalCgpa,
+        finalCredits,
+      });
     } catch (e) {
       console.error("[pdf-export]", e);
-      toast.error(t(pdfErrorKey(e)));
+      toast.error(t("pdfExportFailedGeneric"));
     } finally {
       setDownloading(false);
     }
