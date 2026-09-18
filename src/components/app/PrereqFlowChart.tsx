@@ -226,7 +226,12 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
                 const x2 = to.x;
                 const y2 = to.y + NODE_H / 2;
                 const mid = (x1 + x2) / 2;
-                const leadsToAvailable = to.state === "available" || to.state === "current";
+                // Previously any edge leading into an "available" node lit up — on a real major
+                // map, most unlocked-but-not-taken courses are "available", so nearly the whole
+                // graph glowed at once. Only highlighting edges that *start* at a course she's
+                // currently taking answers the actual question this chart should answer: "what
+                // does finishing what I'm in now unlock?" — a small, meaningful subset.
+                const fromCurrent = from.state === "current";
                 const dimmed =
                   filterCategory &&
                   from.course.category !== filterCategory &&
@@ -236,13 +241,11 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
                     key={i}
                     d={`M${x1},${y1} C${mid},${y1} ${mid},${y2} ${x2},${y2}`}
                     fill="none"
-                    stroke={leadsToAvailable ? "var(--accent)" : "currentColor"}
-                    strokeWidth={leadsToAvailable ? 2 : 1.5}
+                    stroke={fromCurrent ? "var(--accent)" : "currentColor"}
+                    strokeWidth={fromCurrent ? 2 : 1.5}
                     markerEnd="url(#arrow)"
                     className={cn(
-                      leadsToAvailable
-                        ? "prereq-edge-active text-accent"
-                        : "text-muted-foreground/45",
+                      fromCurrent ? "prereq-edge-active text-accent" : "text-muted-foreground/45",
                       dimmed && "opacity-20",
                     )}
                   />
@@ -261,7 +264,7 @@ export function PrereqFlowChart({ courses }: { courses: Course[] }) {
                   className={cn(
                     "absolute flex flex-col justify-center rounded-xl border bg-card px-3 py-2 shadow-sm transition-all hover:shadow-[var(--shadow-lift)]",
                     n.state === "locked" && "opacity-60",
-                    n.state === "available" && "prereq-node-available",
+                    n.state === "current" && "prereq-node-current",
                     dimmed && "opacity-15",
                   )}
                   style={{

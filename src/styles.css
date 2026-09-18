@@ -251,7 +251,7 @@
     box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent) 0%, transparent);
   }
 }
-.prereq-node-available {
+.prereq-node-current {
   animation: prereq-glow 2.4s ease-in-out infinite;
 }
 @keyframes prereq-flow {
