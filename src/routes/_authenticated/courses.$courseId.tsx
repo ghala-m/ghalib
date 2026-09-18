@@ -9,6 +9,7 @@ import { pointsFor } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
+import { playTickChime } from "@/lib/sound";
 import { SyllabusPanel } from "@/components/app/SyllabusPanel";
 import { CourseFormDialog } from "@/components/app/CourseFormDialog";
 import { CalendarView } from "@/components/app/CalendarView";
@@ -246,7 +247,11 @@ function CoursePage() {
               <li key={i.id} className="flex items-center gap-3 py-3">
                 <Checkbox
                   checked={i.completed}
-                  onCheckedChange={(v) => toggle.mutate({ id: i.id, completed: v === true })}
+                  onCheckedChange={(v) => {
+                    const completed = v === true;
+                    if (completed) playTickChime();
+                    toggle.mutate({ id: i.id, completed });
+                  }}
                 />
                 <div className="min-w-0 flex-1">
                   <p

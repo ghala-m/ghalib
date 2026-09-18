@@ -119,6 +119,10 @@ const dict = {
     en: "You have more than two terms, but some terms are missing a recorded GPA. Add your past terms' GPAs to see your trend.",
   },
   gpaTrendAddData: { ar: "إضافة معدلات الفصول", en: "Add term GPAs" },
+  gpaTrendPartialGap: {
+    ar: "{count} فصل بدون معدل مسجّل — مو ظاهر بالرسم البياني.",
+    en: "{count} term(s) have no recorded GPA — not shown on the chart.",
+  },
   nicknames: { ar: "الأسماء المختصرة", en: "Nicknames" },
   addNickname: { ar: "إضافة اسم مختصر", en: "Add nickname" },
   dangerZone: { ar: "منطقة الخطر", en: "Danger zone" },

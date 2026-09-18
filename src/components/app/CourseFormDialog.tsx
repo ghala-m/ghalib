@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { playTickChime } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -158,7 +159,10 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
       invalidate();
       setOpen(false);
       toast.success(t("saved"));
-      if (!course) navigate({ to: "/courses/$courseId", params: { courseId: id } });
+      if (!course) {
+        playTickChime();
+        navigate({ to: "/courses/$courseId", params: { courseId: id } });
+      }
     },
     onError: () => toast.error(t("saveFailed")),
   });
