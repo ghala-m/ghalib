@@ -78,22 +78,23 @@ export async function exportTermCalendarPdf(opts: {
   opts.months.forEach((month, rowIdx) => {
     const rowTop = rowsTop + rowIdx * rowH;
 
-    // Month-label column, right edge of the row, full row height.
+    // Month-label column, right edge of the row, full row height. NOTE: jsPDF's `align: "center"`
+    // combined with `angle` computes the wrong anchor point (verified empirically — it can place
+    // the text dozens of points outside the intended box, which is why month names were vanishing:
+    // the week-block rectangles drawn afterward simply painted over the mispositioned text). This
+    // centers it manually instead: with `angle: 90` the given (x, y) is the BOTTOM of the text and
+    // it grows upward, so y needs nudging down by half the text's rendered width to end up centered.
     doc.setFillColor(238, 238, 238);
     doc.setDrawColor(170);
     doc.rect(rightEdge - monthLabelW, rowTop, monthLabelW, rowH, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.setTextColor(20);
-    doc.text(
-      (MONTH_NAMES[month.monthIndex] ?? "").slice(0, 3),
-      rightEdge - monthLabelW / 2,
-      rowTop + rowH / 2,
-      {
-        align: "center",
-        angle: 90,
-      },
-    );
+    const monthLabel = (MONTH_NAMES[month.monthIndex] ?? "").slice(0, 3);
+    const monthLabelWidth = doc.getTextWidth(monthLabel);
+    doc.text(monthLabel, rightEdge - monthLabelW / 2 + 4, rowTop + rowH / 2 + monthLabelWidth / 2, {
+      angle: 90,
+    });
     doc.setTextColor(0);
 
     const weekCount = month.weeks.length || 1;

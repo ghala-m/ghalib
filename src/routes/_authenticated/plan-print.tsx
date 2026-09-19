@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Printer, ArrowRight, Download, Loader2 } from "lucide-react";
+import { ArrowRight, Download, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -98,10 +98,6 @@ function PlanPrintPage() {
           {t("backToProfile")}
         </Link>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer className="size-4" />
-            {t("printAction")}
-          </Button>
           <Button onClick={download} disabled={downloading}>
             {downloading ? (
               <Loader2 className="size-4 animate-spin" />

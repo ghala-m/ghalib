@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowRight, Award, Download, GraduationCap, Loader2, Printer } from "lucide-react";
+import { ArrowRight, Award, Download, GraduationCap, Loader2 } from "lucide-react";
 import { coursesQuery, profileQuery, termsQuery, type Course, type TermRow } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
@@ -181,10 +181,6 @@ function TranscriptPage() {
           {t("backToProfile")}
         </Link>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => window.print()}>
-            <Printer className="size-4" />
-            {t("printAction")}
-          </Button>
           <Button onClick={download} disabled={downloading}>
             {downloading ? (
               <Loader2 className="size-4 animate-spin" />

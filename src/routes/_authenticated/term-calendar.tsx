@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { Printer, ArrowRight, CalendarRange, Download, Loader2 } from "lucide-react";
+import { ArrowRight, CalendarRange, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   allItemsQuery,
@@ -93,10 +93,6 @@ function TermCalendarPage() {
         </Link>
         {activeTerm ? (
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => window.print()}>
-              <Printer className="size-4" />
-              {t("printAction")}
-            </Button>
             <Button onClick={download} disabled={downloading}>
               {downloading ? (
                 <Loader2 className="size-4 animate-spin" />
