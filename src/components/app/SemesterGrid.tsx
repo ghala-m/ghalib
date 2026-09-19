@@ -1,10 +1,14 @@
 import { useMemo } from "react";
-import { buildSemesterGrid, weekdayLabels, type GridDay } from "@/lib/semester-grid";
+import {
+  buildDateMarks,
+  buildSemesterGrid,
+  weekdayLabels,
+  type DateMark,
+  type GridDay,
+} from "@/lib/semester-grid";
 import type { CalendarEvent, Course, CourseItem, TermCalendarEvent, TermRow } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
-type DayMark = { kind: "item" | "event" | "milestone"; label: string; color?: string };
 
 export function SemesterGrid({
   term,
@@ -38,32 +42,11 @@ export function SemesterGrid({
   }, [term.start_date, term.end_date, term.weeks_count]);
 
   const marksByDate = useMemo(() => {
-    const map = new Map<string, DayMark[]>();
-    const push = (date: string, mark: DayMark) => {
-      const list = map.get(date) ?? [];
-      list.push(mark);
-      map.set(date, list);
-    };
     const courseName = (id: string | null) => {
       const c = courses.find((x) => x.id === id);
       return c?.nickname || c?.code || c?.name || "";
     };
-    for (const it of items) {
-      if (!it.due_date) continue;
-      push(it.due_date, { kind: "item", label: it.title || courseName(it.course_id) });
-    }
-    for (const e of events) {
-      push(e.event_date, { kind: "event", label: e.title });
-    }
-    for (const m of milestones) {
-      const start = new Date(m.start_date);
-      const end = m.end_date ? new Date(m.end_date) : start;
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-        push(iso, { kind: "milestone", label: m.title });
-      }
-    }
-    return map;
+    return buildDateMarks({ items, events, milestones, courseLabel: courseName });
   }, [items, events, milestones, courses]);
 
   const weekday = weekdayLabels(locale);
@@ -138,7 +121,7 @@ function DayCell({
 }: {
   day: GridDay;
   isToday: boolean;
-  marks?: DayMark[] | undefined;
+  marks?: DateMark[] | undefined;
   weekdayLabel: string;
 }) {
   return (
@@ -150,7 +133,12 @@ function DayCell({
       )}
       title={weekdayLabel}
     >
-      <p className={cn("text-[11px] font-semibold tabular-nums", !day.overflow && "text-accent")}>
+      <p
+        className={cn(
+          "text-[11px] font-semibold tabular-nums",
+          day.overflow ? "text-foreground" : "text-accent",
+        )}
+      >
         {day.dayOfMonth}
       </p>
       {marks?.slice(0, 3).map((mk, i) => (

@@ -297,18 +297,3 @@
     opacity: 0;
   }
 }
-   html2canvas-based "Download PDF" capture, which renders normal screen media and so never
-   matches @media print on its own. */
-.pdf-capturing,
-.pdf-capturing body {
-  background: #fff !important;
-  color: #111 !important;
-}
-.pdf-capturing .print-hide {
-  display: none !important;
-}
-.pdf-capturing .print-panel {
-  border: 1px solid #ccc !important;
-  box-shadow: none !important;
-  background: #fff !important;
-}

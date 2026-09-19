@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
  * A short confetti burst rendered as plain absolutely-positioned divs animated by CSS
  * (`.confetti-piece` / `confetti-fall` in styles.css) — deliberately not a canvas library, so
  * this can never fail the way loading an external effects package from a CDN could (see
- * export-pdf.ts for the same reasoning applied to PDF export). It respects
+ * transcript-pdf.ts for the same reasoning applied to PDF export). It respects
  * `prefers-reduced-motion` automatically via the CSS media query.
  *
  * Usage: bump a counter prop every time you want a burst —

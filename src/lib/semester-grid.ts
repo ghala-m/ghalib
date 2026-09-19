@@ -141,6 +141,41 @@ export function buildSemesterGrid({
   return months;
 }
 
+export type DateMark = { kind: "item" | "event" | "milestone"; label: string };
+
+/**
+ * Builds a date → marks map from the term's due items, standalone events, and multi-day
+ * milestones. Shared by the on-screen grid (SemesterGrid.tsx) and the PDF export
+ * (term-calendar-pdf.ts) so the two never drift out of sync on what counts as "on this date".
+ */
+export function buildDateMarks(opts: {
+  items: { due_date: string | null; title: string | null; course_id: string | null }[];
+  events: { event_date: string; title: string }[];
+  milestones: { start_date: string; end_date: string | null; title: string }[];
+  courseLabel: (courseId: string | null) => string;
+}): Map<string, DateMark[]> {
+  const map = new Map<string, DateMark[]>();
+  const push = (date: string, mark: DateMark) => {
+    const list = map.get(date) ?? [];
+    list.push(mark);
+    map.set(date, list);
+  };
+  for (const it of opts.items) {
+    if (!it.due_date) continue;
+    push(it.due_date, { kind: "item", label: it.title || opts.courseLabel(it.course_id) });
+  }
+  for (const e of opts.events) push(e.event_date, { kind: "event", label: e.title });
+  for (const m of opts.milestones) {
+    const start = new Date(m.start_date);
+    const end = m.end_date ? new Date(m.end_date) : start;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      push(iso, { kind: "milestone", label: m.title });
+    }
+  }
+  return map;
+}
+
 /** Saturday-first weekday short labels, in the given locale. */
 export function weekdayLabels(locale: string): string[] {
   // 2026-01-03 is a Saturday — safe fixed anchor to read labels off of.

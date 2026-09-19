@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import type { Course, CourseStatus } from "@/lib/queries";
-import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
+import { exportPlanPdf, type PlanPdfCategory } from "@/lib/plan-pdf";
 
 export const Route = createFileRoute("/_authenticated/plan-print")({
   head: () => ({
@@ -37,13 +37,48 @@ function PlanPrintPage() {
   });
 
   const download = async () => {
-    if (!contentRef.current) return;
     setDownloading(true);
     try {
-      await exportElementToPdf(contentRef.current, "academic-plan.pdf");
+      const STATUS_LABEL: Record<CourseStatus, string> = {
+        completed: "Completed",
+        current: "In Progress",
+        future: "Planned",
+      };
+      const CATEGORY_LABEL: Record<(typeof CATEGORY_ORDER)[number], string> = {
+        prep: "Preparatory",
+        general: "General Education",
+        college: "College Requirements",
+        major: "Major Requirements",
+        major_elective: "Major Electives",
+      };
+      const categories: PlanPdfCategory[] = CATEGORY_ORDER.map((cat) => ({
+        key: cat,
+        label: CATEGORY_LABEL[cat],
+        courses: STATUS_ORDER.flatMap((status) =>
+          active.filter((c) => c.category === cat && c.status === status),
+        ).map((c) => ({
+          code: c.code,
+          name: c.name,
+          credits: c.credits,
+          term: c.term,
+          status: STATUS_LABEL[c.status],
+          finalGrade: c.final_grade,
+        })),
+      }));
+
+      await exportPlanPdf({
+        studentName: profile?.full_name || user?.email || "",
+        major: profile?.major || "",
+        currentTerm: profile?.current_term || "",
+        generatedOn: today,
+        overallGpa: profile?.overall_gpa ?? "—",
+        semesterGpa: profile?.semester_gpa ?? "—",
+        totalCredits: profile?.total_credits ?? 0,
+        categories,
+      });
     } catch (e) {
       console.error("[pdf-export]", e);
-      toast.error(t(pdfErrorKey(e)));
+      toast.error(t("pdfExportFailedGeneric"));
     } finally {
       setDownloading(false);
     }

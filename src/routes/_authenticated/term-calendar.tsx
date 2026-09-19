@@ -13,7 +13,8 @@ import {
 import { SemesterGrid } from "@/components/app/SemesterGrid";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { exportElementToPdf, pdfErrorKey } from "@/lib/export-pdf";
+import { exportTermCalendarPdf, type CalendarPdfMark } from "@/lib/term-calendar-pdf";
+import { buildDateMarks, buildSemesterGrid } from "@/lib/semester-grid";
 
 export const Route = createFileRoute("/_authenticated/term-calendar")({
   head: () => ({
@@ -33,13 +34,45 @@ function TermCalendarPage() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const download = async () => {
-    if (!contentRef.current) return;
+    if (!activeTerm?.start_date) return;
     setDownloading(true);
     try {
-      await exportElementToPdf(contentRef.current, "term-calendar.pdf");
+      const months = activeTerm.weeks_count
+        ? buildSemesterGrid({
+            startDate: activeTerm.start_date,
+            weeksCount: activeTerm.weeks_count,
+          })
+        : activeTerm.end_date
+          ? buildSemesterGrid({ startDate: activeTerm.start_date, endDate: activeTerm.end_date })
+          : buildSemesterGrid({ startDate: activeTerm.start_date, weeksCount: 16 });
+
+      const courseLabel = (id: string | null) => {
+        const c = courses.find((x) => x.id === id);
+        return c?.nickname || c?.code || c?.name || "";
+      };
+      const marks = buildDateMarks({
+        items: allItems.filter((i) => !!i.due_date),
+        events: allEvents,
+        milestones,
+        courseLabel,
+      });
+      const marksByDate = new Map<string, CalendarPdfMark[]>();
+      for (const [date, list] of marks) {
+        marksByDate.set(
+          date,
+          list.map((m) => ({ date, label: m.label })),
+        );
+      }
+
+      await exportTermCalendarPdf({
+        semesterName: activeTerm.name,
+        months,
+        marksByDate,
+        todayIso: new Date().toISOString().slice(0, 10),
+      });
     } catch (e) {
       console.error("[pdf-export]", e);
-      toast.error(t(pdfErrorKey(e)));
+      toast.error(t("pdfExportFailedGeneric"));
     } finally {
       setDownloading(false);
     }
