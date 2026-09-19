@@ -52,12 +52,9 @@ export const parseMajorSheet = createServerFn({ method: "POST" })
       windowMinutes: 60,
     });
 
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
-    const { createLovableAiGatewayProvider, extractJson, aiError, AI_MODEL } = await import("./ai-gateway.server");
+    const { getAiModel, extractJson, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const gateway = createLovableAiGatewayProvider(key);
+    const model = getAiModel();
 
     const prompt = [
       "You read a university degree plan / major sheet (study plan) and extract EVERY course listed in it.",
@@ -84,7 +81,7 @@ export const parseMajorSheet = createServerFn({ method: "POST" })
 
     try {
       const result = await generateText({
-        model: gateway(AI_MODEL),
+        model,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         messages: [{ role: "user", content: content as any }],
       });

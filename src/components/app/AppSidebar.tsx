@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronDown,
   FlaskConical,
+  Library,
   LogOut,
   Menu,
   MessageSquareHeart,
@@ -167,6 +168,13 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
             onNavigate={onNavigate}
           />
           <SideLink
+            to="/study-library"
+            active={pathname === "/study-library"}
+            icon={Library}
+            label={t("studyLibrary")}
+            onNavigate={onNavigate}
+          />
+          <SideLink
             to="/gpa-planner"
             active={pathname === "/gpa-planner"}
             icon={Calculator}
@@ -281,6 +289,7 @@ function SideLink({
     | "/roadmap"
     | "/advisor"
     | "/tools"
+    | "/study-library"
     | "/gpa-planner"
     | "/simulator";
   active: boolean;

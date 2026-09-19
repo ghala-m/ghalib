@@ -7,14 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { primaryNickname, coursesQuery, type CalendarEvent } from "@/lib/queries";
 import { requestNotificationPermission } from "@/hooks/useReminders";
 
-const REMINDERS: { value: string; key: "noReminder" | "remind10" | "remind30" | "remind60" | "remind1440" }[] = [
+const REMINDERS: {
+  value: string;
+  key: "noReminder" | "remind10" | "remind30" | "remind60" | "remind1440";
+}[] = [
   { value: "none", key: "noReminder" },
   { value: "10", key: "remind10" },
   { value: "30", key: "remind30" },
@@ -77,7 +93,9 @@ export function EventDialog({
         if (error) throw error;
       } else {
         if (!user) throw new Error("no user");
-        const { error } = await supabase.from("calendar_events").insert({ ...values, user_id: user.id });
+        const { error } = await supabase
+          .from("calendar_events")
+          .insert({ ...values, user_id: user.id });
         if (error) throw error;
       }
     },
@@ -112,7 +130,10 @@ export function EventDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t("eventTitle")}</Label>
-            <Input value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} />
+            <Input
+              value={form.title}
+              onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -135,7 +156,10 @@ export function EventDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t("reminder")}</Label>
-              <Select value={form.remind_minutes} onValueChange={(v) => setForm((s) => ({ ...s, remind_minutes: v }))}>
+              <Select
+                value={form.remind_minutes}
+                onValueChange={(v) => setForm((s) => ({ ...s, remind_minutes: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -150,17 +174,22 @@ export function EventDialog({
             </div>
             <div className="space-y-1.5">
               <Label>{t("linkedCourse")}</Label>
-              <Select value={form.course_id} onValueChange={(v) => setForm((s) => ({ ...s, course_id: v }))}>
+              <Select
+                value={form.course_id}
+                onValueChange={(v) => setForm((s) => ({ ...s, course_id: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t("noCourseLink")}</SelectItem>
                   {courses
-                    .filter((c) => !c.archived)
+                    .filter((c) => !c.archived && c.status === "current")
                     .map((c) => (
                       <SelectItem key={c.id} value={c.id}>
-                        {primaryNickname(c.nickname) || c.code || c.name}
+                        {[c.code, primaryNickname(c.nickname) || c.name]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -169,12 +198,20 @@ export function EventDialog({
           </div>
           <div className="space-y-1.5">
             <Label>{t("notes")}</Label>
-            <Textarea rows={2} value={form.notes} onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))} />
+            <Textarea
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm((s) => ({ ...s, notes: e.target.value }))}
+            />
           </div>
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
           {event ? (
-            <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => remove.mutate()}>
+            <Button
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={() => remove.mutate()}
+            >
               <Trash2 className="size-4" />
               {t("delete")}
             </Button>
@@ -185,7 +222,10 @@ export function EventDialog({
             <Button variant="outline" onClick={() => setOpen(false)}>
               {t("cancel")}
             </Button>
-            <Button disabled={!form.title.trim() || !form.event_date || save.isPending} onClick={() => save.mutate()}>
+            <Button
+              disabled={!form.title.trim() || !form.event_date || save.isPending}
+              onClick={() => save.mutate()}
+            >
               {t("save")}
             </Button>
           </div>

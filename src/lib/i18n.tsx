@@ -490,6 +490,21 @@ const dict = {
   gpaRecalculated: { ar: "تم تحديث المعدل", en: "GPA updated" },
   // --- Study tools ---
   studyTools: { ar: "أدوات الدراسة", en: "Study tools" },
+  studyLibrary: { ar: "مكتبة المواد", en: "Study library" },
+  studyLibraryHint: {
+    ar: "كل ملخص وبطاقات مراجعة واختبار سوّيتيه، مرتب حسب المادة.",
+    en: "Everything you've generated — summaries, flashcards, quizzes — organized by course.",
+  },
+  savedToLibrary: { ar: "انحفظ بمكتبة المواد", en: "Saved to your study library" },
+  savedToLibraryOpening: { ar: "انحفظ، أفتحلك مكتبة البطاقات...", en: "Saved — opening your flashcards…" },
+  unassignedMaterials: { ar: "بدون مادة محدّدة", en: "Not linked to a course" },
+  noSavedMaterials: {
+    ar: "ما سوّيتي شي بأدوات الدراسة بعد. أي شي تسوّينه راح يتحفظ هنا تلقائيًا.",
+    en: "Nothing generated yet. Anything you make in Study Tools is saved here automatically.",
+  },
+  deleteMaterial: { ar: "حذف", en: "Delete" },
+  materialDeleted: { ar: "انحذف", en: "Deleted" },
+  backToTools: { ar: "رجوع لأدوات الدراسة", en: "Back to study tools" },
   toolSummarize: { ar: "ملخّص سريع", en: "Quick summary" },
   toolSummarizeBody: {
     ar: "الصق نصاً أو ارفع ملفاً واحصل على ملخص منظّم بنقاط.",

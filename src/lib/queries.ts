@@ -10,6 +10,51 @@ export type ItemType = Database["public"]["Enums"]["item_type"];
 export type CourseCategory = Database["public"]["Enums"]["course_category"];
 export type ChatMessage = Database["public"]["Tables"]["chat_messages"]["Row"];
 export type ChatSession = Database["public"]["Tables"]["chat_sessions"]["Row"];
+export type StudyMaterial = Database["public"]["Tables"]["study_materials"]["Row"];
+export type StudyMaterialKind = "summarize" | "flashcards" | "quiz" | "explain" | "studyPlan";
+
+export const studyMaterialsQuery = () => ({
+  queryKey: ["study-materials"],
+  queryFn: async (): Promise<StudyMaterial[]> => {
+    const { data, error } = await supabase
+      .from("study_materials")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+});
+
+export async function saveStudyMaterial(opts: {
+  userId: string;
+  courseId: string | null;
+  kind: StudyMaterialKind;
+  title: string;
+  content: unknown;
+  sourceExcerpt: string | null;
+}): Promise<StudyMaterial> {
+  const { data, error } = await supabase
+    .from("study_materials")
+    .insert({
+      user_id: opts.userId,
+      course_id: opts.courseId,
+      kind: opts.kind,
+      title: opts.title,
+      // Supabase's generated types want `Json`, not `unknown` — the content shapes here
+      // (plain strings/arrays/objects from the AI tool output) are always JSON-safe already.
+      content: opts.content as never,
+      source_excerpt: opts.sourceExcerpt,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteStudyMaterial(id: string): Promise<void> {
+  const { error } = await supabase.from("study_materials").delete().eq("id", id);
+  if (error) throw error;
+}
 
 export const chatSessionsQuery = () => ({
   queryKey: ["chat-sessions"],
@@ -261,7 +306,9 @@ export function primaryNickname(nickname: string | null | undefined): string | n
 export function matchesCourse(c: Course, query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return [c.name, c.code, c.term, ...nicknameList(c.nickname)].some((v) => (v ?? "").toLowerCase().includes(q));
+  return [c.name, c.code, c.term, ...nicknameList(c.nickname)].some((v) =>
+    (v ?? "").toLowerCase().includes(q),
+  );
 }
 
 const normCode = (v: string) => v.replace(/\s+/g, "").toUpperCase();

@@ -22,6 +22,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authenticated/reimport-plan'
 import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
+import { Route as AuthenticatedStudyLibraryRouteImport } from './routes/_authenticated/study-library'
 import { Route as AuthenticatedTermCalendarRouteImport } from './routes/_authenticated/term-calendar'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedTranscriptRouteImport } from './routes/_authenticated/transcript'
@@ -92,6 +93,12 @@ const AuthenticatedSimulatorRoute = AuthenticatedSimulatorRouteImport.update({
   path: '/simulator',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStudyLibraryRoute =
+  AuthenticatedStudyLibraryRouteImport.update({
+    id: '/study-library',
+    path: '/study-library',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTermCalendarRoute =
   AuthenticatedTermCalendarRouteImport.update({
     id: '/term-calendar',
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/study-library': typeof AuthenticatedStudyLibraryRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/study-library': typeof AuthenticatedStudyLibraryRoute
   '/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/transcript': typeof AuthenticatedTranscriptRoute
@@ -166,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
+  '/_authenticated/study-library': typeof AuthenticatedStudyLibraryRoute
   '/_authenticated/term-calendar': typeof AuthenticatedTermCalendarRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/transcript': typeof AuthenticatedTranscriptRoute
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/reimport-plan'
     | '/roadmap'
     | '/simulator'
+    | '/study-library'
     | '/term-calendar'
     | '/tools'
     | '/transcript'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/reimport-plan'
     | '/roadmap'
     | '/simulator'
+    | '/study-library'
     | '/term-calendar'
     | '/tools'
     | '/transcript'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reimport-plan'
     | '/_authenticated/roadmap'
     | '/_authenticated/simulator'
+    | '/_authenticated/study-library'
     | '/_authenticated/term-calendar'
     | '/_authenticated/tools'
     | '/_authenticated/transcript'
@@ -328,6 +341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSimulatorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/study-library': {
+      id: '/_authenticated/study-library'
+      path: '/study-library'
+      fullPath: '/study-library'
+      preLoaderRoute: typeof AuthenticatedStudyLibraryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/term-calendar': {
       id: '/_authenticated/term-calendar'
       path: '/term-calendar'
@@ -370,6 +390,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReimportPlanRoute: typeof AuthenticatedReimportPlanRoute
   AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
   AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
+  AuthenticatedStudyLibraryRoute: typeof AuthenticatedStudyLibraryRoute
   AuthenticatedTermCalendarRoute: typeof AuthenticatedTermCalendarRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTranscriptRoute: typeof AuthenticatedTranscriptRoute
@@ -387,6 +408,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReimportPlanRoute: AuthenticatedReimportPlanRoute,
   AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
   AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
+  AuthenticatedStudyLibraryRoute: AuthenticatedStudyLibraryRoute,
   AuthenticatedTermCalendarRoute: AuthenticatedTermCalendarRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTranscriptRoute: AuthenticatedTranscriptRoute,

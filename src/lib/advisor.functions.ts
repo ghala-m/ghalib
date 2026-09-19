@@ -23,12 +23,9 @@ export const askAdvisor = createServerFn({ method: "POST" })
       windowMinutes: 60,
     });
 
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
-    const { createLovableAiGatewayProvider, aiError, AI_MODEL } = await import("./ai-gateway.server");
+    const { getAiModel, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const gateway = createLovableAiGatewayProvider(key);
+    const model = getAiModel();
 
     const system = [
       "You are Ghalib, a warm and practical AI academic advisor for university students.",
@@ -42,7 +39,7 @@ export const askAdvisor = createServerFn({ method: "POST" })
 
     try {
       const result = await generateText({
-        model: gateway(AI_MODEL),
+        model,
         messages: [
           { role: "system", content: system },
           ...data.history.map((m) => ({ role: m.role, content: m.content }) as const),

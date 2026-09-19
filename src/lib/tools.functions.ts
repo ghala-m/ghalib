@@ -38,13 +38,11 @@ export const runStudyTool = createServerFn({ method: "POST" })
       windowMinutes: 60,
     });
 
-    const key = process.env["LOVABLE_API_KEY"];
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
     if (!data.text.trim() && !data.pdfBase64) throw new Error("EMPTY_INPUT");
 
-    const { createLovableAiGatewayProvider, extractJson, aiError, AI_MODEL } = await import("./ai-gateway.server");
+    const { getAiModel, extractJson, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const gateway = createLovableAiGatewayProvider(key);
+    const model = getAiModel();
     const langLine = data.lang === "ar" ? "Answer in Arabic." : "Answer in English.";
     const content = data.pdfBase64
       ? [
@@ -69,7 +67,7 @@ export const runStudyTool = createServerFn({ method: "POST" })
 
     try {
       const result = await generateText({
-        model: gateway(AI_MODEL),
+        model,
         messages: [
           { role: "system", content: system },
           { role: "user", content: content as never },
@@ -88,7 +86,10 @@ export const runStudyTool = createServerFn({ method: "POST" })
     } catch (error) {
       // A malformed/unparseable structured response is still an AI failure from the user's
       // point of view — map it to the same AI_FAILED the UI already knows how to show.
-      if (error instanceof Error && (error.message === "PARSE_FAILED" || error.name === "ZodError")) {
+      if (
+        error instanceof Error &&
+        (error.message === "PARSE_FAILED" || error.name === "ZodError")
+      ) {
         throw new Error("AI_FAILED");
       }
       throw aiError(error);
