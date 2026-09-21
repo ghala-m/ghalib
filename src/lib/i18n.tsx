@@ -47,6 +47,9 @@ const dict = {
   location: { ar: "القاعة / المبنى", en: "Room / building" },
   term: { ar: "الفصل", en: "Term" },
   credits: { ar: "الساعات", en: "Credits" },
+  creditsModeCourse: { ar: "مادة (٣ ساعات)", en: "Course (3 credits)" },
+  creditsModeLab: { ar: "معمل / لاب (١ ساعة)", en: "Lab (1 credit)" },
+  creditsModeCustom: { ar: "مخصص", en: "Custom" },
   status: { ar: "التصنيف", en: "Classification" },
   create: { ar: "إنشاء", en: "Create" },
   syllabus: { ar: "الخطة الدراسية", en: "Syllabus" },
@@ -126,6 +129,12 @@ const dict = {
   nicknames: { ar: "الأسماء المختصرة", en: "Nicknames" },
   addNickname: { ar: "إضافة اسم مختصر", en: "Add nickname" },
   dangerZone: { ar: "منطقة الخطر", en: "Danger zone" },
+  exportDataTitle: { ar: "نسخة احتياطية من بياناتك", en: "Back up your data" },
+  exportDataHint: {
+    ar: "نزّلي كل بياناتك (المواد، الدرجات، المذاكرة، المحادثات) كملف JSON واحد تحتفظين فيه لنفسك.",
+    en: "Download everything (courses, grades, study history, chats) as one JSON file you keep for yourself.",
+  },
+  exportDataAction: { ar: "تنزيل نسخة احتياطية", en: "Download backup" },
   resetAccount: { ar: "إعادة تعيين الحساب", en: "Reset account" },
   resetAccountHint: {
     ar: "يحذف كل موادك وفصولك وأحداثك ومحادثاتك وملفاتك، ويعيد الحساب كما كان أول مرة سجّلتِ فيها الدخول. لا يمكن التراجع.",
@@ -496,7 +505,10 @@ const dict = {
     en: "Everything you've generated — summaries, flashcards, quizzes — organized by course.",
   },
   savedToLibrary: { ar: "انحفظ بمكتبة المواد", en: "Saved to your study library" },
-  savedToLibraryOpening: { ar: "انحفظ، أفتحلك مكتبة البطاقات...", en: "Saved — opening your flashcards…" },
+  savedToLibraryOpening: {
+    ar: "انحفظ، أفتحلك مكتبة البطاقات...",
+    en: "Saved — opening your flashcards…",
+  },
   unassignedMaterials: { ar: "بدون مادة محدّدة", en: "Not linked to a course" },
   noSavedMaterials: {
     ar: "ما سوّيتي شي بأدوات الدراسة بعد. أي شي تسوّينه راح يتحفظ هنا تلقائيًا.",
@@ -547,6 +559,9 @@ const dict = {
   scoreLabel: { ar: "درجتك %", en: "Your score %" },
   scorePlaceholder: { ar: "مثال: 85", en: "e.g. 85" },
   currentGrade: { ar: "أداؤك الحالي", en: "Current standing" },
+  whatDoINeedFor: { ar: "وش أحتاج عشان أطلع", en: "What do I need for" },
+  onRemainingWeight: { ar: "على باقي {weight}٪", en: "on the remaining {weight}%" },
+  targetOutOfReach: { ar: "صعبة الحين حتى لو ١٠٠٪ بالباقي", en: "Out of reach even with 100% on what's left" },
   gradeCoverage: { ar: "من وزن الدرجة مسجَّل", en: "of your grade weight recorded" },
   noWeightedItems: {
     ar: "لا توجد عناصر لها وزن في التقييم بعد. أضف الوزن عند إنشاء أو تعديل أي عنصر.",

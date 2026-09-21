@@ -32,6 +32,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   coursesQuery,
   nicknameList,
+  termsQuery,
   type Course,
   type CourseCategory,
   type CourseStatus,
@@ -73,6 +74,13 @@ const empty: FormState = {
   previous_attempt_id: "",
 };
 
+function creditsModeFor(c: Course | undefined): "course" | "lab" | "custom" {
+  if (!c || c.credits == null) return "course";
+  if (c.credits === 3) return "course";
+  if (c.credits === 1) return "lab";
+  return "custom";
+}
+
 function fromCourse(c: Course): FormState {
   return {
     name: c.name,
@@ -100,10 +108,20 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(course ? fromCourse(course) : empty);
+  // Most courses are worth a flat 3 credits and most labs 1 — asking "course or lab?" gets the
+  // common case right with one click instead of typing a number, while "custom" still covers the
+  // (real but less common) 2/4-credit course.
+  const [creditsMode, setCreditsMode] = useState<"course" | "lab" | "custom">(
+    creditsModeFor(course),
+  );
   const { data: allCourses = [] } = useQuery(coursesQuery());
+  const { data: terms = [] } = useQuery(termsQuery());
 
   useEffect(() => {
-    if (open) setForm(course ? fromCourse(course) : empty);
+    if (open) {
+      setForm(course ? fromCourse(course) : empty);
+      setCreditsMode(creditsModeFor(course));
+    }
   }, [open, course]);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
@@ -128,7 +146,9 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
       .map((p) => p.trim())
       .filter(Boolean),
     alt_group: form.alt_group.trim() || null,
-    final_grade: form.final_grade.trim() || null,
+    // Only a completed course can meaningfully have a final grade — if the student flips status
+    // away from "completed" (e.g. correcting a mistake), don't carry a stale grade along.
+    final_grade: form.status === "completed" ? form.final_grade.trim() || null : null,
     notes: form.notes.trim() || null,
     is_retake: form.is_retake,
     previous_attempt_id: form.is_retake ? form.previous_attempt_id || null : null,
@@ -286,18 +306,65 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
             </Field>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Field label={t("term")}>
-              <Input value={form.term} onChange={(e) => set("term", e.target.value)} />
+              {terms.length ? (
+                <Select
+                  value={form.term || "none"}
+                  onValueChange={(v) => set("term", v === "none" ? "" : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="—" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">—</SelectItem>
+                    {terms.map((tr) => (
+                      <SelectItem key={tr.id} value={tr.name}>
+                        {tr.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                // No terms set up yet anywhere in the app — fall back to free text rather than
+                // showing an empty, unusable dropdown.
+                <Input value={form.term} onChange={(e) => set("term", e.target.value)} />
+              )}
             </Field>
             <Field label={t("credits")}>
-              <Input
-                type="number"
-                min={0}
-                value={form.credits}
-                onChange={(e) => set("credits", e.target.value)}
-              />
+              <div className="space-y-2">
+                <Select
+                  value={creditsMode}
+                  onValueChange={(v) => {
+                    const mode = v as "course" | "lab" | "custom";
+                    setCreditsMode(mode);
+                    if (mode === "course") set("credits", "3");
+                    else if (mode === "lab") set("credits", "1");
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="course">{t("creditsModeCourse")}</SelectItem>
+                    <SelectItem value="lab">{t("creditsModeLab")}</SelectItem>
+                    <SelectItem value="custom">{t("creditsModeCustom")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {creditsMode === "custom" ? (
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.credits}
+                    onChange={(e) => set("credits", e.target.value)}
+                    placeholder={t("credits")}
+                  />
+                ) : null}
+              </div>
             </Field>
+          </div>
+
+          {form.status === "completed" ? (
             <Field label={t("finalGrade")}>
               <Select
                 value={form.final_grade || "none"}
@@ -316,7 +383,7 @@ export function CourseFormDialog({ course, trigger }: { course?: Course; trigger
                 </SelectContent>
               </Select>
             </Field>
-          </div>
+          ) : null}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("instructor")}>

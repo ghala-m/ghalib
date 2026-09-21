@@ -12,9 +12,9 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.58",
-    "@ai-sdk/google": "^4.0.76",
-    "@ai-sdk/openai": "^4.0.71",
+    "@ai-sdk/anthropic": "4.0.56",
+    "@ai-sdk/google": "4.0.74",
+    "@ai-sdk/openai": "4.0.69",
     "@ai-sdk/openai-compatible": "^3.0.30",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.0.0",

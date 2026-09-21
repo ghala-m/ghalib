@@ -19,7 +19,9 @@ export type GradeSummary = {
  * student has entered a `score_percent` for — i.e. "how am I doing on what's been graded so far",
  * not a prediction for items that haven't been graded yet.
  */
-export function summarizeGrades(items: Pick<CourseItem, "weight" | "score_percent">[]): GradeSummary {
+export function summarizeGrades(
+  items: Pick<CourseItem, "weight" | "score_percent">[],
+): GradeSummary {
   const weighted = items.filter((i) => i.weight != null && i.weight > 0);
   const totalWeight = weighted.reduce((sum, i) => sum + (i.weight ?? 0), 0);
 
@@ -37,4 +39,18 @@ export function summarizeGrades(items: Pick<CourseItem, "weight" | "score_percen
     coverage: totalWeight > 0 ? (gradedWeight / totalWeight) * 100 : 0,
     currentAverage,
   };
+}
+
+/**
+ * "What do I need on what's left to hit a target overall grade?" — the classic remaining-average
+ * calculator. Only meaningful once some weight is still ungraded; returns null when there's
+ * nothing left to affect the outcome (fully graded already) or when the weighting doesn't add up
+ * to 100 (can't say what "target%" means against an incomplete weight scheme).
+ */
+export function neededAverage(summary: GradeSummary, targetPercent: number): number | null {
+  const remainingWeight = summary.totalWeight - summary.gradedWeight;
+  if (remainingWeight <= 0) return null;
+  if (Math.abs(summary.totalWeight - 100) > 0.5) return null;
+  const earnedSoFar = (summary.currentAverage ?? 0) * summary.gradedWeight;
+  return (targetPercent * 100 - earnedSoFar) / remainingWeight;
 }

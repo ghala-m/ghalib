@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, MapPin, Pencil, RotateCcw, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { primaryNickname, courseQuery, coursesQuery, meetingsOf } from "@/lib/queries";
-import { summarizeGrades } from "@/lib/grades";
+import { summarizeGrades, neededAverage } from "@/lib/grades";
+import { Input } from "@/components/ui/input";
 import { pointsFor } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
@@ -42,6 +44,7 @@ function CoursePage() {
   const qc = useQueryClient();
   const { data } = useQuery(courseQuery(courseId));
   const { data: allCourses = [] } = useQuery(coursesQuery());
+  const [targetGrade, setTargetGrade] = useState("90");
   const course = data?.course;
   const items = data?.items ?? [];
   const weights = data?.weights ?? [];
@@ -107,6 +110,7 @@ function CoursePage() {
   const done = items.filter((i) => i.completed).length;
   const meetings = meetingsOf(course);
   const grade = summarizeGrades(items);
+  const needed = neededAverage(grade, Number(targetGrade) || 0);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
@@ -236,6 +240,43 @@ function CoursePage() {
             ) : (
               <p className="text-sm text-muted-foreground">{t("noGradedYet")}</p>
             )}
+
+            {grade.totalWeight - grade.gradedWeight > 0 &&
+            Math.abs(grade.totalWeight - 100) <= 0.5 ? (
+              <div className="mt-3 border-t border-border pt-3">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {t("whatDoINeedFor")}
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={targetGrade}
+                      onChange={(e) => setTargetGrade(e.target.value)}
+                      className="h-8 w-16 text-center"
+                    />
+                    %
+                  </label>
+                  {needed !== null ? (
+                    <p className="text-sm font-semibold">
+                      {needed > 100 ? (
+                        <span className="text-destructive">{t("targetOutOfReach")}</span>
+                      ) : (
+                        <>
+                          {Math.max(0, needed).toFixed(1)}%{" "}
+                          <span className="font-normal text-muted-foreground">
+                            {t("onRemainingWeight").replace(
+                              "{weight}",
+                              (grade.totalWeight - grade.gradedWeight).toFixed(0),
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
 

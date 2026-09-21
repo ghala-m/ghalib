@@ -29,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
+import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { AchievementsBadges } from "@/components/app/AchievementsBadges";
 import { GpaHistoryManager } from "@/components/app/GpaHistoryManager";
@@ -514,6 +515,7 @@ function ProfilePage() {
         </div>
       </SectionCard>
 
+      <DataExportCard />
       <ResetAccountCard />
     </div>
   );
