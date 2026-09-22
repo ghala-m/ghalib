@@ -4,7 +4,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, MapPin, Pencil, RotateCcw, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { primaryNickname, courseQuery, coursesQuery, meetingsOf } from "@/lib/queries";
+import {
+  primaryNickname,
+  courseQuery,
+  coursesQuery,
+  meetingsOf,
+  studyMaterialsQuery,
+} from "@/lib/queries";
+import { CourseMaterialsSection } from "@/components/app/CourseMaterialsSection";
 import { summarizeGrades, neededAverage } from "@/lib/grades";
 import { Input } from "@/components/ui/input";
 import { pointsFor } from "@/lib/plan";
@@ -44,6 +51,7 @@ function CoursePage() {
   const qc = useQueryClient();
   const { data } = useQuery(courseQuery(courseId));
   const { data: allCourses = [] } = useQuery(coursesQuery());
+  const { data: allMaterials = [] } = useQuery(studyMaterialsQuery());
   const [targetGrade, setTargetGrade] = useState("90");
   const course = data?.course;
   const items = data?.items ?? [];
@@ -100,6 +108,19 @@ function CoursePage() {
       toast.success(t("retakeCreated"));
       navigate({ to: "/courses/$courseId", params: { courseId: newId } });
     },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const setDefaultView = useMutation({
+    mutationFn: async (v: string) => {
+      if (!course) return;
+      const { error } = await supabase
+        .from("courses")
+        .update({ calendar_default_view: v })
+        .eq("id", course.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["course", courseId] }),
     onError: () => toast.error(t("saveFailed")),
   });
 
@@ -193,10 +214,32 @@ function CoursePage() {
         </div>
       </div>
 
+      <CourseMaterialsSection materials={allMaterials.filter((m) => m.course_id === course.id)} />
+
       <section className="mt-6">
-        <h2 className="mb-3 font-semibold">{t("courseCalendar")}</h2>
-        <p className="mb-3 text-xs text-muted-foreground">{t("courseCalendarHint")}</p>
-        <CalendarView courseId={courseId} />
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="font-semibold">{t("courseCalendar")}</h2>
+            <p className="text-xs text-muted-foreground">{t("courseCalendarHint")}</p>
+          </div>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            {t("defaultView")}
+            <select
+              className="rounded-md border border-border bg-transparent px-1.5 py-1 text-xs"
+              value={course.calendar_default_view}
+              onChange={(e) => setDefaultView.mutate(e.target.value)}
+            >
+              <option value="day">{t("viewDay")}</option>
+              <option value="week">{t("viewWeek")}</option>
+              <option value="month">{t("viewMonth")}</option>
+            </select>
+          </label>
+        </div>
+        <CalendarView
+          key={course.calendar_default_view}
+          courseId={courseId}
+          defaultView={course.calendar_default_view as "day" | "week" | "month"}
+        />
       </section>
 
       <section className="panel mt-6 p-6">

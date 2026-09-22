@@ -164,6 +164,7 @@ export type Database = {
           description: string | null;
           due_date: string | null;
           due_time: string | null;
+          from_syllabus: boolean;
           id: string;
           notified_at: string | null;
           score_percent: number | null;
@@ -179,6 +180,7 @@ export type Database = {
           description?: string | null;
           due_date?: string | null;
           due_time?: string | null;
+          from_syllabus?: boolean;
           id?: string;
           notified_at?: string | null;
           score_percent?: number | null;
@@ -194,6 +196,7 @@ export type Database = {
           description?: string | null;
           due_date?: string | null;
           due_time?: string | null;
+          from_syllabus?: boolean;
           id?: string;
           notified_at?: string | null;
           score_percent?: number | null;
@@ -257,6 +260,7 @@ export type Database = {
         Row: {
           alt_group: string | null;
           archived: boolean;
+          calendar_default_view: string;
           category: Database["public"]["Enums"]["course_category"];
           code: string | null;
           color: string | null;
@@ -285,6 +289,7 @@ export type Database = {
         Insert: {
           alt_group?: string | null;
           archived?: boolean;
+          calendar_default_view?: string;
           category?: Database["public"]["Enums"]["course_category"];
           code?: string | null;
           color?: string | null;
@@ -313,6 +318,7 @@ export type Database = {
         Update: {
           alt_group?: string | null;
           archived?: boolean;
+          calendar_default_view?: string;
           category?: Database["public"]["Enums"]["course_category"];
           code?: string | null;
           color?: string | null;

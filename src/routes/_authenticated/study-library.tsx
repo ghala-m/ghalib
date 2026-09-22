@@ -6,6 +6,8 @@ import {
   Brain,
   ChevronDown,
   FileText,
+  LayoutGrid,
+  List,
   ListChecks,
   Sparkles,
   Trash2,
@@ -63,6 +65,14 @@ function StudyLibraryPage() {
   const { data: materials = [], isLoading } = useQuery(studyMaterialsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());
   const [openId, setOpenId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
+    if (typeof window === "undefined") return "list";
+    return (localStorage.getItem("study-library:view") as "list" | "grid" | null) ?? "list";
+  });
+  const changeViewMode = (mode: "list" | "grid") => {
+    setViewMode(mode);
+    if (typeof window !== "undefined") localStorage.setItem("study-library:view", mode);
+  };
 
   // Set by the Study Tools page right before navigating here after saving a fresh batch of
   // flashcards — scrolls to and expands that specific item once, then forgets it.
@@ -112,8 +122,40 @@ function StudyLibraryPage() {
             <ArrowRight className="size-4 rtl:rotate-180" />
             {t("backToTools")}
           </Link>
-          <h1 className="font-display text-3xl font-bold">{t("studyLibrary")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{t("studyLibraryHint")}</p>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 className="font-display text-3xl font-bold">{t("studyLibrary")}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("studyLibraryHint")}</p>
+            </div>
+            <div className="flex gap-1 rounded-lg border border-border p-1">
+              <button
+                type="button"
+                onClick={() => changeViewMode("list")}
+                className={cn(
+                  "rounded-md p-1.5",
+                  viewMode === "list"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground",
+                )}
+                aria-label={t("viewAsList")}
+              >
+                <List className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => changeViewMode("grid")}
+                className={cn(
+                  "rounded-md p-1.5",
+                  viewMode === "grid"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground",
+                )}
+                aria-label={t("viewAsGrid")}
+              >
+                <LayoutGrid className="size-4" />
+              </button>
+            </div>
+          </div>
         </header>
 
         {!isLoading && materials.length === 0 ? (
@@ -125,7 +167,7 @@ function StudyLibraryPage() {
                 <h2 className="mb-3 text-sm font-bold tracking-wide text-accent">
                   {courseLabel(course)}
                 </h2>
-                <div className="space-y-2">
+                <div className={viewMode === "grid" ? "grid gap-3 sm:grid-cols-3" : "space-y-2"}>
                   {items.map((m) => (
                     <MaterialCard
                       key={m.id}
@@ -133,6 +175,7 @@ function StudyLibraryPage() {
                       open={openId === m.id}
                       onToggle={setOpenId}
                       onDelete={(id) => remove.mutate(id)}
+                      gridMode={viewMode === "grid"}
                     />
                   ))}
                 </div>
@@ -144,7 +187,7 @@ function StudyLibraryPage() {
                 <h2 className="mb-3 text-sm font-bold tracking-wide text-muted-foreground">
                   {t("unassignedMaterials")}
                 </h2>
-                <div className="space-y-2">
+                <div className={viewMode === "grid" ? "grid gap-3 sm:grid-cols-3" : "space-y-2"}>
                   {groups.unassigned.map((m) => (
                     <MaterialCard
                       key={m.id}
@@ -152,6 +195,7 @@ function StudyLibraryPage() {
                       open={openId === m.id}
                       onToggle={setOpenId}
                       onDelete={(id) => remove.mutate(id)}
+                      gridMode={viewMode === "grid"}
                     />
                   ))}
                 </div>
@@ -169,11 +213,13 @@ function MaterialCard({
   open,
   onToggle,
   onDelete,
+  gridMode,
 }: {
   material: StudyMaterial;
   open: boolean;
   onToggle: (id: string | null) => void;
   onDelete: (id: string) => void;
+  gridMode: boolean;
 }) {
   const { t } = useI18n();
   const Icon = KIND_ICON[material.kind] ?? FileText;
@@ -181,37 +227,54 @@ function MaterialCard({
     { text: string } | { cards: Flashcard[] } | { questions: QuizQuestion[] };
 
   return (
-    <div id={`material-${material.id}`} className="panel overflow-hidden p-0">
+    <div
+      id={`material-${material.id}`}
+      className={cn("panel overflow-hidden p-0", gridMode && open && "sm:col-span-3")}
+    >
       <button
         type="button"
         onClick={() => onToggle(open ? null : material.id)}
-        className="flex w-full items-center gap-3 p-4 text-start hover:bg-muted/30"
+        className={cn(
+          "flex w-full items-start gap-3 p-4 text-start hover:bg-muted/30",
+          gridMode && !open && "h-full flex-col",
+        )}
       >
         <Icon className="size-4 shrink-0 text-accent" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{material.title}</p>
+          <p
+            className={cn(
+              "font-medium",
+              gridMode && !open ? "line-clamp-2 text-sm" : "truncate text-sm",
+            )}
+          >
+            {material.title}
+          </p>
           <p className="text-xs text-muted-foreground">
             {t(KIND_LABEL_KEY[material.kind] ?? "toolSummarize")} ·{" "}
             {new Date(material.created_at).toLocaleDateString()}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(material.id);
-          }}
-          aria-label={t("deleteMaterial")}
-        >
-          <Trash2 className="size-4" />
-        </Button>
-        <ChevronDown
-          className={cn(
-            "size-4 shrink-0 text-muted-foreground transition-transform",
-            open && "rotate-180",
-          )}
-        />
+        {!gridMode || open ? (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(material.id);
+              }}
+              aria-label={t("deleteMaterial")}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground transition-transform",
+                open && "rotate-180",
+              )}
+            />
+          </>
+        ) : null}
       </button>
       {open ? (
         <div className="border-t border-border p-4">

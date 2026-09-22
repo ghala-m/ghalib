@@ -35,7 +35,9 @@ export function SyllabusPanel({ course }: { course: Course }) {
       const doc = await prepareDocument(file);
       await supabase.storage
         .from("syllabi")
-        .upload(`${course.user_id}/${course.id}/${Date.now()}-${file.name}`, file, { upsert: true });
+        .upload(`${course.user_id}/${course.id}/${Date.now()}-${file.name}`, file, {
+          upsert: true,
+        });
       const payload =
         doc.kind === "pdf"
           ? { base64: doc.base64, mediaType: doc.mediaType, courseHint: course.name }
@@ -71,6 +73,24 @@ export function SyllabusPanel({ course }: { course: Course }) {
         .eq("id", course.id);
       if (error) throw error;
 
+      // Re-uploading a syllabus replaces what the LAST syllabus produced rather than piling a
+      // second copy on top of it. Grade weights only ever come from a syllabus, so those are
+      // always fully cleared first. Checklist items also include ones the student added by hand
+      // (via the regular "add task" dialog) — those carry `from_syllabus: false` and are left
+      // alone; only the previous syllabus-derived batch (`from_syllabus: true`) is cleared.
+      const { error: clearWeightsError } = await supabase
+        .from("grade_weights")
+        .delete()
+        .eq("course_id", course.id);
+      if (clearWeightsError) throw clearWeightsError;
+
+      const { error: clearItemsError } = await supabase
+        .from("course_items")
+        .delete()
+        .eq("course_id", course.id)
+        .eq("from_syllabus", true);
+      if (clearItemsError) throw clearItemsError;
+
       if (extraction.items.length) {
         const { error: itemsError } = await supabase.from("course_items").insert(
           extraction.items.map((i) => ({
@@ -82,6 +102,7 @@ export function SyllabusPanel({ course }: { course: Course }) {
             due_date: i.due_date,
             due_time: i.due_time,
             weight: i.weight,
+            from_syllabus: true,
           })),
         );
         if (itemsError) throw itemsError;
@@ -132,7 +153,11 @@ export function SyllabusPanel({ course }: { course: Course }) {
               e.target.value = "";
             }}
           />
-          <Button className="mt-4" disabled={run.isPending} onClick={() => inputRef.current?.click()}>
+          <Button
+            className="mt-4"
+            disabled={run.isPending}
+            onClick={() => inputRef.current?.click()}
+          >
             <Upload className="size-4" />
             {run.isPending ? t("analyzing") : t("uploadSyllabus")}
           </Button>
@@ -155,7 +180,8 @@ export function SyllabusPanel({ course }: { course: Course }) {
           </dl>
 
           <p className="text-xs text-muted-foreground">
-            {extraction.items.length} · {t("checklist")} — {extraction.grade_weights.length} · {t("gradeWeights")}
+            {extraction.items.length} · {t("checklist")} — {extraction.grade_weights.length} ·{" "}
+            {t("gradeWeights")}
           </p>
 
           {askable.length > 0 && (

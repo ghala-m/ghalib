@@ -345,6 +345,10 @@ const dict = {
     ar: "كل ما يخص هذه المادة فقط — يومي وأسبوعي وشهري.",
     en: "Only this course — day, week and month views.",
   },
+  defaultView: { ar: "الافتراضي", en: "Default" },
+  viewDay: { ar: "يومي", en: "Day" },
+  viewWeek: { ar: "أسبوعي", en: "Week" },
+  viewMonth: { ar: "شهري", en: "Month" },
   // --- Events & reminders ---
   addEvent: { ar: "إضافة حدث", en: "Add event" },
   editEvent: { ar: "تعديل الحدث", en: "Edit event" },
@@ -500,6 +504,14 @@ const dict = {
   // --- Study tools ---
   studyTools: { ar: "أدوات الدراسة", en: "Study tools" },
   studyLibrary: { ar: "مكتبة المواد", en: "Study library" },
+  courseMaterials: { ar: "ملفات هذي المادة", en: "This course's files" },
+  noCourseMaterialsYet: {
+    ar: "ماكو ملخصات أو بطاقات محفوظة لهذي المادة بعد. سوّي شي بأدوات الدراسة وحطي المادة هذي.",
+    en: "Nothing saved for this course yet. Generate something in Study Tools and link it to this course.",
+  },
+  viewAll: { ar: "مشاهدة الكل", en: "View all" },
+  viewAsList: { ar: "عرض كقائمة", en: "View as list" },
+  viewAsGrid: { ar: "عرض كشبكة", en: "View as grid" },
   studyLibraryHint: {
     ar: "كل ملخص وبطاقات مراجعة واختبار سوّيتيه، مرتب حسب المادة.",
     en: "Everything you've generated — summaries, flashcards, quizzes — organized by course.",
