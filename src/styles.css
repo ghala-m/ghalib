@@ -199,13 +199,47 @@
   backdrop-filter: blur(12px);
 }
 
+/* Shared dot-grid texture — a faint field of dots (ledger-paper feel, fits an academic planner)
+   layered under the color gradients on every page that uses `surface-gradient`. Kept as its own
+   utility too so a page can opt into just the texture without the color wash, or vice versa. */
+@utility bg-dot-grid {
+  background-image: radial-gradient(color-mix(in oklab, var(--color-foreground) 35%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
 @utility surface-gradient {
   background-image: radial-gradient(
       120% 90% at 100% 0%,
-      color-mix(in oklab, var(--color-accent) 14%, transparent) 0%,
+      color-mix(in oklab, var(--color-accent) 16%, transparent) 0%,
       transparent 55%
     ),
-    radial-gradient(100% 80% at 0% 0%, color-mix(in oklab, var(--color-primary) 12%, transparent) 0%, transparent 50%);
+    radial-gradient(100% 80% at 0% 0%, color-mix(in oklab, var(--color-primary) 14%, transparent) 0%, transparent 50%),
+    radial-gradient(color-mix(in oklab, var(--color-foreground) 22%, transparent) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    20px 20px;
+}
+
+/* The dashboard's own, more pronounced version: everything `surface-gradient` has, plus two
+   large soft-focus color fields (organic — blurred, not hard-edged) positioned off-center so the
+   page doesn't feel perfectly symmetric/static, and a touch more dot-grid opacity since the
+   dashboard is the one page meant to feel like "home" rather than a work surface. */
+@utility surface-gradient-hero {
+  position: relative;
+  background-image: radial-gradient(
+      130% 100% at 100% -10%,
+      color-mix(in oklab, var(--color-accent) 22%, transparent) 0%,
+      transparent 55%
+    ),
+    radial-gradient(110% 90% at -10% 10%, color-mix(in oklab, var(--color-primary) 18%, transparent) 0%, transparent 50%),
+    radial-gradient(70% 60% at 85% 70%, color-mix(in oklab, var(--color-cat-major) 12%, transparent) 0%, transparent 60%),
+    radial-gradient(color-mix(in oklab, var(--color-foreground) 26%, transparent) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    20px 20px;
 }
 
 @layer base {

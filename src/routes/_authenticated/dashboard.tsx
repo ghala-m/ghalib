@@ -49,109 +49,111 @@ function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {profile?.major || t("none")} · {profile?.current_term || t("none")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeModeToggle />
-          <LangToggle variant="outline" />
-        </div>
-      </header>
-
-      <div className="mb-6">
-        <TermControls />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="panel p-5">
-            <s.icon className="size-5 text-accent" />
-            <p className="mt-3 text-2xl font-bold">{String(s.value)}</p>
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+    <div className="surface-gradient-hero min-h-full">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+        <header className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">{t("dashboard")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {profile?.major || t("none")} · {profile?.current_term || t("none")}
+            </p>
           </div>
-        ))}
-      </div>
+          <div className="flex items-center gap-2">
+            <ThemeModeToggle />
+            <LangToggle variant="outline" />
+          </div>
+        </header>
 
-      <div className="mt-6">
-        <StudyStreak />
-      </div>
+        <div className="mb-6">
+          <TermControls />
+        </div>
 
-      <div className="mt-6">
-        <GpaTrendChart />
-      </div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {stats.map((s) => (
+            <div key={s.label} className="panel p-5">
+              <s.icon className="size-5 text-accent" />
+              <p className="mt-3 text-2xl font-bold">{String(s.value)}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </div>
+          ))}
+        </div>
 
-      <section className="mt-10">
-        <PrereqFlowChart courses={courses.filter((c) => !c.archived)} />
-      </section>
+        <div className="mt-6">
+          <StudyStreak />
+        </div>
 
-      <section className="mt-6">
-        <NextTermPreview courses={courses.filter((c) => !c.archived)} />
-      </section>
+        <div className="mt-6">
+          <GpaTrendChart />
+        </div>
 
-      <section className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">{t("calendar")}</h2>
-        <CalendarView defaultView="week" />
-      </section>
+        <section className="mt-10">
+          <PrereqFlowChart courses={courses.filter((c) => !c.archived)} />
+        </section>
 
-      <section className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">{t("upcoming")}</h2>
-        {upcoming.length === 0 ? (
-          <p className="panel p-6 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
-        ) : (
-          <ul className="panel divide-y divide-border">
-            {upcoming.map((item) => (
-              <li key={item.id} className="flex items-center justify-between gap-4 px-5 py-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{item.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {item.courses?.name} · {t(item.type)}
+        <section className="mt-6">
+          <NextTermPreview courses={courses.filter((c) => !c.archived)} />
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">{t("calendar")}</h2>
+          <CalendarView defaultView="week" />
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">{t("upcoming")}</h2>
+          {upcoming.length === 0 ? (
+            <p className="panel p-6 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
+          ) : (
+            <ul className="panel divide-y divide-border">
+              {upcoming.map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-4 px-5 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{item.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.courses?.name} · {t(item.type)}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                    {item.due_date
+                      ? new Date(item.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {
+                          day: "numeric",
+                          month: "short",
+                        })
+                      : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold">{t("current")}</h2>
+          {active.length === 0 ? (
+            <div className="panel p-8 text-center">
+              <p className="font-medium">{t("noCourses")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("addFirstCourse")}</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {active.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/courses/$courseId"
+                  params={{ courseId: c.id }}
+                  className="panel p-5 transition-shadow hover:shadow-[var(--shadow-lift)]"
+                >
+                  <p className="text-xs text-muted-foreground">{c.code || t("none")}</p>
+                  <p className="mt-1 font-semibold">{c.name}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {c.instructor || t("none")} · {c.term || t("none")}
                   </p>
-                </div>
-                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                  {item.due_date
-                    ? new Date(item.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {
-                        day: "numeric",
-                        month: "short",
-                      })
-                    : "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="mt-10">
-        <h2 className="mb-4 text-lg font-semibold">{t("current")}</h2>
-        {active.length === 0 ? (
-          <div className="panel p-8 text-center">
-            <p className="font-medium">{t("noCourses")}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t("addFirstCourse")}</p>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {active.map((c) => (
-              <Link
-                key={c.id}
-                to="/courses/$courseId"
-                params={{ courseId: c.id }}
-                className="panel p-5 transition-shadow hover:shadow-[var(--shadow-lift)]"
-              >
-                <p className="text-xs text-muted-foreground">{c.code || t("none")}</p>
-                <p className="mt-1 font-semibold">{c.name}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {c.instructor || t("none")} · {c.term || t("none")}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

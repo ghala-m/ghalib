@@ -75,15 +75,34 @@ export function SyllabusPanel({ course }: { course: Course }) {
 
       // Re-uploading a syllabus replaces what the LAST syllabus produced rather than piling a
       // second copy on top of it. Grade weights only ever come from a syllabus, so those are
-      // always fully cleared first. Checklist items also include ones the student added by hand
-      // (via the regular "add task" dialog) — those carry `from_syllabus: false` and are left
-      // alone; only the previous syllabus-derived batch (`from_syllabus: true`) is cleared.
+      // always fully cleared and immediately re-inserted as one pair of steps — deliberately
+      // BEFORE touching course_items below. supabase-js has no client-side multi-table
+      // transaction, so if the migration adding `from_syllabus` hasn't been run yet on this
+      // database, the course_items step that depends on it throws — and grade weights, having
+      // already been fully replaced by this point, are left correct either way rather than
+      // wiped-and-never-refilled (which is what happened when items were cleared first and that
+      // step's failure aborted everything before grade weights got their new rows).
       const { error: clearWeightsError } = await supabase
         .from("grade_weights")
         .delete()
         .eq("course_id", course.id);
       if (clearWeightsError) throw clearWeightsError;
 
+      if (extraction.grade_weights.length) {
+        const { error: gwError } = await supabase.from("grade_weights").insert(
+          extraction.grade_weights.map((g) => ({
+            course_id: course.id,
+            user_id: course.user_id,
+            category: g.category,
+            percentage: g.percentage,
+          })),
+        );
+        if (gwError) throw gwError;
+      }
+
+      // Checklist items also include ones the student added by hand (via the regular "add task"
+      // dialog) — those carry `from_syllabus: false` and are left alone; only the previous
+      // syllabus-derived batch (`from_syllabus: true`) is cleared.
       const { error: clearItemsError } = await supabase
         .from("course_items")
         .delete()
@@ -106,17 +125,6 @@ export function SyllabusPanel({ course }: { course: Course }) {
           })),
         );
         if (itemsError) throw itemsError;
-      }
-      if (extraction.grade_weights.length) {
-        const { error: gwError } = await supabase.from("grade_weights").insert(
-          extraction.grade_weights.map((g) => ({
-            course_id: course.id,
-            user_id: course.user_id,
-            category: g.category,
-            percentage: g.percentage,
-          })),
-        );
-        if (gwError) throw gwError;
       }
     },
     onSuccess: () => {

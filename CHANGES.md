@@ -1,4 +1,21 @@
-# تحديثات غالِب — الدفعة الرابعة والعشرون
+# تحديثات غالِب — الدفعة الخامسة والعشرون
+
+## طريقة التطبيق
+نسخة كاملة (zip)، مو باتش. **شغّلي المايجريشن كامل الآن** بـSQL editor (نفس النص موجود بالمحادثة):
+```sql
+alter table public.course_items add column if not exists from_syllabus boolean not null default false;
+alter table public.courses add column if not exists calendar_default_view text not null default 'week';
+alter table public.courses drop constraint if exists courses_calendar_default_view_check;
+alter table public.courses add constraint courses_calendar_default_view_check
+  check (calendar_default_view in ('day', 'week', 'month'));
+```
+
+## إصلاح اختفاء توزيع الدرجات (بسبب مني — ما عطيتك المايجريشن واضح بالرد السابق)
+لأن العمود الجديد مو موجود على قاعدة بياناتك، عملية رفع السيلابس كانت تمسح توزيع الدرجات القديم بنجاح، ثم تتوقف بخطوة تالية تعتمد على عمود غير موجود — فتضل الدرجات فاضية دايمًا. أعدت ترتيب الكود بـ`SyllabusPanel.tsx`: الحين توزيع الدرجات يُحذف *ويُعاد إدراجه فورًا* كخطوة واحدة متكاملة، قبل أي خطوة تعتمد على العمود الجديد — فحتى لو صار خطأ بخطوة تالية، الدرجات تبقى سليمة.
+
+## لوحة التحكم: خلفية أبرز شوي
+أضفت طبقة نقش نقطي خفيف (يشبه ورق الدفاتر) فوق التدرج اللوني الموجود بكل الصفحات، ولوحة التحكم تحديدًا صارت أقوى شوي (تدرجات أوسع + لمسة لون إضافية) عشان تحس إنها "الصفحة الرئيسية" مقارنة بالصفحات الثانوية. القوة الحالية تقديرية — قوليلي رأيك بعد النشر وأعدّلها أقوى أو أخف.
+
 
 ## طريقة التطبيق
 نسخة كاملة (zip)، مو باتش. **فيها migration جديد**: `20260922010000_syllabus_reset_flag.sql` — شغّليه بـSQL editor.
