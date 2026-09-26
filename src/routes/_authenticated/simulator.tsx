@@ -125,7 +125,9 @@ function SimulatorPage() {
                   >
                     <i
                       className="size-2 rounded-full"
-                      style={{ background: CATEGORY_META[c.category].color }}
+                      style={{
+                        background: CATEGORY_META[c.category]?.color ?? "var(--muted-foreground)",
+                      }}
                     />
                     <span className="max-w-48 truncate">{c.name}</span>
                     {c.credits ? (
@@ -201,7 +203,9 @@ function SimulatorPage() {
                 >
                   <i
                     className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: CATEGORY_META[c.category].color }}
+                    style={{
+                      background: CATEGORY_META[c.category]?.color ?? "var(--muted-foreground)",
+                    }}
                   />
                   <span className="min-w-0 flex-1 truncate">{c.name}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{c.code || "—"}</span>

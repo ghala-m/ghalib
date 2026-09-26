@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CalendarDays, MapPin, Pencil, RotateCcw, User } from "lucide-react";
@@ -19,7 +19,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Checkbox } from "@/components/ui/checkbox";
 import { playTickChime } from "@/lib/sound";
-import { SyllabusPanel } from "@/components/app/SyllabusPanel";
+import {
+  CoursePageSettingsDialog,
+  parseSectionOrder,
+  type SectionKey,
+} from "@/components/app/CoursePageSettingsDialog";
 import { CourseFormDialog } from "@/components/app/CourseFormDialog";
 import { CalendarView } from "@/components/app/CalendarView";
 import { ItemDialog } from "@/components/app/ItemDialog";
@@ -174,6 +178,7 @@ function CoursePage() {
               {t("retakeCourse")}
             </Button>
           ) : null}
+          <CoursePageSettingsDialog course={course} />
           <CourseFormDialog
             course={course}
             trigger={
@@ -186,191 +191,210 @@ function CoursePage() {
         </div>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <SyllabusPanel course={course} />
-
-        <div className="panel p-6">
-          <h2 className="font-semibold">{t("gradeWeights")}</h2>
-          {weights.length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">{t("none")}</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {weights.map((w) => (
-                <li key={w.id}>
-                  <div className="flex justify-between text-sm">
-                    <span>{w.category}</span>
-                    <span className="tabular-nums">{w.percentage}%</span>
-                  </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-muted">
-                    <div
-                      className="h-1.5 rounded-full bg-accent"
-                      style={{ width: `${Math.min(100, Number(w.percentage))}%` }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      <CourseMaterialsSection materials={allMaterials.filter((m) => m.course_id === course.id)} />
-
-      <section className="mt-6">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="font-semibold">{t("courseCalendar")}</h2>
-            <p className="text-xs text-muted-foreground">{t("courseCalendarHint")}</p>
-          </div>
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            {t("defaultView")}
-            <select
-              className="rounded-md border border-border bg-transparent px-1.5 py-1 text-xs"
-              value={course.calendar_default_view}
-              onChange={(e) => setDefaultView.mutate(e.target.value)}
-            >
-              <option value="day">{t("viewDay")}</option>
-              <option value="week">{t("viewWeek")}</option>
-              <option value="month">{t("viewMonth")}</option>
-            </select>
-          </label>
-        </div>
-        <CalendarView
-          key={course.calendar_default_view}
-          courseId={courseId}
-          defaultView={course.calendar_default_view as "day" | "week" | "month"}
-        />
-      </section>
-
-      <section className="panel mt-6 p-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold">{t("checklist")}</h2>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">
-              {done}/{items.length} · {t("overallProgress")}
-            </span>
-            <ItemDialog
-              courseId={courseId}
-              trigger={
-                <Button size="sm" variant="outline">
-                  {t("addItem")}
-                </Button>
-              }
+      {/* Each block below is keyed so `sectionOrder.map` can render them in the student's chosen
+          order (set via CoursePageSettingsDialog) — "grades", "materials", "calendar",
+          "checklist" are the only four reorderable; meetings, being small and rare, always stays
+          pinned at the very end regardless of order. */}
+      {(() => {
+        const sectionBlocks: Record<SectionKey, ReactNode> = {
+          grades: (
+            <div key="grades" className="panel mt-6 p-6">
+              <h2 className="font-semibold">{t("gradeWeights")}</h2>
+              {weights.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">{t("none")}</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {weights.map((w) => (
+                    <li key={w.id}>
+                      <div className="flex justify-between text-sm">
+                        <span>{w.category}</span>
+                        <span className="tabular-nums">{w.percentage}%</span>
+                      </div>
+                      <div className="mt-1 h-1.5 rounded-full bg-muted">
+                        <div
+                          className="h-1.5 rounded-full bg-accent"
+                          style={{ width: `${Math.min(100, Number(w.percentage))}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ),
+          materials: (
+            <CourseMaterialsSection
+              key="materials"
+              materials={allMaterials.filter((m) => m.course_id === course.id)}
             />
-          </div>
-        </div>
-
-        {grade.totalWeight > 0 && (
-          <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4">
-            {grade.currentAverage !== null ? (
-              <>
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="text-sm font-medium">{t("currentGrade")}</p>
-                  <p className="text-2xl font-bold tabular-nums text-accent">
-                    {grade.currentAverage.toFixed(1)}%
-                  </p>
+          ),
+          calendar: (
+            <section key="calendar" className="mt-6">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="font-semibold">{t("courseCalendar")}</h2>
+                  <p className="text-xs text-muted-foreground">{t("courseCalendarHint")}</p>
                 </div>
-                <div className="mt-2 h-1.5 rounded-full bg-muted">
-                  <div
-                    className="h-1.5 rounded-full bg-accent"
-                    style={{ width: `${Math.min(100, grade.coverage)}%` }}
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  {t("defaultView")}
+                  <select
+                    className="rounded-md border border-border bg-transparent px-1.5 py-1 text-xs"
+                    value={course.calendar_default_view}
+                    onChange={(e) => setDefaultView.mutate(e.target.value)}
+                  >
+                    <option value="day">{t("viewDay")}</option>
+                    <option value="week">{t("viewWeek")}</option>
+                    <option value="month">{t("viewMonth")}</option>
+                  </select>
+                </label>
+              </div>
+              <CalendarView
+                key={course.calendar_default_view}
+                courseId={courseId}
+                defaultView={course.calendar_default_view as "day" | "week" | "month"}
+              />
+            </section>
+          ),
+          checklist: (
+            <section key="checklist" className="panel mt-6 p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">{t("checklist")}</h2>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {done}/{items.length} · {t("overallProgress")}
+                  </span>
+                  <ItemDialog
+                    courseId={courseId}
+                    trigger={
+                      <Button size="sm" variant="outline">
+                        {t("addItem")}
+                      </Button>
+                    }
                   />
                 </div>
-                <p className="mt-1.5 text-xs text-muted-foreground">
-                  {grade.coverage.toFixed(0)}% {t("gradeCoverage")}
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">{t("noGradedYet")}</p>
-            )}
+              </div>
 
-            {grade.totalWeight - grade.gradedWeight > 0 &&
-            Math.abs(grade.totalWeight - 100) <= 0.5 ? (
-              <div className="mt-3 border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {t("whatDoINeedFor")}
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={targetGrade}
-                      onChange={(e) => setTargetGrade(e.target.value)}
-                      className="h-8 w-16 text-center"
-                    />
-                    %
-                  </label>
-                  {needed !== null ? (
-                    <p className="text-sm font-semibold">
-                      {needed > 100 ? (
-                        <span className="text-destructive">{t("targetOutOfReach")}</span>
-                      ) : (
-                        <>
-                          {Math.max(0, needed).toFixed(1)}%{" "}
-                          <span className="font-normal text-muted-foreground">
-                            {t("onRemainingWeight").replace(
-                              "{weight}",
-                              (grade.totalWeight - grade.gradedWeight).toFixed(0),
+              {grade.totalWeight > 0 && (
+                <div className="mt-4 rounded-xl border border-border bg-muted/30 p-4">
+                  {grade.currentAverage !== null ? (
+                    <>
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <p className="text-sm font-medium">{t("currentGrade")}</p>
+                        <p className="text-2xl font-bold tabular-nums text-accent">
+                          {grade.currentAverage.toFixed(1)}%
+                        </p>
+                      </div>
+                      <div className="mt-2 h-1.5 rounded-full bg-muted">
+                        <div
+                          className="h-1.5 rounded-full bg-accent"
+                          style={{ width: `${Math.min(100, grade.coverage)}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-muted-foreground">
+                        {grade.coverage.toFixed(0)}% {t("gradeCoverage")}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t("noGradedYet")}</p>
+                  )}
+
+                  {grade.totalWeight - grade.gradedWeight > 0 &&
+                  Math.abs(grade.totalWeight - 100) <= 0.5 ? (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                          {t("whatDoINeedFor")}
+                          <Input
+                            type="number"
+                            min={0}
+                            max={100}
+                            value={targetGrade}
+                            onChange={(e) => setTargetGrade(e.target.value)}
+                            className="h-8 w-16 text-center"
+                          />
+                          %
+                        </label>
+                        {needed !== null ? (
+                          <p className="text-sm font-semibold">
+                            {needed > 100 ? (
+                              <span className="text-destructive">{t("targetOutOfReach")}</span>
+                            ) : (
+                              <>
+                                {Math.max(0, needed).toFixed(1)}%{" "}
+                                <span className="font-normal text-muted-foreground">
+                                  {t("onRemainingWeight").replace(
+                                    "{weight}",
+                                    (grade.totalWeight - grade.gradedWeight).toFixed(0),
+                                  )}
+                                </span>
+                              </>
                             )}
-                          </span>
-                        </>
-                      )}
-                    </p>
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
                   ) : null}
                 </div>
-              </div>
-            ) : null}
-          </div>
-        )}
+              )}
 
-        {items.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
-        ) : (
-          <ul className="mt-4 divide-y divide-border">
-            {items.map((i) => (
-              <li key={i.id} className="flex items-center gap-3 py-3">
-                <Checkbox
-                  checked={i.completed}
-                  onCheckedChange={(v) => {
-                    const completed = v === true;
-                    if (completed) playTickChime();
-                    toggle.mutate({ id: i.id, completed });
-                  }}
-                />
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`truncate text-sm ${i.completed ? "text-muted-foreground line-through" : ""}`}
-                  >
-                    {i.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t(i.type)}
-                    {i.weight ? ` · ${t("weight")}: ${i.weight}%` : ""}
-                    {i.score_percent !== null ? ` · ${t("scoreLabel")}: ${i.score_percent}%` : ""}
-                  </p>
-                </div>
-                <ItemDialog
-                  courseId={courseId}
-                  item={i}
-                  trigger={
-                    <Button variant="ghost" size="sm" className="shrink-0 text-xs">
-                      {t("edit")}
-                    </Button>
-                  }
-                />
-                <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                  {i.due_date
-                    ? new Date(i.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {
-                        day: "numeric",
-                        month: "short",
-                      })
-                    : "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              {items.length === 0 ? (
+                <p className="mt-3 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
+              ) : (
+                <ul className="mt-4 divide-y divide-border">
+                  {items.map((i) => (
+                    <li key={i.id} className="flex items-center gap-3 py-3">
+                      <Checkbox
+                        checked={i.completed}
+                        onCheckedChange={(v) => {
+                          const completed = v === true;
+                          if (completed) playTickChime();
+                          toggle.mutate({ id: i.id, completed });
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={`truncate text-sm ${i.completed ? "text-muted-foreground line-through" : ""}`}
+                        >
+                          {i.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t(i.type)}
+                          {i.weight ? ` · ${t("weight")}: ${i.weight}%` : ""}
+                          {i.score_percent !== null
+                            ? ` · ${t("scoreLabel")}: ${i.score_percent}%`
+                            : ""}
+                        </p>
+                      </div>
+                      <ItemDialog
+                        courseId={courseId}
+                        item={i}
+                        trigger={
+                          <Button variant="ghost" size="sm" className="shrink-0 text-xs">
+                            {t("edit")}
+                          </Button>
+                        }
+                      />
+                      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                        {i.due_date
+                          ? new Date(i.due_date).toLocaleDateString(
+                              lang === "ar" ? "ar" : "en-GB",
+                              {
+                                day: "numeric",
+                                month: "short",
+                              },
+                            )
+                          : "—"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          ),
+        };
+        const order = parseSectionOrder(course.section_order);
+        return order.map((key) => sectionBlocks[key]);
+      })()}
 
       {meetings.length > 0 && (
         <section className="panel mt-6 p-6">

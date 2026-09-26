@@ -131,14 +131,14 @@ export function buildPrereqGraph(courses: Course[]): {
     const node = byKey.get(key);
     if (!node || seen.has(key)) return 0;
     seen.add(key);
-    const prereqs = node.course.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const prereqs = (node.course.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
     if (!prereqs.length) return 0;
     return 1 + Math.max(...prereqs.map((p) => depthOf(p, new Set(seen))));
   };
 
   for (const node of byKey.values()) {
     node.depth = node.course.plan_level ? node.course.plan_level - 1 : depthOf(node.key);
-    for (const p of node.course.prerequisites.map(norm)) {
+    for (const p of (node.course.prerequisites ?? []).map(norm)) {
       byKey.get(p)?.unlocks.push(node.key);
     }
   }
@@ -148,7 +148,7 @@ export function buildPrereqGraph(courses: Course[]): {
     if (node.course.status === "completed") node.state = "completed";
     else if (node.course.status === "current") node.state = "current";
     else {
-      const prereqs = node.course.prerequisites.map(norm).filter((p) => byKey.has(p));
+      const prereqs = (node.course.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
       const prereqsMet = prereqs.every((p) => byKey.get(p)?.course.status === "completed");
       node.state =
         prereqsMet && meetsExtraUnlockConditions(node.course, totalCompletedCredits)
@@ -162,7 +162,7 @@ export function buildPrereqGraph(courses: Course[]): {
   // whose only blocker is a lecture that's itself available/in-progress right now unlocks too.
   for (const node of byKey.values()) {
     if (node.state !== "locked") continue;
-    const prereqs = node.course.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const prereqs = (node.course.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
     const prereqsMet = prereqs.every((p) => {
       const target = byKey.get(p)!;
       if (target.course.status === "completed") return true;
@@ -188,7 +188,7 @@ function prereqSatisfiedNow(
 ): boolean {
   if (prereq.status === "completed") return true;
   if (isLabPairOf(dependent, prereq)) {
-    const lecturePrereqs = prereq.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const lecturePrereqs = (prereq.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
     return lecturePrereqs.every((p) => byKey.get(p)!.status === "completed");
   }
   return false;
@@ -214,7 +214,7 @@ export function nextTermPreview(courses: Course[]): Course[] {
   for (const c of courses) {
     if (c.status !== "future") continue;
     if (!meetsExtraUnlockConditions(c, totalCompletedCredits)) continue;
-    const prereqs = c.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const prereqs = (c.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
     const availableToday = prereqs.every((p) => prereqSatisfiedNow(c, byKey.get(p)!, byKey));
     if (availableToday) continue;
     const availableNextTerm = prereqs.every((p) => {
@@ -249,7 +249,7 @@ export function simulateUnlocks(courses: Course[], selectedIds: string[]): Cours
   for (const c of courses) {
     if (c.status !== "future" || assumed.has(c.id)) continue;
     if (!meetsExtraUnlockConditions(c, totalCompletedCredits)) continue;
-    const prereqs = c.prerequisites.map(norm).filter((p) => byKey.has(p));
+    const prereqs = (c.prerequisites ?? []).map(norm).filter((p) => byKey.has(p));
     const availableToday = prereqs.every((p) => prereqSatisfiedNow(c, byKey.get(p)!, byKey));
     if (availableToday) continue;
     const unlocked = prereqs.every((p) => {
@@ -396,8 +396,8 @@ export function diffMajorSheet(
     if (p.category !== match.category) changes.push("category");
     if ((p.level ?? null) !== (match.plan_level ?? null)) changes.push("level");
     if (
-      [...p.prerequisites].map(norm).sort().join(",") !==
-      [...match.prerequisites].map(norm).sort().join(",")
+      [...(p.prerequisites ?? [])].map(norm).sort().join(",") !==
+      [...(match.prerequisites ?? [])].map(norm).sort().join(",")
     )
       changes.push("prerequisites");
 
@@ -422,7 +422,7 @@ export function unresolvedPrerequisites(
   const known = new Set(rows.map((r) => norm(r.code || r.name)));
   const unresolved = new Set<string>();
   for (const r of rows) {
-    for (const p of r.prerequisites) {
+    for (const p of r.prerequisites ?? []) {
       if (!known.has(norm(p))) unresolved.add(p);
     }
   }

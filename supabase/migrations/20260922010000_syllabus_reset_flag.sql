@@ -13,3 +13,8 @@ alter table public.courses add column if not exists calendar_default_view text n
 alter table public.courses drop constraint if exists courses_calendar_default_view_check;
 alter table public.courses add constraint courses_calendar_default_view_check
   check (calendar_default_view in ('day', 'week', 'month'));
+
+-- Per-course, student-chosen order for the course page's main sections (grades, materials,
+-- calendar, checklist) — "sometimes I want the checklist first, sometimes the calendar first".
+alter table public.courses add column if not exists section_order jsonb
+  not null default '["grades", "materials", "calendar", "checklist"]'::jsonb;

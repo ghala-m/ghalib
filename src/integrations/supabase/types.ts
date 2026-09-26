@@ -280,6 +280,7 @@ export type Database = {
           plan_level: number | null;
           prerequisites: string[];
           previous_attempt_id: string | null;
+          section_order: Json;
           status: Database["public"]["Enums"]["course_status"];
           syllabus_path: string | null;
           term: string | null;
@@ -309,6 +310,7 @@ export type Database = {
           plan_level?: number | null;
           prerequisites?: string[];
           previous_attempt_id?: string | null;
+          section_order?: Json;
           status?: Database["public"]["Enums"]["course_status"];
           syllabus_path?: string | null;
           term?: string | null;
@@ -338,6 +340,7 @@ export type Database = {
           plan_level?: number | null;
           prerequisites?: string[];
           previous_attempt_id?: string | null;
+          section_order?: Json;
           status?: Database["public"]["Enums"]["course_status"];
           syllabus_path?: string | null;
           term?: string | null;
