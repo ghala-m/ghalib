@@ -242,6 +242,44 @@
     20px 20px;
 }
 
+/* --- Background pattern picker (Settings → Background) ---
+   `.surface-gradient` / `.surface-gradient-hero` above are the "dots" pattern and stay the
+   default text/first-paint background (so the very first render — before the picker's
+   localStorage value is read — always looks intentional, never blank). The three rules below
+   override just the texture layer when a different pattern is chosen, scoped by a
+   `data-bg-pattern` attribute set on <html> by ThemeProvider; the color-wash gradients underneath
+   are left as-is in every case, only the repeating texture on top changes. Higher specificity
+   (attribute + class) than the plain utility above, so no !important needed. */
+[data-bg-pattern="plain"] .surface-gradient,
+[data-bg-pattern="plain"] .surface-gradient-hero {
+  background-image:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--color-accent) 16%, transparent) 0%, transparent 55%),
+    radial-gradient(100% 80% at 0% 0%, color-mix(in oklab, var(--color-primary) 14%, transparent) 0%, transparent 50%);
+}
+
+[data-bg-pattern="geometric"] .surface-gradient,
+[data-bg-pattern="geometric"] .surface-gradient-hero {
+  background-image:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in oklab, var(--color-accent) 16%, transparent) 0%, transparent 55%),
+    radial-gradient(100% 80% at 0% 0%, color-mix(in oklab, var(--color-primary) 14%, transparent) 0%, transparent 50%),
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in oklab, var(--color-foreground) 6%, transparent) 0px,
+      color-mix(in oklab, var(--color-foreground) 6%, transparent) 1px,
+      transparent 1px,
+      transparent 26px
+    );
+}
+
+[data-bg-pattern="waves"] .surface-gradient,
+[data-bg-pattern="waves"] .surface-gradient-hero {
+  background-image:
+    radial-gradient(60% 50% at 15% 15%, color-mix(in oklab, var(--color-accent) 20%, transparent) 0%, transparent 65%),
+    radial-gradient(55% 45% at 90% 25%, color-mix(in oklab, var(--color-primary) 16%, transparent) 0%, transparent 65%),
+    radial-gradient(50% 55% at 75% 90%, color-mix(in oklab, var(--color-cat-major) 14%, transparent) 0%, transparent 65%),
+    radial-gradient(45% 40% at 10% 85%, color-mix(in oklab, var(--color-cat-college) 12%, transparent) 0%, transparent 65%);
+}
+
 @layer base {
   ::-webkit-scrollbar {
     width: 10px;

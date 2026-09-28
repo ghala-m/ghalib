@@ -10,6 +10,14 @@ import {
 
 export type ThemeMode = "light" | "dark" | "system";
 
+export type BackgroundPattern = "dots" | "geometric" | "waves" | "plain";
+export const BACKGROUND_PATTERNS: { id: BackgroundPattern; labelAr: string; labelEn: string }[] = [
+  { id: "dots", labelAr: "نقطي", labelEn: "Dot grid" },
+  { id: "geometric", labelAr: "هندسي", labelEn: "Geometric" },
+  { id: "waves", labelAr: "عضوي", labelEn: "Organic" },
+  { id: "plain", labelAr: "بسيط", labelEn: "Plain" },
+];
+
 export type AccentPreset = {
   id: string;
   labelAr: string;
@@ -236,6 +244,8 @@ type Ctx = {
    * `applyBgTint`. Null means "no custom background, use whatever the accent preset implies". */
   customBg: string | null;
   setCustomBg: (hex: string | null) => void;
+  bgPattern: BackgroundPattern;
+  setBgPattern: (p: BackgroundPattern) => void;
 };
 
 const ThemeContext = createContext<Ctx | null>(null);
@@ -337,16 +347,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("system");
   const [accent, setAccentState] = useState<string>("amber");
   const [customBg, setCustomBgState] = useState<string | null>(null);
+  const [bgPattern, setBgPatternState] = useState<BackgroundPattern>("dots");
   const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {
     const storedMode = window.localStorage.getItem("theme") as ThemeMode | null;
     const storedAccent = window.localStorage.getItem("accent");
     const storedBg = window.localStorage.getItem("customBg");
+    const storedPattern = window.localStorage.getItem("bgPattern") as BackgroundPattern | null;
     if (storedMode === "light" || storedMode === "dark" || storedMode === "system")
       setModeState(storedMode);
     if (storedAccent) setAccentState(storedAccent);
     if (storedBg) setCustomBgState(storedBg);
+    if (storedPattern && BACKGROUND_PATTERNS.some((p) => p.id === storedPattern))
+      setBgPatternState(storedPattern);
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     setSystemDark(mq.matches);
     const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches);
@@ -365,6 +379,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (customBg) applyBgTint(hexToOklchHue(customBg), resolved);
   }, [resolved, accent, customBg]);
 
+  useEffect(() => {
+    document.documentElement.dataset["bgPattern"] = bgPattern;
+  }, [bgPattern]);
+
   const setMode = useCallback((m: ThemeMode) => {
     setModeState(m);
     window.localStorage.setItem("theme", m);
@@ -381,9 +399,24 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     else window.localStorage.removeItem("customBg");
   }, []);
 
+  const setBgPattern = useCallback((p: BackgroundPattern) => {
+    setBgPatternState(p);
+    window.localStorage.setItem("bgPattern", p);
+  }, []);
+
   const value = useMemo(
-    () => ({ mode, setMode, resolved, accent, setAccent, customBg, setCustomBg }),
-    [mode, setMode, resolved, accent, setAccent, customBg, setCustomBg],
+    () => ({
+      mode,
+      setMode,
+      resolved,
+      accent,
+      setAccent,
+      customBg,
+      setCustomBg,
+      bgPattern,
+      setBgPattern,
+    }),
+    [mode, setMode, resolved, accent, setAccent, customBg, setCustomBg, bgPattern, setBgPattern],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

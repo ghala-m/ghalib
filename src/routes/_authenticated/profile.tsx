@@ -33,7 +33,11 @@ import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { AchievementsBadges } from "@/components/app/AchievementsBadges";
 import { GpaHistoryManager } from "@/components/app/GpaHistoryManager";
-import { AccentPicker, ThemeModeToggle } from "@/components/app/ThemeControls";
+import {
+  AccentPicker,
+  BackgroundPatternPicker,
+  ThemeModeToggle,
+} from "@/components/app/ThemeControls";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -364,6 +368,9 @@ function ProfilePage() {
         action={<ThemeModeToggle />}
       >
         <AccentPicker />
+        <div className="mt-4">
+          <BackgroundPatternPicker />
+        </div>
       </SectionCard>
 
       {/* Every reminder control in one place */}

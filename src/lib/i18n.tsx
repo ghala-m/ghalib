@@ -142,6 +142,7 @@ const dict = {
   },
   nicknames: { ar: "الأسماء المختصرة", en: "Nicknames" },
   addNickname: { ar: "إضافة اسم مختصر", en: "Add nickname" },
+  backgroundPattern: { ar: "نمط الخلفية", en: "Background pattern" },
   dangerZone: { ar: "منطقة الخطر", en: "Danger zone" },
   exportDataTitle: { ar: "نسخة احتياطية من بياناتك", en: "Back up your data" },
   exportDataHint: {

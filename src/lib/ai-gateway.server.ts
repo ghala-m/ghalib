@@ -24,7 +24,7 @@ export function createLovableAiGatewayProvider(apiKey: string) {
  * Order matters only in that the first configured one wins if more than one secret is set —
  * pick whichever provider you actually have an account with:
  *   - OPENAI_API_KEY        → OpenAI directly (gpt-4o-mini)
- *   - GOOGLE_GENERATIVE_AI_API_KEY → Google AI Studio directly (gemini-2.0-flash) — has a
+ *   - GOOGLE_GENERATIVE_AI_API_KEY → Google AI Studio directly (gemini-2.5-flash) — has a
  *     genuinely free tier as of when this was written, so this is the cheapest way to fully
  *     detach from Lovable's credit system; get a key at https://aistudio.google.com/apikey
  *   - ANTHROPIC_API_KEY     → Anthropic directly (claude-3-5-haiku)
@@ -45,7 +45,7 @@ export function getAiModel(): LanguageModel {
   const googleKey = process.env["GOOGLE_GENERATIVE_AI_API_KEY"];
   if (googleKey)
     return createGoogleGenerativeAI({ apiKey: googleKey })(
-      "gemini-2.0-flash",
+      "gemini-2.5-flash",
     ) as unknown as LanguageModel;
 
   const anthropicKey = process.env["ANTHROPIC_API_KEY"];

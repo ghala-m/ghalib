@@ -1,6 +1,12 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { Pipette } from "lucide-react";
-import { ACCENTS, isCustomAccent, useTheme, type ThemeMode } from "@/lib/theme";
+import {
+  ACCENTS,
+  BACKGROUND_PATTERNS,
+  isCustomAccent,
+  useTheme,
+  type ThemeMode,
+} from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -137,6 +143,42 @@ export function AccentPicker() {
             </button>
           ) : null}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/** Picks which decorative texture (dots / geometric / organic / plain) shows through the
+ * page-background gradient — see the `[data-bg-pattern="..."]` rules in styles.css. Each swatch
+ * previews the real pattern (not a description), scaled down, so the choice is visual. */
+export function BackgroundPatternPicker() {
+  const { bgPattern, setBgPattern } = useTheme();
+  const { t, lang } = useI18n();
+  return (
+    <div>
+      <p className="text-sm font-medium">{t("backgroundPattern")}</p>
+      <div className="mt-2 grid grid-cols-4 gap-2">
+        {BACKGROUND_PATTERNS.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => setBgPattern(p.id)}
+            aria-pressed={bgPattern === p.id}
+            data-bg-pattern={p.id}
+            className={cn(
+              "relative h-14 overflow-hidden rounded-lg border-2 transition-colors",
+              bgPattern === p.id ? "border-accent" : "border-border hover:border-muted-foreground",
+            )}
+          >
+            {/* The attribute lives on the button (above); this inner div carries the
+                `.surface-gradient` class the [data-bg-pattern] CSS rules target as a descendant,
+                so each swatch previews its own pattern regardless of the app-wide active one. */}
+            <div className="surface-gradient absolute inset-0" />
+            <span className="absolute inset-x-1 bottom-1 rounded bg-card/80 px-1.5 py-0.5 text-[10px] text-foreground">
+              {lang === "ar" ? p.labelAr : p.labelEn}
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
