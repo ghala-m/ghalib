@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { withAiDetail } from "@/lib/ai-error-detail";
 
 /**
  * Historical terms bulk-imported during onboarding never get a row in `terms` (only a term
@@ -186,7 +187,7 @@ export function GpaHistoryManager() {
       else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
-      else toast.error(t("aiFailed"));
+      else toast.error(withAiDetail(t("aiFailed"), e));
     },
   });
 

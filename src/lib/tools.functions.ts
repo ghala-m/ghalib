@@ -90,7 +90,7 @@ export const runStudyTool = createServerFn({ method: "POST" })
         error instanceof Error &&
         (error.message === "PARSE_FAILED" || error.name === "ZodError")
       ) {
-        throw new Error("AI_FAILED");
+        throw new Error("AI_FAILED: unreadable model output");
       }
       throw aiError(error);
     }

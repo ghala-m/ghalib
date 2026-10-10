@@ -7,7 +7,12 @@ declare global {
   interface Window {
     google?: {
       maps: {
-        places: { Autocomplete: new (input: HTMLInputElement, opts?: Record<string, unknown>) => GoogleAutocomplete };
+        places: {
+          Autocomplete: new (
+            input: HTMLInputElement,
+            opts?: Record<string, unknown>,
+          ) => GoogleAutocomplete;
+        };
       };
     };
   }
@@ -57,7 +62,7 @@ export function PlaceSearchInput({
   const [status, setStatus] = useState<"loading" | "ready" | "no_key" | "error">("loading");
 
   useEffect(() => {
-    const apiKey = import.meta.env['VITE_GOOGLE_MAPS_API_KEY'] as string | undefined;
+    const apiKey = import.meta.env["VITE_GOOGLE_MAPS_API_KEY"] as string | undefined;
     if (!apiKey) {
       setStatus("no_key");
       return;
@@ -74,7 +79,12 @@ export function PlaceSearchInput({
         listener = autocomplete.addListener("place_changed", () => {
           const place = autocomplete.getPlace();
           const loc = place.geometry?.location;
-          if (loc) onSelect({ lat: loc.lat(), lng: loc.lng(), address: place.formatted_address || place.name || "" });
+          if (loc)
+            onSelect({
+              lat: loc.lat(),
+              lng: loc.lng(),
+              address: place.formatted_address || place.name || "",
+            });
         });
         setStatus("ready");
       })
@@ -88,13 +98,20 @@ export function PlaceSearchInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (status === "no_key") return <p className="text-xs text-muted-foreground">{t("mapsKeyMissing")}</p>;
+  if (status === "no_key")
+    return <p className="text-xs text-muted-foreground">{t("mapsKeyMissing")}</p>;
   if (status === "error") return <p className="text-xs text-destructive">{t("mapsLoadFailed")}</p>;
 
   return (
     <div className="relative">
       <MapPin className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-      <Input id={inputId} ref={inputRef} defaultValue={defaultValue} placeholder={t("searchLocation")} className="ps-8" />
+      <Input
+        id={inputId}
+        ref={inputRef}
+        defaultValue={defaultValue}
+        placeholder={t("searchLocation")}
+        className="ps-8"
+      />
       {status === "loading" && (
         <Loader2 className="absolute end-2.5 top-1/2 size-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
       )}

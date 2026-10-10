@@ -7,22 +7,37 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { parseMajorSheet, type MajorSheet } from "@/lib/majorsheet.functions";
 import { ACCEPTED_DOCS, isAcceptedDoc, prepareDocument } from "@/lib/files";
-import { CATEGORY_META, CATEGORY_ORDER, diffMajorSheet, unresolvedPrerequisites, type ReimportRow } from "@/lib/plan";
+import {
+  CATEGORY_META,
+  CATEGORY_ORDER,
+  diffMajorSheet,
+  unresolvedPrerequisites,
+  type ReimportRow,
+} from "@/lib/plan";
 import { coursesQuery, type CourseCategory } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { LangToggle } from "@/components/LangToggle";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
+import { withAiDetail } from "@/lib/ai-error-detail";
 
 export const Route = createFileRoute("/_authenticated/reimport-plan")({
   component: ReimportPlanPage,
 });
 
 function rowKey(row: ReimportRow) {
-  return row.kind === "new" ? `new-${row.parsed.code || row.parsed.name}` : `changed-${row.existing.id}`;
+  return row.kind === "new"
+    ? `new-${row.parsed.code || row.parsed.name}`
+    : `changed-${row.existing.id}`;
 }
 
 function ReimportPlanPage() {
@@ -43,7 +58,8 @@ function ReimportPlanPage() {
     mutationFn: async (file: File) => {
       if (!isAcceptedDoc(file)) throw new Error("INVALID_FILE");
       const doc = await prepareDocument(file);
-      const payload = doc.kind === "pdf" ? { base64: doc.base64, mediaType: doc.mediaType } : { text: doc.text };
+      const payload =
+        doc.kind === "pdf" ? { base64: doc.base64, mediaType: doc.mediaType } : { text: doc.text };
       return (await parse({ data: payload })) as MajorSheet;
     },
     onSuccess: (data) => {
@@ -60,7 +76,7 @@ function ReimportPlanPage() {
       else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
-      else toast.error(t("aiFailed"));
+      else toast.error(withAiDetail(t("aiFailed"), e));
     },
   });
 
@@ -68,7 +84,10 @@ function ReimportPlanPage() {
     mutationFn: async () => {
       if (!user || !diff) return;
       const toInsert = diff.rows
-        .filter((r): r is Extract<ReimportRow, { kind: "new" }> => r.kind === "new" && !!selected[rowKey(r)])
+        .filter(
+          (r): r is Extract<ReimportRow, { kind: "new" }> =>
+            r.kind === "new" && !!selected[rowKey(r)],
+        )
         .map((r) => ({
           user_id: user.id,
           name: r.parsed.name,
@@ -81,7 +100,8 @@ function ReimportPlanPage() {
         }));
 
       const toUpdate = diff.rows.filter(
-        (r): r is Extract<ReimportRow, { kind: "changed" }> => r.kind === "changed" && !!selected[rowKey(r)],
+        (r): r is Extract<ReimportRow, { kind: "changed" }> =>
+          r.kind === "changed" && !!selected[rowKey(r)],
       );
 
       if (toInsert.length) {
@@ -113,7 +133,9 @@ function ReimportPlanPage() {
   const changedRows = useMemo(() => diff?.rows.filter((r) => r.kind === "changed") ?? [], [diff]);
   const unresolved = useMemo(() => (sheet ? unresolvedPrerequisites(sheet.courses) : []), [sheet]);
   const selectedCount = Object.values(selected).filter(Boolean).length;
-  const allSelected = diff ? diff.rows.length > 0 && diff.rows.every((r) => selected[rowKey(r)]) : false;
+  const allSelected = diff
+    ? diff.rows.length > 0 && diff.rows.every((r) => selected[rowKey(r)])
+    : false;
 
   const toggleAll = (checked: boolean) => {
     if (!diff) return;
@@ -127,7 +149,10 @@ function ReimportPlanPage() {
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <Link to="/profile" className="mb-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <Link
+              to="/profile"
+              className="mb-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="size-3.5" />
               {t("profile")}
             </Link>
@@ -142,7 +167,9 @@ function ReimportPlanPage() {
         {!diff && (
           <div className="panel-glass p-8 text-center">
             <Sparkles className="mx-auto size-8 text-accent" />
-            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">{t("reimportHint")}</p>
+            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
+              {t("reimportHint")}
+            </p>
             <input
               ref={inputRef}
               type="file"
@@ -154,8 +181,17 @@ function ReimportPlanPage() {
                 e.target.value = "";
               }}
             />
-            <Button className="mt-6" size="lg" disabled={run.isPending} onClick={() => inputRef.current?.click()}>
-              {run.isPending ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+            <Button
+              className="mt-6"
+              size="lg"
+              disabled={run.isPending}
+              onClick={() => inputRef.current?.click()}
+            >
+              {run.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
               {run.isPending ? t("analyzing") : t("reimportUpload")}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">{t("onlyPdfWord")}</p>
@@ -167,25 +203,31 @@ function ReimportPlanPage() {
             <div className="panel-glass p-5 text-sm text-muted-foreground">
               {sheet?.major || t("major")}
               {" · "}
-              {newRows.length} {t("reimportNewCourses")} · {changedRows.length} {t("reimportChangedCourses")} ·{" "}
-              {diff.unchangedCount} {t("reimportUnchanged")}
+              {newRows.length} {t("reimportNewCourses")} · {changedRows.length}{" "}
+              {t("reimportChangedCourses")} · {diff.unchangedCount} {t("reimportUnchanged")}
             </div>
 
             {unresolved.length > 0 && (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-                <p className="font-medium text-amber-600 dark:text-amber-400">{t("unresolvedPrereqsTitle")}</p>
+                <p className="font-medium text-amber-600 dark:text-amber-400">
+                  {t("unresolvedPrereqsTitle")}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">{t("unresolvedPrereqsHint")}</p>
                 <p className="mt-2 font-mono text-xs">{unresolved.join(" · ")}</p>
               </div>
             )}
 
             {diff.rows.length === 0 ? (
-              <div className="panel-glass p-8 text-center text-sm text-muted-foreground">{t("reimportNoDiff")}</div>
+              <div className="panel-glass p-8 text-center text-sm text-muted-foreground">
+                {t("reimportNoDiff")}
+              </div>
             ) : (
               <>
                 {newRows.length > 0 && (
                   <div className="panel-glass overflow-hidden">
-                    <div className="border-b border-border px-5 py-3 text-sm font-semibold">{t("reimportNewCourses")}</div>
+                    <div className="border-b border-border px-5 py-3 text-sm font-semibold">
+                      {t("reimportNewCourses")}
+                    </div>
                     <ul className="divide-y divide-border">
                       {newRows.map((row) => {
                         if (row.kind !== "new") return null;
@@ -198,7 +240,10 @@ function ReimportPlanPage() {
                             />
                             <span
                               className="size-2.5 shrink-0 rounded-full"
-                              style={{ background: CATEGORY_META[categoryOverride[key] ?? row.parsed.category].color }}
+                              style={{
+                                background:
+                                  CATEGORY_META[categoryOverride[key] ?? row.parsed.category].color,
+                              }}
                             />
                             <div className="min-w-40 flex-1">
                               <p className="text-sm font-medium">{row.parsed.name}</p>
@@ -208,7 +253,9 @@ function ReimportPlanPage() {
                             </div>
                             <Select
                               value={categoryOverride[key] ?? row.parsed.category}
-                              onValueChange={(v) => setCategoryOverride((s) => ({ ...s, [key]: v as CourseCategory }))}
+                              onValueChange={(v) =>
+                                setCategoryOverride((s) => ({ ...s, [key]: v as CourseCategory }))
+                              }
                             >
                               <SelectTrigger className="w-44">
                                 <SelectValue />
@@ -230,7 +277,9 @@ function ReimportPlanPage() {
 
                 {changedRows.length > 0 && (
                   <div className="panel-glass overflow-hidden">
-                    <div className="border-b border-border px-5 py-3 text-sm font-semibold">{t("reimportChangedCourses")}</div>
+                    <div className="border-b border-border px-5 py-3 text-sm font-semibold">
+                      {t("reimportChangedCourses")}
+                    </div>
                     <ul className="divide-y divide-border">
                       {changedRows.map((row) => {
                         if (row.kind !== "changed") return null;
@@ -263,7 +312,10 @@ function ReimportPlanPage() {
                 )}
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button disabled={apply.isPending || selectedCount === 0} onClick={() => apply.mutate()}>
+                  <Button
+                    disabled={apply.isPending || selectedCount === 0}
+                    onClick={() => apply.mutate()}
+                  >
                     {apply.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
                     {t("reimportApply")} ({selectedCount})
                   </Button>

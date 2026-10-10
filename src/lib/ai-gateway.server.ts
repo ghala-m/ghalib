@@ -2,7 +2,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { APICallError, type LanguageModel } from "ai";
+import { APICallError, RetryError, type LanguageModel } from "ai";
 
 export const AI_MODEL = "google/gemini-3.5-flash";
 
@@ -85,16 +85,19 @@ export function extractJson(text: string): unknown {
  * a generic "couldn't reply, try again" toast instead of the specific "AI credits exhausted" one.
  * Reading `error.statusCode` directly is what actually works.
  */
-export function aiError(error: unknown): Error {
+export function aiError(rawError: unknown): Error {
+  // generateText retries and then wraps the real failure in a RetryError, so the status code and
+  // provider message live on `lastError` — unwrap it or a 429/402/403 is never recognised.
+  const error =
+    RetryError.isInstance(rawError) && rawError.lastError ? rawError.lastError : rawError;
   const statusCode = APICallError.isInstance(error) ? error.statusCode : undefined;
   if (statusCode === 429) return new Error("RATE_LIMIT");
   if (statusCode === 402) return new Error("NO_CREDITS");
-  if (statusCode === 403) return new Error("AI_BLOCKED");
   // Fall back to substring matching on the message for non-APICallError failures (network
   // errors, timeouts, etc.) in case anything upstream still embeds a code in the text.
   const message = error instanceof Error ? error.message : String(error);
   if (message.includes("429")) return new Error("RATE_LIMIT");
   if (message.includes("402")) return new Error("NO_CREDITS");
-  if (message.includes("403")) return new Error("AI_BLOCKED");
-  return new Error("AI_FAILED");
+  console.error("[ai] call failed:", error);
+  return new Error(`AI_FAILED: ${message.slice(0, 300)}`);
 }

@@ -32,13 +32,21 @@ export function NotificationSettings({ userId }: { userId: string | undefined })
                 }
                 const ok = await requestNotificationPermission();
                 setPermission(notificationState());
-                toast[ok ? "success" : "error"](ok ? t("notificationsOn") : t("notificationsBlocked"));
+                toast[ok ? "success" : "error"](
+                  ok ? t("notificationsOn") : t("notificationsBlocked"),
+                );
               }}
             >
-              {permission === "granted" ? <Bell className="size-4" /> : <BellOff className="size-4" />}
+              {permission === "granted" ? (
+                <Bell className="size-4" />
+              ) : (
+                <BellOff className="size-4" />
+              )}
               {t("browserReminders")}
             </Button>
-            {permission === "granted" && <span className="text-xs text-cat-general">{t("notificationsOn")}</span>}
+            {permission === "granted" && (
+              <span className="text-xs text-cat-general">{t("notificationsOn")}</span>
+            )}
           </div>
         )}
 

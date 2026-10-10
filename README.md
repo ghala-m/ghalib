@@ -31,6 +31,15 @@ Courses that carry an extra unit-based gate on top of their normal prerequisites
 which requires 96+ completed credit hours) stay locked until that's met too. Zoom defaults to
 100% and remembers the last zoom level you set, until you hit "reset zoom".
 
+### 4b. AI weekly plan, study library & course page
+* **AI weekly plan** on every course page: urgent reminders ("tomorrow you have a quiz — study
+  chapters 4 and 5") plus a day-by-day list. Cached per day so it only spends one AI call.
+* **Study library** per course: flashcards / summaries / quizzes are saved and browsable
+  (list or 3-column grid, "View all").
+* **Course page settings (gear)**: upload/re-upload the syllabus (re-upload fully replaces the
+  previous grade weights and syllabus items), reorder page sections, reset the order, choose the
+  default calendar view (week / day / month). An empty course first asks you to upload the syllabus.
+
 ### 5. Calendars — day / week / month
 * **Dashboard calendar** — everything across all courses. A button here jumps to the term calendar.
 * **Course calendar** — only that course's assignments, quizzes and exams.
@@ -117,3 +126,13 @@ fine without them, those specific features just stay disabled with a translated 
 | `VITE_GOOGLE_MAPS_API_KEY` | Location autocomplete search | `EMERGENCE.md` → Google Maps section |
 
 See `CHANGES.md` for a running, dated log of feature batches applied to this project.
+
+
+---
+
+## AI provider (no Lovable credits needed)
+
+Set ONE secret in Lovable Cloud → Secrets (then **Publish**): `GOOGLE_GENERATIVE_AI_API_KEY`
+(free key from https://aistudio.google.com/apikey), or `OPENAI_API_KEY`, or `ANTHROPIC_API_KEY`.
+Priority: OpenAI → Google → Anthropic → Lovable AI gateway. When an AI call fails the toast now
+shows the provider's real error text in brackets, so the cause is visible.

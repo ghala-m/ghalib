@@ -197,9 +197,41 @@ const dict = {
     ar: "قائمة مهام، تقويم زمني، توزيع درجات، وملاحظات — تُبنى تلقائياً.",
     en: "Checklist, timeline, grade weights and notes — generated automatically.",
   },
+  f5t: { ar: "خطة أسبوعية بالذكاء الاصطناعي", en: "AI weekly plan" },
+  f5b: {
+    ar: "تذكيرات مثل «تذكّر! بكرة عندك كويز، ذاكر الفصل ٤ و٥» لكل مادة.",
+    en: "Reminders like “Remember! tomorrow you have a quiz — study chapters 4 and 5” for every course.",
+  },
+  f6t: { ar: "مكتبة دراسة لكل مادة", en: "Study library per course" },
+  f6b: {
+    ar: "بطاقات ومراجعات واختبارات قصيرة تنحفظ وترجع لها وقت ما تبي.",
+    en: "Flashcards, summaries and quizzes saved per course, ready whenever you need them.",
+  },
+  f7t: { ar: "تقويم الفصل وPDF جاهز", en: "Term calendar + PDF" },
+  f7b: {
+    ar: "جدول الفصل بشكل الأشهر والأسابيع مع مساحة للملاحظات، وتنزيله PDF بالإنجليزي.",
+    en: "A months-and-weeks term grid with room for notes, downloadable as a clean PDF.",
+  },
+  f8t: { ar: "خريطة المتطلبات والمعدل", en: "Prerequisite map & GPA" },
+  f8b: {
+    ar: "شوف وش تفتح لك موادك الحالية، وتابع معدلك وكم تحتاج تجيب بالنهائي.",
+    en: "See what your current courses unlock, track your GPA and the grade you need on the final.",
+  },
   // --- Navigation & shell ---
   calendar: { ar: "التقويم", en: "Calendar" },
   advisor: { ar: "المرشد الذكي", en: "AI advisor" },
+  weeklyPlanTitle: { ar: "خطة الأسبوع بالذكاء الاصطناعي", en: "AI weekly plan" },
+  weeklyPlanGenerate: { ar: "جهّز خطتي", en: "Generate my plan" },
+  weeklyPlanRefresh: { ar: "تحديث الخطة", en: "Refresh plan" },
+  weeklyPlanHint: {
+    ar: "تذكيرات بالاختبارات والتسليمات القريبة وما تذاكره هالأسبوع.",
+    en: "Reminders for upcoming quizzes and deadlines, and what to study this week.",
+  },
+  uploadSyllabusFirst: { ar: "ارفع السلابس للبدء", en: "Upload the syllabus to get started" },
+  uploadSyllabusFirstHint: {
+    ar: "ارفع ملف السلابس وبنعبّي الدرجات والمواعيد تلقائياً.",
+    en: "Upload the syllabus and we'll fill in grades and dates automatically.",
+  },
   studyPlan: { ar: "الخطة الدراسية", en: "Study plan" },
   appearance: { ar: "المظهر", en: "Appearance" },
   settings: { ar: "الإعدادات", en: "Settings" },
@@ -588,7 +620,10 @@ const dict = {
   currentGrade: { ar: "أداؤك الحالي", en: "Current standing" },
   whatDoINeedFor: { ar: "وش أحتاج عشان أطلع", en: "What do I need for" },
   onRemainingWeight: { ar: "على باقي {weight}٪", en: "on the remaining {weight}%" },
-  targetOutOfReach: { ar: "صعبة الحين حتى لو ١٠٠٪ بالباقي", en: "Out of reach even with 100% on what's left" },
+  targetOutOfReach: {
+    ar: "صعبة الحين حتى لو ١٠٠٪ بالباقي",
+    en: "Out of reach even with 100% on what's left",
+  },
   gradeCoverage: { ar: "من وزن الدرجة مسجَّل", en: "of your grade weight recorded" },
   noWeightedItems: {
     ar: "لا توجد عناصر لها وزن في التقييم بعد. أضف الوزن عند إنشاء أو تعديل أي عنصر.",

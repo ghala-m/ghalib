@@ -31,6 +31,7 @@ import { LangToggle } from "@/components/LangToggle";
 import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import type { CourseCategory, CourseStatus } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import { withAiDetail } from "@/lib/ai-error-detail";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -129,7 +130,7 @@ function OnboardingPage() {
       else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
-      else toast.error(t("aiFailed"));
+      else toast.error(withAiDetail(t("aiFailed"), e));
     },
   });
 

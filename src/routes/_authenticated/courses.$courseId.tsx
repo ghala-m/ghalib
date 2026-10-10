@@ -24,6 +24,7 @@ import {
   parseSectionOrder,
   type SectionKey,
 } from "@/components/app/CoursePageSettingsDialog";
+import { WeeklyPlanCard } from "@/components/app/WeeklyPlanCard";
 import { CourseFormDialog } from "@/components/app/CourseFormDialog";
 import { CalendarView } from "@/components/app/CalendarView";
 import { ItemDialog } from "@/components/app/ItemDialog";
@@ -57,6 +58,7 @@ function CoursePage() {
   const { data: allCourses = [] } = useQuery(coursesQuery());
   const { data: allMaterials = [] } = useQuery(studyMaterialsQuery());
   const [targetGrade, setTargetGrade] = useState("90");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const course = data?.course;
   const items = data?.items ?? [];
   const weights = data?.weights ?? [];
@@ -178,7 +180,11 @@ function CoursePage() {
               {t("retakeCourse")}
             </Button>
           ) : null}
-          <CoursePageSettingsDialog course={course} />
+          <CoursePageSettingsDialog
+            course={course}
+            open={settingsOpen}
+            onOpenChange={setSettingsOpen}
+          />
           <CourseFormDialog
             course={course}
             trigger={
@@ -195,6 +201,27 @@ function CoursePage() {
           order (set via CoursePageSettingsDialog) — "grades", "materials", "calendar",
           "checklist" are the only four reorderable; meetings, being small and rare, always stays
           pinned at the very end regardless of order. */}
+      {items.length === 0 && weights.length === 0 ? (
+        <section className="panel mb-6 flex flex-col items-center gap-3 p-8 text-center">
+          <h2 className="text-lg font-semibold">{t("uploadSyllabusFirst")}</h2>
+          <p className="text-sm text-muted-foreground">{t("uploadSyllabusFirstHint")}</p>
+          <Button onClick={() => setSettingsOpen(true)}>{t("uploadSyllabusFirst")}</Button>
+        </section>
+      ) : (
+        <WeeklyPlanCard
+          courseId={course.id}
+          courseName={course.name}
+          items={items.map((i) => ({
+            title: i.title,
+            type: i.type,
+            due_date: i.due_date,
+            completed: i.completed,
+            weight: i.weight,
+          }))}
+          gradeWeights={weights.map((w) => ({ category: w.category, percentage: w.percentage }))}
+        />
+      )}
+
       {(() => {
         const sectionBlocks: Record<SectionKey, ReactNode> = {
           grades: (
@@ -393,6 +420,7 @@ function CoursePage() {
           ),
         };
         const order = parseSectionOrder(course.section_order);
+        if (items.length === 0 && weights.length === 0) return null;
         return order.map((key) => sectionBlocks[key]);
       })()}
 

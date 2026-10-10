@@ -43,10 +43,23 @@ export function parseSectionOrder(raw: unknown): SectionKey[] {
  * control out of the main page (it's an occasional action, not something that should dominate
  * the page every visit), a way to reorder the page's main sections (some students want the
  * checklist first, others the calendar), and a one-click reset back to the default order. */
-export function CoursePageSettingsDialog({ course }: { course: Course }) {
+export function CoursePageSettingsDialog({
+  course,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  course: Course;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const { t } = useI18n();
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [innerOpen, setInnerOpen] = useState(false);
+  const open = controlledOpen ?? innerOpen;
+  const setOpen = (v: boolean) => {
+    setInnerOpen(v);
+    onOpenChange?.(v);
+  };
   const [order, setOrder] = useState<SectionKey[]>(() => parseSectionOrder(course.section_order));
 
   useEffect(() => {

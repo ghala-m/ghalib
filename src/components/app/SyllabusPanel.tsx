@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Course } from "@/lib/queries";
+import { withAiDetail } from "@/lib/ai-error-detail";
 
 const GAP_LABELS: Record<string, string> = {
   course_name: "courseName",
@@ -51,7 +52,7 @@ export function SyllabusPanel({ course }: { course: Course }) {
       else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
-      else toast.error(t("aiFailed"));
+      else toast.error(withAiDetail(t("aiFailed"), e));
     },
   });
 

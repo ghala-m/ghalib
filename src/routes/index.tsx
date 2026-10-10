@@ -1,5 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpenCheck, CalendarClock, FileUp, MessagesSquare, RotateCcw, ScrollText } from "lucide-react";
+import {
+  BookOpenCheck,
+  CalendarClock,
+  FileUp,
+  MessagesSquare,
+  RotateCcw,
+  ScrollText,
+  Sparkles,
+  Library,
+  CalendarDays,
+  Network,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LangToggle } from "@/components/LangToggle";
 import { useI18n } from "@/lib/i18n";
@@ -32,6 +43,10 @@ function Index() {
     { icon: MessagesSquare, title: t("f2t"), body: t("f2b") },
     { icon: RotateCcw, title: t("f3t"), body: t("f3b") },
     { icon: BookOpenCheck, title: t("f4t"), body: t("f4b") },
+    { icon: Sparkles, title: t("f5t"), body: t("f5b") },
+    { icon: Library, title: t("f6t"), body: t("f6b") },
+    { icon: CalendarDays, title: t("f7t"), body: t("f7b") },
+    { icon: Network, title: t("f8t"), body: t("f8b") },
   ];
 
   return (
@@ -60,7 +75,9 @@ function Index() {
             <h1 className="max-w-3xl text-4xl leading-tight font-bold text-balance md:text-6xl">
               {t("heroTitle")}
             </h1>
-            <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">{t("heroBody")}</p>
+            <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
+              {t("heroBody")}
+            </p>
             <div className="mt-8">
               <Button asChild size="lg">
                 <Link to="/auth">{t("getStarted")}</Link>
@@ -71,7 +88,7 @@ function Index() {
 
         <section className="mx-auto max-w-6xl px-6 py-20">
           <h2 className="text-2xl font-bold md:text-3xl">{t("featuresTitle")}</h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {features.map((f) => (
               <article key={f.title} className="panel p-6">
                 <f.icon className="size-6 text-accent" />

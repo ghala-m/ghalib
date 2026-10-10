@@ -15,7 +15,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import type { CourseItem, ItemType } from "@/lib/queries";
@@ -74,7 +80,9 @@ export function ItemDialog({
         due_date: form.due_date || null,
         due_time: form.due_time || null,
         weight: form.weight ? Number(form.weight) : null,
-        score_percent: form.score_percent ? Math.min(100, Math.max(0, Number(form.score_percent))) : null,
+        score_percent: form.score_percent
+          ? Math.min(100, Math.max(0, Number(form.score_percent)))
+          : null,
         description: form.description.trim() || null,
       };
       if (item) {
@@ -82,7 +90,9 @@ export function ItemDialog({
         if (error) throw error;
       } else {
         if (!user) throw new Error("no user");
-        const { error } = await supabase.from("course_items").insert({ ...values, course_id: courseId, user_id: user.id });
+        const { error } = await supabase
+          .from("course_items")
+          .insert({ ...values, course_id: courseId, user_id: user.id });
         if (error) throw error;
       }
     },
@@ -117,12 +127,18 @@ export function ItemDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label>{t("title")}</Label>
-            <Input value={form.title} onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))} />
+            <Input
+              value={form.title}
+              onChange={(e) => setForm((s) => ({ ...s, title: e.target.value }))}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t("type")}</Label>
-              <Select value={form.type} onValueChange={(v) => setForm((s) => ({ ...s, type: v as ItemType }))}>
+              <Select
+                value={form.type}
+                onValueChange={(v) => setForm((s) => ({ ...s, type: v as ItemType }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -176,12 +192,20 @@ export function ItemDialog({
           </div>
           <div className="space-y-1.5">
             <Label>{t("description")}</Label>
-            <Textarea rows={2} value={form.description} onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))} />
+            <Textarea
+              rows={2}
+              value={form.description}
+              onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
+            />
           </div>
         </div>
         <DialogFooter className="gap-2 sm:justify-between">
           {item ? (
-            <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => remove.mutate()}>
+            <Button
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
+              onClick={() => remove.mutate()}
+            >
               <Trash2 className="size-4" />
               {t("delete")}
             </Button>
