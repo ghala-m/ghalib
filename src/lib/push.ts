@@ -20,8 +20,10 @@ export async function ensureServiceWorker(): Promise<ServiceWorkerRegistration |
 
 export async function getPushSubscription(): Promise<PushSubscription | null> {
   if (!pushSupported()) return null;
-  const reg = await navigator.serviceWorker.ready;
-  return reg.pushManager.getSubscription();
+  // `serviceWorker.ready` never resolves when no worker is registered yet, which left
+  // the enable button stuck. Look up the registration directly instead.
+  const reg = await navigator.serviceWorker.getRegistration("/sw.js");
+  return reg ? reg.pushManager.getSubscription() : null;
 }
 
 export type SubscribeResult =
