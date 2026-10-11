@@ -193,7 +193,7 @@ function ProfilePage() {
     });
   }, [profile]);
 
-  const useMyLocation = () => {
+  const useMyLocation = (target: "home" | "university" = "home") => {
     if (!navigator.geolocation) {
       toast.error(t("locationUnsupported"));
       return;
@@ -201,11 +201,13 @@ function ProfilePage() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setForm((s) => ({
-          ...s,
-          home_lat: pos.coords.latitude.toFixed(6),
-          home_lng: pos.coords.longitude.toFixed(6),
-        }));
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        setForm((s) =>
+          target === "home"
+            ? { ...s, home_lat: lat, home_lng: lng }
+            : { ...s, university_lat: lat, university_lng: lng, university_address: "" },
+        );
         setLocating(false);
       },
       () => {
@@ -436,7 +438,7 @@ function ProfilePage() {
                 variant="outline"
                 size="sm"
                 disabled={locating}
-                onClick={useMyLocation}
+                onClick={() => useMyLocation("home")}
               >
                 {locating ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -457,6 +459,16 @@ function ProfilePage() {
                 <MapPin className="size-4 text-accent" />
                 {t("universityLocation")}
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={locating}
+                onClick={() => useMyLocation("university")}
+              >
+                <MapPin className="size-3.5" />
+                {t("useMyLocation")}
+              </Button>
               <PlaceSearchInput
                 defaultValue={form.university_address}
                 onSelect={(place) =>
