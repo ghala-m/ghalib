@@ -40,18 +40,22 @@ export function getAiModel(): LanguageModel {
   // though the object works correctly when actually passed to `generateText`.
   const openaiKey = process.env["OPENAI_API_KEY"];
   if (openaiKey)
-    return createOpenAI({ apiKey: openaiKey })("gpt-4o-mini") as unknown as LanguageModel;
+    return createOpenAI({ apiKey: openaiKey })(
+      process.env["AI_MODEL_NAME"] || "gpt-4o-mini",
+    ) as unknown as LanguageModel;
 
   const googleKey = process.env["GOOGLE_GENERATIVE_AI_API_KEY"];
   if (googleKey)
+    // gemini-2.5-flash is retired (legacy / shutdown Oct 2026) → default to a current model.
+    // Override from Cloud → Secrets with AI_MODEL_NAME (e.g. "gemini-3.8-flash") if needed.
     return createGoogleGenerativeAI({ apiKey: googleKey })(
-      "gemini-2.5-flash",
+      process.env["AI_MODEL_NAME"] || "gemini-3.5-flash-lite",
     ) as unknown as LanguageModel;
 
   const anthropicKey = process.env["ANTHROPIC_API_KEY"];
   if (anthropicKey)
     return createAnthropic({ apiKey: anthropicKey })(
-      "claude-3-5-haiku-latest",
+      process.env["AI_MODEL_NAME"] || "claude-haiku-5-5",
     ) as unknown as LanguageModel;
 
   const lovableKey = process.env["LOVABLE_API_KEY"];

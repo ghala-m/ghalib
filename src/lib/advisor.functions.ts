@@ -40,8 +40,8 @@ export const askAdvisor = createServerFn({ method: "POST" })
     try {
       const result = await generateText({
         model,
+        instructions: system,
         messages: [
-          { role: "system", content: system },
           ...data.history.map((m) => ({ role: m.role, content: m.content }) as const),
           { role: "user" as const, content: data.message },
         ],

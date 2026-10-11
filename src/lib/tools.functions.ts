@@ -68,8 +68,8 @@ export const runStudyTool = createServerFn({ method: "POST" })
     try {
       const result = await generateText({
         model,
+        instructions: system,
         messages: [
-          { role: "system", content: system },
           { role: "user", content: content as never },
         ],
       });

@@ -553,3 +553,5 @@ alter table public.courses add constraint courses_calendar_default_view_check
 - خطة أسبوعية بالذكاء الاصطناعي في صفحة المادة (`WeeklyPlanCard` + `weekly-plan.functions.ts`).
 - بانر «ارفع السلابس للبدء» للمادة الفارغة وإخفاء الأقسام حتى الرفع.
 - تحديث الصفحة الرئيسية (٤ مزايا جديدة) والـREADME.
+- Fix: Gemini default model gemini-2.5-flash (retired) -> gemini-3.5-flash-lite, override via AI_MODEL_NAME secret; Claude default -> claude-haiku-5-5.
+- Fix: AI SDK v7 rejects role:system in messages -> use instructions option (advisor, tools, weekly plan).

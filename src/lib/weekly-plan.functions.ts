@@ -48,7 +48,7 @@ export const generateWeeklyPlan = createServerFn({ method: "POST" })
     try {
       const result = await generateText({
         model,
-        system: [
+        instructions: [
           "You are Ghalib, a friendly study coach. Build a short plan for the NEXT 7 DAYS for this one course.",
           "Start with urgent reminders in the style: 'Remember! tomorrow you have a quiz — study chapters 4 and 5'.",
           "Then give a day-by-day list (max 7 lines) of what to study. Use only the items provided; never invent dates or chapters.",
