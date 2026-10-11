@@ -474,6 +474,47 @@ export type Database = {
         }
         Relationships: []
       }
+      study_materials: {
+        Row: {
+          content: Json
+          course_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          source_excerpt: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: Json
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          source_excerpt?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          source_excerpt?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_streak: {
         Row: {
           count: number
