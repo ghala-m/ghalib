@@ -703,6 +703,16 @@ const dict = {
   },
   mapsLoadFailed: { ar: "تعذّر تحميل خرائط جوجل.", en: "Couldn't load Google Maps." },
   locationSet: { ar: "الموقع محدَّد", en: "Location set" },
+  pasteMapsLink: {
+    ar: "الصق رابط الموقع من خرائط جوجل…",
+    en: "Paste a Google Maps link…",
+  },
+  extractFromLink: { ar: "استخراج", en: "Extract" },
+  invalidMapsLink: {
+    ar: "ما قدرت أستخرج الإحداثيات من هذا الرابط — تأكد أنه رابط خرائط جوجل لمكان محدد.",
+    en: "Couldn't extract coordinates from this link — make sure it's a Google Maps link to a specific place.",
+  },
+  mapsLinkExtracted: { ar: "تم استخراج الإحداثيات من الرابط", en: "Coordinates extracted from the link" },
   // --- Morning briefing ---
   briefingTitle: { ar: "البريفنج الصباحي", en: "Morning briefing" },
   briefingHint: {

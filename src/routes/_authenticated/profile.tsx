@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
+import { MapsLinkInput } from "@/components/app/MapsLinkInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
 import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
