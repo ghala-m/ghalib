@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep briefing save/reset scoped to its profile fields and derive its saved summary from persisted locations, so unrelated account data remains untouched and the summary survives reloads.

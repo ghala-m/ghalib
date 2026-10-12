@@ -1,7 +1,7 @@
 # Roadmap
 
 ## In progress
-- (none)
+- Remove obsolete Maps-key message and collapse saved briefing into a summary with section-only reset; verify saving and reset.
 
 ## Done this session
 - Term calendar feature verified in preview
