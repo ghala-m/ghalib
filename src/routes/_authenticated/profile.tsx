@@ -470,6 +470,16 @@ function ProfilePage() {
                 <MapPin className="size-3.5" />
                 {t("useMyLocation")}
               </Button>
+              <MapsLinkInput
+                onSelect={(place) =>
+                  setForm((s) => ({
+                    ...s,
+                    university_lat: place.lat.toFixed(6),
+                    university_lng: place.lng.toFixed(6),
+                    university_address: place.address || s.university_address,
+                  }))
+                }
+              />
               <PlaceSearchInput
                 defaultValue={form.university_address}
                 onSelect={(place) =>
