@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
+import { MapsLinkInput } from "@/components/app/MapsLinkInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
 import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
@@ -447,6 +448,16 @@ function ProfilePage() {
                 )}
                 {t("useMyLocation")}
               </Button>
+              <MapsLinkInput
+                onSelect={(place) =>
+                  setForm((s) => ({
+                    ...s,
+                    home_lat: place.lat.toFixed(6),
+                    home_lng: place.lng.toFixed(6),
+                    home_address: place.address || s.home_address,
+                  }))
+                }
+              />
               <p className="text-xs text-muted-foreground">
                 {form.home_lat && form.home_lng
                   ? `${form.home_lat}, ${form.home_lng}`
@@ -469,6 +480,16 @@ function ProfilePage() {
                 <MapPin className="size-3.5" />
                 {t("useMyLocation")}
               </Button>
+              <MapsLinkInput
+                onSelect={(place) =>
+                  setForm((s) => ({
+                    ...s,
+                    university_lat: place.lat.toFixed(6),
+                    university_lng: place.lng.toFixed(6),
+                    university_address: place.address || s.university_address,
+                  }))
+                }
+              />
               <PlaceSearchInput
                 defaultValue={form.university_address}
                 onSelect={(place) =>
