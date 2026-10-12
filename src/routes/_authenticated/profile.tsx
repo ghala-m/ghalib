@@ -3,8 +3,6 @@ import { isMissingSchemaError } from "@/lib/db-errors";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Bell,
-  BellOff,
   FileOutput,
   GraduationCap,
   Loader2,
@@ -57,6 +55,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
         content: "Manage your major, current term, GPA and completed credits.",
       },
       { property: "og:title", content: "Academic Profile — Ghalib" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Manage your major, current term, GPA and completed credits.",
@@ -156,6 +156,8 @@ function ProfilePage() {
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [locating, setLocating] = useState(false);
+  const briefingSaved = profile?.home_lat != null && profile.home_lng != null &&
+    profile.university_lat != null && profile.university_lng != null;
 
   const [form, setForm] = useState({
     full_name: "",
@@ -206,7 +208,7 @@ function ProfilePage() {
         const lng = pos.coords.longitude.toFixed(6);
         setForm((s) =>
           target === "home"
-            ? { ...s, home_lat: lat, home_lng: lng }
+            ? { ...s, home_lat: lat, home_lng: lng, home_address: "" }
             : { ...s, university_lat: lat, university_lng: lng, university_address: "" },
         );
         setLocating(false);
@@ -252,6 +254,41 @@ function ProfilePage() {
     },
     onError: (e: Error) =>
       toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : t("saveFailed")),
+  });
+
+  const saveBriefing = useMutation({
+    mutationFn: async (reset: boolean) => {
+      if (!user) throw new Error("no user");
+      const lead = Number(form.briefing_lead_minutes);
+      const buffer = Number(form.briefing_buffer_minutes);
+      if (!reset) {
+        if (!form.home_lat || !form.home_lng || !form.university_lat || !form.university_lng) {
+          throw new Error(t("briefingNeedsLocation"));
+        }
+        if (!form.briefing_lead_minutes || !form.briefing_buffer_minutes ||
+          !Number.isInteger(lead) || lead < 15 || !Number.isInteger(buffer) || buffer < 0) {
+          throw new Error(t("briefingInvalidTiming"));
+        }
+      }
+      const { error } = await supabase.from("profiles").update({
+        home_lat: reset ? null : Number(form.home_lat),
+        home_lng: reset ? null : Number(form.home_lng),
+        home_address: reset ? null : form.home_address || null,
+        university_lat: reset ? null : Number(form.university_lat),
+        university_lng: reset ? null : Number(form.university_lng),
+        university_address: reset ? null : form.university_address || null,
+        commute_mode: reset ? "driving" : form.commute_mode,
+        briefing_enabled: reset ? false : form.briefing_enabled,
+        briefing_lead_minutes: reset ? 60 : lead,
+        briefing_buffer_minutes: reset ? 10 : buffer,
+      }).eq("id", user.id).select("id").single();
+      if (error) throw error;
+    },
+    onSuccess: async (_, reset) => {
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(t(reset ? "briefingResetDone" : "saved"));
+    },
+    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : e.message),
   });
 
   const fields: { key: keyof typeof form; label: string; type?: string; step?: string }[] = [
@@ -402,12 +439,15 @@ function ProfilePage() {
 
       {/* Morning commute briefing */}
       <SectionCard
+        id="morning-briefing"
         icon={Sunrise}
         title={t("briefingTitle")}
         className="mt-6"
-        description={t("briefingHint")}
+        description={briefingSaved ? undefined : t("briefingHint")}
         action={
+          briefingSaved ? undefined :
           <Switch
+            aria-label={t("briefingTitle")}
             checked={form.briefing_enabled}
             onCheckedChange={(checked) => {
               if (checked && (!form.home_lat || !form.university_lat)) {
@@ -427,9 +467,32 @@ function ProfilePage() {
           />
         }
       >
+        {briefingSaved ? (
+          <div className="space-y-4">
+            <dl className="grid gap-4 sm:grid-cols-2">
+              {[
+                [t("homeLocation"), profile.home_address || `${profile.home_lat}, ${profile.home_lng}`],
+                [t("universityLocation"), profile.university_address || `${profile.university_lat}, ${profile.university_lng}`],
+                [t("commuteMode"), t(profile.commute_mode === "walking" ? "walking" : profile.commute_mode === "transit" ? "transit" : profile.commute_mode === "bicycling" ? "bicycling" : "driving")],
+                [t("briefingLeadMinutes"), String(profile.briefing_lead_minutes)],
+                [t("briefingBufferMinutes"), String(profile.briefing_buffer_minutes)],
+                [t("briefingStatus"), t(profile.briefing_enabled ? "briefingActive" : "briefingInactive")],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="mt-1 break-words text-sm font-medium">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <Button variant="outline" disabled={saveBriefing.isPending} onClick={() => saveBriefing.mutate(true)}>
+              {saveBriefing.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              {t("briefingReset")}
+            </Button>
+          </div>
+        ) : (
         <div className="space-y-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 rounded-xl border border-border p-4">
+            <div className="min-w-0 space-y-2">
               <p className="flex items-center gap-1.5 text-sm font-medium">
                 <MapPin className="size-4 text-accent" />
                 {t("homeLocation")}
@@ -465,7 +528,7 @@ function ProfilePage() {
               </p>
             </div>
 
-            <div className="space-y-2 rounded-xl border border-border p-4">
+            <div className="min-w-0 space-y-2">
               <p className="flex items-center gap-1.5 text-sm font-medium">
                 <MapPin className="size-4 text-accent" />
                 {t("universityLocation")}
@@ -528,8 +591,9 @@ function ProfilePage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>{t("briefingLeadMinutes")}</Label>
+              <Label htmlFor="briefing-lead">{t("briefingLeadMinutes")}</Label>
               <Input
+                id="briefing-lead"
                 type="number"
                 min={15}
                 value={form.briefing_lead_minutes}
@@ -537,8 +601,9 @@ function ProfilePage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>{t("briefingBufferMinutes")}</Label>
+              <Label htmlFor="briefing-buffer">{t("briefingBufferMinutes")}</Label>
               <Input
+                id="briefing-buffer"
                 type="number"
                 min={0}
                 value={form.briefing_buffer_minutes}
@@ -549,10 +614,12 @@ function ProfilePage() {
             </div>
           </div>
 
-          <Button onClick={() => save.mutate()} disabled={save.isPending}>
+          <Button onClick={() => saveBriefing.mutate(false)} disabled={saveBriefing.isPending || locating}>
+            {saveBriefing.isPending && <Loader2 className="size-4 animate-spin" />}
             {t("save")}
           </Button>
         </div>
+        )}
       </SectionCard>
 
       <DataExportCard />

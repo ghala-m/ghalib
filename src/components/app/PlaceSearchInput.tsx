@@ -98,8 +98,7 @@ export function PlaceSearchInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (status === "no_key")
-    return <p className="text-xs text-muted-foreground">{t("mapsKeyMissing")}</p>;
+  if (status === "no_key") return null;
   if (status === "error") return <p className="text-xs text-destructive">{t("mapsLoadFailed")}</p>;
 
   return (

@@ -715,6 +715,12 @@ const dict = {
   mapsLinkExtracted: { ar: "تم استخراج الإحداثيات من الرابط", en: "Coordinates extracted from the link" },
   // --- Morning briefing ---
   briefingTitle: { ar: "البريفنج الصباحي", en: "Morning briefing" },
+  briefingReset: { ar: "إعادة تعيين القسم", en: "Reset section" },
+  briefingResetDone: { ar: "تمت إعادة تعيين إعدادات البريفنج فقط", en: "Briefing settings reset" },
+  briefingInvalidTiming: { ar: "وقت الإرسال يجب أن يكون 15 دقيقة أو أكثر، والهامش صفر أو أكثر.", en: "Lead time must be at least 15 minutes and the buffer at least zero." },
+  briefingStatus: { ar: "حالة البريفنج", en: "Briefing status" },
+  briefingActive: { ar: "مفعّل", en: "Enabled" },
+  briefingInactive: { ar: "غير مفعّل", en: "Disabled" },
   briefingHint: {
     ar: "إشعار قبل محاضراتك بساعة: وقت الخروج المثالي حسب الزحمة، الطقس، عدد المحاضرات، وأي اختبار اليوم.",
     en: "A notification an hour before your first class: ideal departure time based on traffic, weather, class count, and any exam today.",
