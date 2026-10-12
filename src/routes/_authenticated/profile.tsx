@@ -448,6 +448,16 @@ function ProfilePage() {
                 )}
                 {t("useMyLocation")}
               </Button>
+              <MapsLinkInput
+                onSelect={(place) =>
+                  setForm((s) => ({
+                    ...s,
+                    home_lat: place.lat.toFixed(6),
+                    home_lng: place.lng.toFixed(6),
+                    home_address: place.address || s.home_address,
+                  }))
+                }
+              />
               <p className="text-xs text-muted-foreground">
                 {form.home_lat && form.home_lng
                   ? `${form.home_lat}, ${form.home_lng}`
