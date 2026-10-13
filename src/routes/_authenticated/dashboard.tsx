@@ -5,8 +5,6 @@ import { coursesQuery, profileQuery, upcomingItemsQuery } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
 import { useAutoStreak } from "@/hooks/useAutoStreak";
 import { useI18n } from "@/lib/i18n";
-import { LangToggle } from "@/components/LangToggle";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { PrereqFlowChart } from "@/components/app/PrereqFlowChart";
 import { NextTermPreview } from "@/components/app/NextTermPreview";
 import { StudyStreak } from "@/components/app/StudyStreak";
@@ -58,10 +56,7 @@ function DashboardPage() {
               {profile?.major || t("none")} · {profile?.current_term || t("none")}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
-          </div>
+          
         </header>
 
         <div className="mb-6">

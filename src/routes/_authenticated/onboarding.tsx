@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -27,8 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LangToggle } from "@/components/LangToggle";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
+import { profileQuery } from "@/lib/queries";
 import type { CourseCategory, CourseStatus } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { withAiDetail } from "@/lib/ai-error-detail";
@@ -67,7 +66,17 @@ function OnboardingPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [sheet, setSheet] = useState<MajorSheet | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
-  const [stage, setStage] = useState<1 | 2 | 3>(1);
+  const [stage, setStage] = useState<0 | 1 | 2 | 3>(0);
+  const { data: profile } = useQuery(profileQuery(user?.id));
+  const [student, setStudent] = useState({ full_name: "", university: "", major: "", current_term: "" });
+  useEffect(() => {
+    if (profile) setStudent(s => ({
+      full_name: s.full_name || profile.full_name || "",
+      university: s.university || profile.university || "",
+      major: s.major || profile.major || "",
+      current_term: s.current_term || profile.current_term || "",
+    }));
+  }, [profile]);
   const [restoredDraft, setRestoredDraft] = useState(false);
 
   // Autosave: parsing the major sheet is a real AI cost, so losing that work to an accidental
@@ -79,12 +88,13 @@ function OnboardingPage() {
     try {
       const raw = localStorage.getItem(draftKey);
       if (!raw) return;
-      const draft = JSON.parse(raw) as { sheet: MajorSheet; rows: Row[]; stage: 1 | 2 | 3 };
+      const draft = JSON.parse(raw) as { sheet: MajorSheet; rows: Row[]; stage: 0 | 1 | 2 | 3; student?: typeof student };
       if (draft.sheet && draft.rows?.length) {
         setSheet(draft.sheet);
         setRows(draft.rows);
         setStage(draft.stage ?? 2);
         setRestoredDraft(true);
+        if (draft.student) setStudent(draft.student);
       }
     } catch {
       // corrupted draft — ignore and start fresh rather than crash onboarding
@@ -94,11 +104,11 @@ function OnboardingPage() {
   useEffect(() => {
     if (!draftKey || !sheet) return;
     try {
-      localStorage.setItem(draftKey, JSON.stringify({ sheet, rows, stage }));
+      localStorage.setItem(draftKey, JSON.stringify({ sheet, rows, stage, student }));
     } catch {
       // storage full/unavailable — autosave is a nice-to-have, not worth surfacing an error for
     }
-  }, [draftKey, sheet, rows, stage]);
+  }, [draftKey, sheet, rows, stage, student]);
 
   const clearDraft = () => {
     if (draftKey) localStorage.removeItem(draftKey);
@@ -137,6 +147,7 @@ function OnboardingPage() {
   const save = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("no user");
+      if (Object.values(student).some(v => !v.trim())) throw new Error(t("setupRequired"));
       const payload = rows.map((r) => ({
         user_id: user.id,
         name: r.name,
@@ -167,7 +178,10 @@ function OnboardingPage() {
         .from("profiles")
         .update({
           onboarding_completed: true,
-          major: sheet?.major ?? null,
+          full_name: student.full_name.trim(),
+          university: student.university.trim(),
+          major: student.major.trim(),
+          current_term: student.current_term.trim(),
           total_credits: credits,
           overall_gpa: gpa ? Number(gpa.toFixed(2)) : null,
         })
@@ -197,24 +211,22 @@ function OnboardingPage() {
             </p>
             <h1 className="font-display text-3xl font-bold">{t("onboardingTitle")}</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
-          </div>
         </header>
 
         <ol className="mb-8 flex flex-wrap gap-2 text-xs">
-          {[t("stepPlan"), t("stepProgress"), t("stepDone")].map((label, i) => (
+          {[t("studentDetails"), t("stepPlan"), t("reviewPlanTitle"), t("markProgressTitle")].map((label, i) => (
             <li
               key={label}
               className={cn(
                 "rounded-full border px-3 py-1",
-                stage >= i + 1
+                stage >= i
                   ? "border-accent bg-accent/10 text-foreground"
                   : "border-border text-muted-foreground",
               )}
             >
+              <span aria-current={stage === i ? "step" : undefined}>
               {t("step")} {i + 1} · {label}
+              </span>
             </li>
           ))}
         </ol>
@@ -229,7 +241,7 @@ function OnboardingPage() {
                 clearDraft();
                 setSheet(null);
                 setRows([]);
-                setStage(1);
+                setStage(0);
                 setRestoredDraft(false);
               }}
             >
@@ -238,8 +250,25 @@ function OnboardingPage() {
           </div>
         )}
 
+        {stage === 0 && (
+          <form className="mx-auto max-w-xl space-y-5" onSubmit={e => {
+            e.preventDefault();
+            if (Object.values(student).some(v => !v.trim())) { toast.error(t("setupRequired")); return; }
+            setStage(1);
+          }}>
+            <h2 className="text-xl font-semibold">{t("studentDetails")}</h2>
+            {(["full_name", "university", "major", "current_term"] as const).map((key, i) => (
+              <div key={key} className="space-y-2">
+                <Label htmlFor={`setup-${key}`}>{[t("fullName"), t("university"), t("major"), t("currentTerm")][i]}</Label>
+                <Input id={`setup-${key}`} required maxLength={160} value={student[key]} onChange={e => setStudent(s => ({ ...s, [key]: e.target.value }))} />
+              </div>
+            ))}
+            <Button type="submit">{t("next")}</Button>
+          </form>
+        )}
+
         {stage === 1 && (
-          <div className="panel-glass p-8 text-center">
+          <div className="py-8 text-center">
             <Sparkles className="mx-auto size-8 text-accent" />
             <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground">
               {t("onboardingBody")}
@@ -269,6 +298,8 @@ function OnboardingPage() {
               {run.isPending ? t("analyzing") : t("uploadMajorSheet")}
             </Button>
             <p className="mt-3 text-xs text-muted-foreground">{t("onlyPdfWord")}</p>
+            <Button variant="ghost" className="mt-4" disabled={run.isPending} onClick={() => setStage(0)}>{t("prev")}</Button>
+            {sheet && <Button className="mt-4" variant="outline" onClick={() => setStage(2)}>{t("next")}</Button>}
           </div>
         )}
 
@@ -276,8 +307,8 @@ function OnboardingPage() {
           <div className="space-y-6">
             <div className="panel-glass p-5">
               <p className="text-sm font-medium">
-                {sheet?.major || t("major")}
-                {sheet?.university ? ` · ${sheet.university}` : ""}
+                {student.major || sheet?.major || t("major")}
+                {` · ${student.university}`}
               </p>
               <p className="text-xs text-muted-foreground">
                 {rows.length} {t("coursesFound")}
@@ -393,7 +424,7 @@ function OnboardingPage() {
                 </Button>
               )}
               <Button variant="outline" onClick={() => (stage === 3 ? setStage(2) : setStage(1))}>
-                {t("cancel")}
+                {t("prev")}
               </Button>
               <label className="ms-auto flex items-center gap-2 text-xs text-muted-foreground">
                 <Checkbox

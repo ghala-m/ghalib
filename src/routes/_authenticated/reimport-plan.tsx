@@ -26,8 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LangToggle } from "@/components/LangToggle";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
 import { withAiDetail } from "@/lib/ai-error-detail";
 
 export const Route = createFileRoute("/_authenticated/reimport-plan")({
@@ -158,10 +156,7 @@ function ReimportPlanPage() {
             </Link>
             <h1 className="font-display text-2xl font-bold">{t("reimportTitle")}</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
-          </div>
+          
         </header>
 
         {!diff && (

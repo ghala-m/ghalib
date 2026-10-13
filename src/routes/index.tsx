@@ -12,7 +12,6 @@ import {
   Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LangToggle } from "@/components/LangToggle";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -59,7 +58,6 @@ function Index() {
           <span className="font-display text-lg font-bold">{t("appName")}</span>
         </div>
         <div className="flex items-center gap-2">
-          <LangToggle />
           <Button asChild variant="outline" size="sm">
             <Link to="/auth">{t("signIn")}</Link>
           </Button>

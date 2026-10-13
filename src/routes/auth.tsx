@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LangToggle } from "@/components/LangToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -89,7 +88,6 @@ function AuthPage() {
           </div>
           <span className="font-display text-lg font-bold">{t("appName")}</span>
         </Link>
-        <LangToggle variant="outline" />
       </div>
 
       <div className="panel w-full max-w-md p-6">

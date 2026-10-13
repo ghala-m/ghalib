@@ -37,6 +37,7 @@ import {
   BackgroundPatternPicker,
   ThemeModeToggle,
 } from "@/components/app/ThemeControls";
+import { LangToggle } from "@/components/LangToggle";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -123,7 +124,7 @@ function SectionCard({
 }: {
   icon: ComponentType<{ className?: string }>;
   title: string;
-  description?: string;
+  description?: string | undefined;
   action?: ReactNode;
   className?: string;
   id?: string;
@@ -398,6 +399,10 @@ function ProfilePage() {
             {t("save")}
           </Button>
         </div>
+      </SectionCard>
+
+      <SectionCard icon={UserRound} title={t("languageSettings")} className="mt-6">
+        <LangToggle variant="outline" />
       </SectionCard>
 
       {/* Appearance: light/dark + accent colour, including a fully custom colour */}

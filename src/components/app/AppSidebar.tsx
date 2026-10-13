@@ -18,6 +18,7 @@ import {
   Sparkles,
   UserRound,
   Wrench,
+  Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -30,7 +31,6 @@ import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { LangToggle } from "@/components/LangToggle";
 import { AddCourseDialog } from "@/components/app/AddCourseDialog";
 import { cn } from "@/lib/utils";
 
@@ -144,7 +144,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
             to="/profile"
             active={pathname === "/profile"}
             icon={UserRound}
-            label={t("profile")}
+            label={t("settings")}
             onNavigate={onNavigate}
           />
         </div>
@@ -181,6 +181,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
             onNavigate={onNavigate}
           />
         </div>
+        <SideLink to="/professors" active={pathname === "/professors"} icon={Star} label={t("professorForum")} onNavigate={onNavigate} />
       </nav>
 
       <div className="px-3 py-4">
@@ -257,7 +258,6 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
       </div>
 
       <div className="flex items-center justify-between border-t border-sidebar-border px-3 py-3">
-        <LangToggle />
         <Button variant="ghost" size="sm" onClick={signOut}>
           <LogOut className="size-4" />
           {t("signOut")}
@@ -282,7 +282,8 @@ function SideLink({
     | "/advisor"
     | "/tools"
     | "/gpa-planner"
-    | "/simulator";
+    | "/simulator"
+    | "/professors";
   active: boolean;
   icon: typeof BookMarked;
   label: string;
