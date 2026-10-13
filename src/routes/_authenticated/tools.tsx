@@ -32,8 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
-import { LangToggle } from "@/components/LangToggle";
 import { FlashcardsViewer, type Flashcard } from "@/components/app/FlashcardsViewer";
 import { QuizViewer, type QuizQuestion } from "@/components/app/QuizViewer";
 import { cn } from "@/lib/utils";
@@ -210,8 +208,6 @@ function ToolsPage() {
               <Library className="size-4" />
               {t("studyLibrary")}
             </Button>
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
           </div>
         </header>
 

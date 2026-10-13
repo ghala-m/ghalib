@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarRange } from "lucide-react";
 import { CalendarView } from "@/components/app/CalendarView";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
-import { LangToggle } from "@/components/LangToggle";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 
@@ -38,8 +36,6 @@ function CalendarPage() {
                 {t("viewTermCalendar")}
               </Link>
             </Button>
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
           </div>
         </header>
         <CalendarView />

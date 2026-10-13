@@ -22,8 +22,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
-import { LangToggle } from "@/components/LangToggle";
 
 export const Route = createFileRoute("/_authenticated/gpa-planner")({
   head: () => ({
@@ -108,10 +106,7 @@ function GpaPlannerPage() {
             </h1>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t("gpaPlannerHint")}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
-          </div>
+          
         </header>
 
         {base.credits === 0 ? (

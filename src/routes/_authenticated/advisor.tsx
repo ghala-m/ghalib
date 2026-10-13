@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { AdvisorChat } from "@/components/app/AdvisorChat";
-import { ThemeModeToggle } from "@/components/app/ThemeControls";
-import { LangToggle } from "@/components/LangToggle";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/advisor")({
@@ -38,10 +36,7 @@ function AdvisorPage() {
               <p className="text-sm text-muted-foreground">{t("advisorHint")}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeModeToggle />
-            <LangToggle variant="outline" />
-          </div>
+          
         </header>
         <AdvisorChat />
       </div>
