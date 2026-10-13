@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedGpaPlannerRouteImport } from './routes/_authenticated/gpa-planner'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPlanPrintRouteImport } from './routes/_authenticated/plan-print'
+import { Route as AuthenticatedProfessorsRouteImport } from './routes/_authenticated/professors'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReimportPlanRouteImport } from './routes/_authenticated/reimport-plan'
 import { Route as AuthenticatedRoadmapRouteImport } from './routes/_authenticated/roadmap'
@@ -70,6 +71,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
 const AuthenticatedPlanPrintRoute = AuthenticatedPlanPrintRouteImport.update({
   id: '/plan-print',
   path: '/plan-print',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfessorsRoute = AuthenticatedProfessorsRouteImport.update({
+  id: '/professors',
+  path: '/professors',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/plan-print': typeof AuthenticatedPlanPrintRoute
+  '/professors': typeof AuthenticatedProfessorsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/plan-print': typeof AuthenticatedPlanPrintRoute
+  '/professors': typeof AuthenticatedProfessorsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/roadmap': typeof AuthenticatedRoadmapRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/_authenticated/gpa-planner': typeof AuthenticatedGpaPlannerRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/plan-print': typeof AuthenticatedPlanPrintRoute
+  '/_authenticated/professors': typeof AuthenticatedProfessorsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reimport-plan': typeof AuthenticatedReimportPlanRoute
   '/_authenticated/roadmap': typeof AuthenticatedRoadmapRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/gpa-planner'
     | '/onboarding'
     | '/plan-print'
+    | '/professors'
     | '/profile'
     | '/reimport-plan'
     | '/roadmap'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
     | '/gpa-planner'
     | '/onboarding'
     | '/plan-print'
+    | '/professors'
     | '/profile'
     | '/reimport-plan'
     | '/roadmap'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authenticated/gpa-planner'
     | '/_authenticated/onboarding'
     | '/_authenticated/plan-print'
+    | '/_authenticated/professors'
     | '/_authenticated/profile'
     | '/_authenticated/reimport-plan'
     | '/_authenticated/roadmap'
@@ -313,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlanPrintRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/professors': {
+      id: '/_authenticated/professors'
+      path: '/professors'
+      fullPath: '/professors'
+      preLoaderRoute: typeof AuthenticatedProfessorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -386,6 +405,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGpaPlannerRoute: typeof AuthenticatedGpaPlannerRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPlanPrintRoute: typeof AuthenticatedPlanPrintRoute
+  AuthenticatedProfessorsRoute: typeof AuthenticatedProfessorsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReimportPlanRoute: typeof AuthenticatedReimportPlanRoute
   AuthenticatedRoadmapRoute: typeof AuthenticatedRoadmapRoute
@@ -404,6 +424,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGpaPlannerRoute: AuthenticatedGpaPlannerRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPlanPrintRoute: AuthenticatedPlanPrintRoute,
+  AuthenticatedProfessorsRoute: AuthenticatedProfessorsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReimportPlanRoute: AuthenticatedReimportPlanRoute,
   AuthenticatedRoadmapRoute: AuthenticatedRoadmapRoute,
