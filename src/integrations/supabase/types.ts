@@ -357,6 +357,106 @@ export type Database = {
           },
         ]
       }
+      professor_review_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professor_review_reports_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "professor_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professor_reviews: {
+        Row: {
+          comment: string
+          course_name: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          professor_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          course_name?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          professor_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          course_name?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          professor_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professor_reviews_professor_id_fkey"
+            columns: ["professor_id"]
+            isOneToOne: false
+            referencedRelation: "professors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professors: {
+        Row: {
+          created_at: string
+          created_by: string
+          department: string
+          id: string
+          name: string
+          university: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          department?: string
+          id?: string
+          name: string
+          university: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          department?: string
+          id?: string
+          name?: string
+          university?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           accent_color: string | null
@@ -627,7 +727,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      list_professor_reviews: {
+        Args: { p_professor_id: string }
+        Returns: {
+          author_name: string
+          comment: string
+          course_name: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          is_own: boolean
+          professor_id: string
+          rating: number
+        }[]
+      }
+      professor_rating_summary: {
+        Args: never
+        Returns: {
+          average_rating: number
+          professor_id: string
+          review_count: number
+        }[]
+      }
     }
     Enums: {
       course_category:
