@@ -369,3 +369,35 @@
     opacity: 0;
   }
 }
+
+.study-document { line-height: 1.9; overflow-wrap: anywhere; }
+.study-document h1, .study-document h2, .study-document h3 { letter-spacing: 0; }
+.study-document > h2 { color: var(--primary); font-size: 1.15rem; font-weight: 700; border-inline-start: 3px solid var(--accent); padding-inline-start: 12px; margin-top: 1.5rem; }
+.study-document > h3 { color: var(--cat-college); font-size: 1rem; font-weight: 700; }
+.study-document ul, .study-document ol { padding-inline-start: 1.5rem; }
+.study-document ul { list-style-type: disc; }
+.study-document ol { list-style-type: decimal; }
+.study-document li { margin-block: .4rem; }
+.study-document li::marker { color: var(--cat-college); }
+.study-document strong { color: var(--primary); }
+.study-document pre { background: var(--muted); padding: 12px; border-radius: 6px; overflow: auto; direction: ltr; text-align: left; white-space: pre-wrap; }
+.study-document code { font-size: .85em; }
+.study-document blockquote { border-inline-start: 3px solid var(--success); padding: 12px; background: color-mix(in oklab, var(--success) 8%, var(--card)); }
+.study-document table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .85rem; }
+.study-document th, .study-document td { border: 1px solid var(--border); padding: 8px; overflow-wrap: anywhere; }
+.study-document th { background: var(--secondary); }
+.study-pdf-host { position: fixed; left: -10000px; top: 0; width: 740px; background: var(--card); color: var(--foreground); --primary: oklch(0.38 0.11 245); --foreground: oklch(0.22 0.025 250); --card: oklch(1 0 0); --muted: oklch(0.96 0.005 250); --muted-foreground: oklch(0.46 0.02 250); --secondary: oklch(0.95 0.02 240); --border: oklch(0.85 0.015 250); --cat-college: oklch(0.42 0.1 165); --success: oklch(0.45 0.12 160); }
+.study-pdf-page { width: 740px; padding: 12px; font-family: var(--font-sans); }
+.study-pdf-page > * { margin-bottom: 16px; }
+.study-pdf-page { line-height: 1.9; overflow-wrap: anywhere; }
+.study-pdf-page h2 { color: var(--primary); font-weight: 700; font-size: 20px; }
+.study-pdf-page h3, .study-pdf-page strong { color: var(--primary); font-weight: 700; }
+.study-pdf-page ul { list-style: disc; padding-inline-start: 24px; }
+.study-pdf-page ol { list-style: decimal; padding-inline-start: 24px; }
+.study-pdf-page pre { white-space: pre-wrap; direction: ltr; }
+.study-pdf-page table { table-layout: fixed; width: 100%; border-collapse: collapse; }
+.study-pdf-page td, .study-pdf-page th { border: 1px solid var(--border); padding: 8px; }
+.flashcard-scene { perspective: 1200px; }
+.flashcard-face { animation: study-card-in .3s ease both; }
+@keyframes study-card-in { from { opacity: .4; transform: rotateY(-12deg) translateY(4px); } to { opacity: 1; transform: rotateY(0) translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .flashcard-face { animation: none; } }

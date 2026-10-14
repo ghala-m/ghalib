@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { StudyOptionsSchema, studyInstructions } from "./study-options";
 
 const Input = z.object({
   lang: z.enum(["ar", "en"]).catch("ar"),
@@ -18,6 +19,11 @@ const Input = z.object({
     )
     .max(80),
   gradeWeights: z.array(z.object({ category: z.string().max(80), percentage: z.number() })).max(30),
+  options: StudyOptionsSchema.optional(),
+  text: z.string().max(60000).default(""),
+  pdfBase64: z.string().max(9000000).optional(),
+  imageBase64: z.string().max(9000000).optional(),
+  imageMediaType: z.enum(["image/png", "image/jpeg", "image/webp"]).optional(),
 });
 
 export const generateWeeklyPlan = createServerFn({ method: "POST" })
@@ -43,19 +49,20 @@ export const generateWeeklyPlan = createServerFn({ method: "POST" })
         (i) =>
           `- ${i.due_date ?? "no date"} | ${i.type} | ${i.title}${i.weight ? ` (${i.weight}%)` : ""}`,
       ),
+      data.text ? `Study material:\n${data.text}` : "",
     ].join("\n");
 
     try {
       const result = await generateText({
         model,
         instructions: [
-          "You are Ghalib, a friendly study coach. Build a short plan for the NEXT 7 DAYS for this one course.",
+          "You are Ghalib, a friendly study coach. Build a personalized plan for this one course.",
           "Start with urgent reminders in the style: 'Remember! tomorrow you have a quiz — study chapters 4 and 5'.",
-          "Then give a day-by-day list (max 7 lines) of what to study. Use only the items provided; never invent dates or chapters.",
-          "If nothing is pending, say so and suggest light review. Max 140 words, plain text, no markdown headings.",
+          data.options ? studyInstructions(data.options) : "Give a Markdown day-by-day plan for the next 7 days. Use only provided items; never invent dates or chapters.",
+          "If nothing is pending, say so and plan review from the uploaded material or known course topics. Never invent source contents.",
           data.lang === "ar" ? "Answer in Arabic (Gulf-friendly, simple)." : "Answer in English.",
         ].join("\n"),
-        prompt,
+        messages: [{ role: "user", content: data.pdfBase64 ? [{ type: "text", text: prompt }, { type: "file", data: data.pdfBase64, mediaType: "application/pdf" }] : data.imageBase64 ? [{ type: "text", text: prompt }, { type: "image", image: `data:${data.imageMediaType || "image/png"};base64,${data.imageBase64}` }] : prompt }],
       });
       return { text: result.text };
     } catch (error) {
