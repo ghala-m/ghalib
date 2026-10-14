@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { runStudyTool } from "@/lib/tools.functions";
-import { ACCEPTED_DOCS, isAcceptedDoc, prepareDocument } from "@/lib/files";
+import type { PreparedDoc } from "@/lib/files";
+import { StudyFileInput } from "@/components/app/StudyFileInput";
+import { StudyPlanOptions } from "@/components/app/StudyPlanOptions";
+import { StudyDocument } from "@/components/app/StudyDocument";
+import { defaultStudyOptions, StudyOptionsSchema, STUDY_COPY } from "@/lib/study-options";
 import {
   coursesQuery,
   primaryNickname,
@@ -104,7 +108,11 @@ function ToolsPage() {
   const [tool, setTool] = useState<Tool>("summarize");
   const [courseId, setCourseId] = useState<string>("none");
   const [text, setText] = useState("");
-  const [pdf, setPdf] = useState<{ base64: string; name: string } | null>(null);
+  const [file, setFile] = useState<PreparedDoc | null>(null);
+  const [reading, setReading] = useState(false);
+  const [options, setOptions] = useState(defaultStudyOptions);
+  const c = STUDY_COPY[lang];
+  const sourceText = [text, file?.kind === "text" ? file.text : ""].filter(Boolean).join("\n\n");
   const [output, setOutput] = useState<
     | { kind: "text"; text: string }
     | { kind: "flashcards"; cards: Flashcard[] }
@@ -114,13 +122,18 @@ function ToolsPage() {
 
   const execute = useMutation({
     mutationFn: async () => {
-      if (!text.trim() && !pdf) throw new Error("EMPTY_INPUT");
+      if (!sourceText.trim() && !file) throw new Error("EMPTY_INPUT");
+      if (sourceText.length > 60000) throw new Error("TEXT_TOO_LARGE");
+      if (tool === "studyPlan" && !StudyOptionsSchema.safeParse(options).success) throw new Error("INVALID_OPTIONS");
       const res = (await run({
         data: {
           tool,
           lang,
-          text,
-          ...(pdf ? { pdfBase64: pdf.base64, fileName: pdf.name } : {}),
+          text: sourceText,
+          ...(file ? { fileName: file.fileName } : {}),
+          ...(file?.kind === "pdf" ? { pdfBase64: file.base64 } : {}),
+          ...(file?.kind === "image" ? { imageBase64: file.base64, imageMediaType: "image/png" as const } : {}),
+          ...(tool === "studyPlan" ? { options } : {}),
         },
       })) as
         | { kind: "text"; text: string }
@@ -143,11 +156,11 @@ function ToolsPage() {
           courseId: courseId === "none" ? null : courseId,
           kind: tool,
           title: defaultTitle(
-            text,
+            file?.fileName || text,
             `${t(TOOL_LABEL_KEY[tool])} — ${new Date().toLocaleDateString()}`,
           ),
           content,
-          sourceExcerpt: text ? text.slice(0, 240) : pdf?.name || null,
+          sourceExcerpt: file?.fileName || (text ? text.slice(0, 240) : null),
         });
         void qc.invalidateQueries({ queryKey: ["study-materials"] });
         // Flashcards specifically benefit from landing on the reusable review page right away —
@@ -167,33 +180,15 @@ function ToolsPage() {
       }
     },
     onError: (e: Error) => {
-      if (e.message.includes("EMPTY_INPUT")) toast.error(t("emptyInput"));
+      if (e.message.includes("INVALID_OPTIONS") || e.message.includes("INVALID_STUDY_DATE")) toast.error(c.invalid);
+      else if (e.message.includes("TEXT_TOO_LARGE")) toast.error(lang === "ar" ? "النص طويل؛ الحد الأقصى 60 ألف حرف" : "Maximum text length is 60,000 characters");
+      else if (e.message.includes("EMPTY_INPUT")) toast.error(t("emptyInput"));
       else if (e.message.includes("Missing LOVABLE_API_KEY")) toast.error(t("aiKeyMissing"));
       else if (e.message.includes("RATE_LIMIT")) toast.error(t("aiRateLimit"));
       else if (e.message.includes("NO_CREDITS")) toast.error(t("aiCredits"));
       else toast.error(withAiDetail(t("aiFailed"), e));
     },
   });
-
-  async function onFile(file: File | undefined) {
-    if (!file) return;
-    if (!isAcceptedDoc(file)) {
-      toast.error(t("invalidFile"));
-      return;
-    }
-    try {
-      const prepared = await prepareDocument(file);
-      if (prepared.kind === "pdf") {
-        setPdf({ base64: prepared.base64, name: prepared.fileName });
-      } else {
-        setPdf(null);
-        setText(prepared.text);
-      }
-      toast.success(file.name);
-    } catch {
-      toast.error(t("readFailed"));
-    }
-  }
 
   return (
     <div className="surface-gradient min-h-screen">
@@ -213,7 +208,10 @@ function ToolsPage() {
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {TOOLS.map((item) => (
-            <button
+            <Button
+              variant="outline"
+              disabled={execute.isPending}
+              aria-pressed={tool === item.id}
               key={item.id}
               type="button"
               onClick={() => {
@@ -221,21 +219,21 @@ function ToolsPage() {
                 setOutput(null);
               }}
               className={cn(
-                "panel p-4 text-start transition-colors",
+                "h-auto flex-col items-start whitespace-normal rounded-lg p-4 text-start transition-colors",
                 tool === item.id ? "border-accent ring-1 ring-accent" : "hover:border-accent/50",
               )}
             >
               <item.icon className="size-5 text-accent" />
               <p className="mt-2 text-sm font-semibold">{t(item.title)}</p>
               <p className="mt-1 text-xs text-muted-foreground">{t(item.body)}</p>
-            </button>
+            </Button>
           ))}
         </div>
 
         <div className="panel mt-6 space-y-4 p-6">
           <div className="max-w-xs space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">{t("linkedCourse")}</label>
-            <Select value={courseId} onValueChange={setCourseId}>
+            <Select value={courseId} disabled={execute.isPending} onValueChange={setCourseId}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -250,25 +248,19 @@ function ToolsPage() {
             </Select>
           </div>
           <Textarea
+            disabled={execute.isPending}
+            maxLength={60000}
             rows={8}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={t("pasteMaterial")}
           />
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="cursor-pointer rounded-lg border border-border px-3 py-2 text-sm hover:border-accent">
-              {t("orUploadDoc")}
-              <input
-                type="file"
-                accept={ACCEPTED_DOCS}
-                className="hidden"
-                onChange={(e) => onFile(e.target.files?.[0])}
-              />
-            </label>
-            {pdf ? <span className="text-xs text-muted-foreground">{pdf.name}</span> : null}
+          <StudyFileInput value={file} onChange={setFile} disabled={execute.isPending} onBusyChange={setReading} />
+          {tool === "studyPlan" && <StudyPlanOptions value={options} onChange={setOptions} disabled={execute.isPending} />}
+          <div className="flex justify-end">
             <Button
               className="ms-auto"
-              disabled={execute.isPending}
+              disabled={execute.isPending || reading}
               onClick={() => execute.mutate()}
             >
               {execute.isPending ? (
@@ -299,7 +291,7 @@ function ToolsPage() {
                 </Button>
               )}
             </div>
-            {output.kind === "text" && <p className="text-sm whitespace-pre-wrap">{output.text}</p>}
+            {output.kind === "text" && <StudyDocument text={output.text} title={tool === "studyPlan" ? c.plan : tool === "summarize" ? c.summary : t(TOOL_LABEL_KEY[tool])} subtitle={file?.fileName} />}
             {output.kind === "flashcards" && <FlashcardsViewer cards={output.cards} />}
             {output.kind === "quiz" && <QuizViewer questions={output.questions} />}
           </div>
