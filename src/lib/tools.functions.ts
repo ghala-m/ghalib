@@ -11,6 +11,11 @@ const Input = z.object({
   fileName: z.string().max(200).optional(),
   imageBase64: z.string().max(9000000).optional(),
   imageMediaType: z.enum(["image/png", "image/jpeg", "image/webp"]).optional(),
+  attachments: z
+    .array(z.object({ kind: z.enum(["pdf", "image"]), base64: z.string().max(9000000), fileName: z.string().max(200) }))
+    .max(5)
+    .refine((list) => list.reduce((n, a) => n + a.base64.length, 0) <= 12000000, "FILE_TOO_LARGE")
+    .optional(),
   options: StudyOptionsSchema.optional(),
 });
 
@@ -42,18 +47,25 @@ export const runStudyTool = createServerFn({ method: "POST" })
       windowMinutes: 60,
     });
 
-    if (!data.text.trim() && !data.pdfBase64 && !data.imageBase64) throw new Error("EMPTY_INPUT");
+    const attachments = [
+      ...(data.attachments ?? []),
+      ...(data.pdfBase64 ? [{ kind: "pdf" as const, base64: data.pdfBase64, fileName: data.fileName || "document.pdf" }] : []),
+      ...(data.imageBase64 ? [{ kind: "image" as const, base64: data.imageBase64, fileName: data.fileName || "image.png" }] : []),
+    ];
+    if (!data.text.trim() && attachments.length === 0) throw new Error("EMPTY_INPUT");
 
     const { getAiModel, extractJson, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
     const model = getAiModel();
     const langLine = data.lang === "ar" ? "Answer in Arabic." : "Answer in English.";
-    const content = data.imageBase64
-      ? [{ type: "text" as const, text: data.text || "Use the attached study image." }, { type: "image" as const, image: `data:${data.imageMediaType || "image/png"};base64,${data.imageBase64}` }]
-      : data.pdfBase64
+    const content = attachments.length
       ? [
-          { type: "text" as const, text: data.text || "Use the attached document." },
-          { type: "file" as const, data: data.pdfBase64, mediaType: "application/pdf" },
+          { type: "text" as const, text: data.text || "Use the attached study files together as one body of material." },
+          ...attachments.map((a) =>
+            a.kind === "image"
+              ? { type: "image" as const, image: `data:image/png;base64,${a.base64}` }
+              : { type: "file" as const, data: a.base64, mediaType: "application/pdf" },
+          ),
         ]
       : data.text;
 

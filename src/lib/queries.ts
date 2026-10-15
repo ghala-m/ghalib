@@ -51,6 +51,11 @@ export async function saveStudyMaterial(opts: {
   return data;
 }
 
+export async function updateStudyMaterial(id: string, patch: { title: string; course_id: string | null }): Promise<void> {
+  const { error } = await supabase.from("study_materials").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
 export async function deleteStudyMaterial(id: string): Promise<void> {
   const { error } = await supabase.from("study_materials").delete().eq("id", id);
   if (error) throw error;

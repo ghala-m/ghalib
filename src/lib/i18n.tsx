@@ -4,6 +4,13 @@ export type Lang = "ar" | "en";
 
 const dict = {
   languageSettings: { ar: "لغة التطبيق", en: "App language" },
+  languageSettingsHint: { ar: "اختر لغة الواجهة؛ يتغير اتجاه الصفحة تلقائيًا.", en: "Choose the interface language; page direction updates automatically." },
+  more: { ar: "المزيد", en: "More" },
+  editMaterial: { ar: "تعديل", en: "Edit" },
+  materialTitle: { ar: "العنوان", en: "Title" },
+  materialCourse: { ar: "المادة المالكة", en: "Owning course" },
+  materialUpdated: { ar: "تم تحديث العنصر", en: "Item updated" },
+  briefingSwitchHint: { ar: "فعّله لتصلك رسالة قبل أول محاضرة بوقت الخروج المناسب.", en: "Turn on to get a message telling you when to leave before your first class." },
   studentDetails: { ar: "بيانات الطالب", en: "Student details" },
   setupRequired: { ar: "أكمل الاسم والجامعة والتخصص والفصل الحالي أولًا.", en: "Enter your name, university, major and current term first." },
   professorForum: { ar: "منتدى تقييم الدكاترة", en: "Professor ratings" },
@@ -738,7 +745,7 @@ const dict = {
   },
   mapsLinkExtracted: { ar: "تم استخراج الإحداثيات من الرابط", en: "Coordinates extracted from the link" },
   // --- Morning briefing ---
-  briefingTitle: { ar: "البريفنج الصباحي", en: "Morning briefing" },
+  briefingTitle: { ar: "رفيق الصباح", en: "Morning companion" },
   briefingReset: { ar: "إعادة تعيين القسم", en: "Reset section" },
   briefingResetDone: { ar: "تمت إعادة تعيين إعدادات البريفنج فقط", en: "Briefing settings reset" },
   briefingInvalidTiming: { ar: "وقت الإرسال يجب أن يكون 15 دقيقة أو أكثر، والهامش صفر أو أكثر.", en: "Lead time must be at least 15 minutes and the buffer at least zero." },

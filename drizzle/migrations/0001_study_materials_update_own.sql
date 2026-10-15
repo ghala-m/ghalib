@@ -1,0 +1,2 @@
+GRANT UPDATE ON public.study_materials TO authenticated;
+CREATE POLICY study_materials_update_own ON public.study_materials FOR UPDATE TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
