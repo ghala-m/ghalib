@@ -10,6 +10,7 @@ import {
   List,
   ListChecks,
   Sparkles,
+  Pencil,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +21,12 @@ import {
   studyMaterialsQuery,
   type Course,
   type StudyMaterial,
+  updateStudyMaterial,
 } from "@/lib/queries";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { FlashcardsViewer, type Flashcard } from "@/components/app/FlashcardsViewer";
@@ -65,6 +71,7 @@ function StudyLibraryPage() {
   const { data: materials = [], isLoading } = useQuery(studyMaterialsQuery());
   const { data: courses = [] } = useQuery(coursesQuery());
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<StudyMaterial | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid">(() => {
     if (typeof window === "undefined") return "list";
     return (localStorage.getItem("study-library:view") as "list" | "grid" | null) ?? "list";
@@ -175,6 +182,7 @@ function StudyLibraryPage() {
                       open={openId === m.id}
                       onToggle={setOpenId}
                       onDelete={(id) => remove.mutate(id)}
+                      onEdit={setEditing}
                       gridMode={viewMode === "grid"}
                     />
                   ))}
@@ -195,6 +203,7 @@ function StudyLibraryPage() {
                       open={openId === m.id}
                       onToggle={setOpenId}
                       onDelete={(id) => remove.mutate(id)}
+                      onEdit={setEditing}
                       gridMode={viewMode === "grid"}
                     />
                   ))}
@@ -204,7 +213,52 @@ function StudyLibraryPage() {
           </div>
         )}
       </div>
+      <EditMaterialDialog material={editing} courses={courses} onClose={() => setEditing(null)} />
     </div>
+  );
+}
+
+function EditMaterialDialog({ material, courses, onClose }: { material: StudyMaterial | null; courses: Course[]; onClose: () => void }) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const [title, setTitle] = useState("");
+  const [courseId, setCourseId] = useState("none");
+  useEffect(() => {
+    if (material) { setTitle(material.title); setCourseId(material.course_id ?? "none"); }
+  }, [material]);
+  const save = useMutation({
+    mutationFn: () => updateStudyMaterial(material!.id, { title: title.trim(), course_id: courseId === "none" ? null : courseId }),
+    onSuccess: () => { toast.success(t("materialUpdated")); void qc.invalidateQueries({ queryKey: ["study-materials"] }); onClose(); },
+    onError: () => toast.error(t("saveFailed")),
+  });
+  return (
+    <Dialog open={!!material} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{t("editMaterial")}</DialogTitle></DialogHeader>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="material-title">{t("materialTitle")}</Label>
+            <Input id="material-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t("materialCourse")}</Label>
+            <Select value={courseId} onValueChange={setCourseId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("noCourseLink")}</SelectItem>
+                {courses.filter((c) => !c.archived).map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{courseLabel(c)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>{t("cancel")}</Button>
+          <Button disabled={!title.trim() || save.isPending} onClick={() => save.mutate()}>{t("save")}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -213,8 +267,10 @@ function MaterialCard({
   open,
   onToggle,
   onDelete,
+  onEdit,
   gridMode,
 }: {
+  onEdit: (m: StudyMaterial) => void;
   material: StudyMaterial;
   open: boolean;
   onToggle: (id: string | null) => void;
@@ -256,6 +312,17 @@ function MaterialCard({
         </div>
         {!gridMode || open ? (
           <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(material);
+              }}
+              aria-label={t("editMaterial")}
+            >
+              <Pencil className="size-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
