@@ -8,6 +8,13 @@
       "when": 1791918656557,
       "tag": "0000_professor_rating_forum",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792079652450,
+      "tag": "0001_study_materials_update_own",
+      "breakpoints": true
     }
   ]
 }
