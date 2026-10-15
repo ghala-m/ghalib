@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -23,6 +23,7 @@ import {
   coursesQuery,
   primaryNickname,
   saveStudyMaterial,
+  studyMaterialsQuery,
   type StudyMaterialKind,
 } from "@/lib/queries";
 import { useAuth } from "@/hooks/useAuth";
@@ -108,11 +109,13 @@ function ToolsPage() {
   const [tool, setTool] = useState<Tool>("summarize");
   const [courseId, setCourseId] = useState<string>("none");
   const [text, setText] = useState("");
-  const [file, setFile] = useState<PreparedDoc | null>(null);
+  const [files, setFiles] = useState<PreparedDoc[]>([]);
   const [reading, setReading] = useState(false);
   const [options, setOptions] = useState(defaultStudyOptions);
   const c = STUDY_COPY[lang];
-  const sourceText = [text, file?.kind === "text" ? file.text : ""].filter(Boolean).join("\n\n");
+  const sourceText = [text, ...files.flatMap((f) => (f.kind === "text" ? [`### ${f.fileName}\n${f.text}`] : []))].filter(Boolean).join("\n\n");
+  const binaries = files.flatMap((f) => (f.kind === "pdf" || f.kind === "image" ? [{ kind: f.kind, base64: f.base64, fileName: f.fileName }] : []));
+  const fileNames = files.map((f) => f.fileName).join("، ");
   const [output, setOutput] = useState<
     | { kind: "text"; text: string }
     | { kind: "flashcards"; cards: Flashcard[] }
@@ -122,7 +125,7 @@ function ToolsPage() {
 
   const execute = useMutation({
     mutationFn: async () => {
-      if (!sourceText.trim() && !file) throw new Error("EMPTY_INPUT");
+      if (!sourceText.trim() && !binaries.length) throw new Error("EMPTY_INPUT");
       if (sourceText.length > 60000) throw new Error("TEXT_TOO_LARGE");
       if (tool === "studyPlan" && !StudyOptionsSchema.safeParse(options).success) throw new Error("INVALID_OPTIONS");
       const res = (await run({
@@ -130,9 +133,7 @@ function ToolsPage() {
           tool,
           lang,
           text: sourceText,
-          ...(file ? { fileName: file.fileName } : {}),
-          ...(file?.kind === "pdf" ? { pdfBase64: file.base64 } : {}),
-          ...(file?.kind === "image" ? { imageBase64: file.base64, imageMediaType: "image/png" as const } : {}),
+          ...(binaries.length ? { attachments: binaries } : {}),
           ...(tool === "studyPlan" ? { options } : {}),
         },
       })) as
@@ -156,11 +157,11 @@ function ToolsPage() {
           courseId: courseId === "none" ? null : courseId,
           kind: tool,
           title: defaultTitle(
-            file?.fileName || text,
+            fileNames || text,
             `${t(TOOL_LABEL_KEY[tool])} — ${new Date().toLocaleDateString()}`,
           ),
           content,
-          sourceExcerpt: file?.fileName || (text ? text.slice(0, 240) : null),
+          sourceExcerpt: fileNames || (text ? text.slice(0, 240) : null),
         });
         void qc.invalidateQueries({ queryKey: ["study-materials"] });
         // Flashcards specifically benefit from landing on the reusable review page right away —
@@ -247,15 +248,17 @@ function ToolsPage() {
               </SelectContent>
             </Select>
           </div>
-          <Textarea
-            disabled={execute.isPending}
-            maxLength={60000}
-            rows={8}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={t("pasteMaterial")}
-          />
-          <StudyFileInput value={file} onChange={setFile} disabled={execute.isPending} onBusyChange={setReading} />
+          <StudyFileInput value={files} onChange={setFiles} disabled={execute.isPending} onBusyChange={setReading}>
+            <Textarea
+              disabled={execute.isPending}
+              maxLength={60000}
+              rows={6}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={t("pasteMaterial")}
+              className="border-0 bg-transparent px-1 shadow-none focus-visible:ring-0"
+            />
+          </StudyFileInput>
           {tool === "studyPlan" && <StudyPlanOptions value={options} onChange={setOptions} disabled={execute.isPending} />}
           <div className="flex justify-end">
             <Button
@@ -291,12 +294,65 @@ function ToolsPage() {
                 </Button>
               )}
             </div>
-            {output.kind === "text" && <StudyDocument text={output.text} title={tool === "studyPlan" ? c.plan : tool === "summarize" ? c.summary : t(TOOL_LABEL_KEY[tool])} subtitle={file?.fileName} />}
+            {output.kind === "text" && <StudyDocument text={output.text} title={tool === "studyPlan" ? c.plan : tool === "summarize" ? c.summary : t(TOOL_LABEL_KEY[tool])} subtitle={fileNames || undefined} />}
             {output.kind === "flashcards" && <FlashcardsViewer cards={output.cards} />}
             {output.kind === "quiz" && <QuizViewer questions={output.questions} />}
           </div>
         ) : null}
+
+        <LibraryPreview />
       </div>
     </div>
   );
 }
+
+function LibraryPreview() {
+  const { t } = useI18n();
+  const { data: materials = [] } = useQuery(studyMaterialsQuery());
+  const { data: courses = [] } = useQuery(coursesQuery());
+  const shown = materials.slice(0, 6);
+  return (
+    <section className="mt-8">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="font-display text-lg font-bold">{t("studyLibrary")}</h2>
+        <Link to="/study-library" className="text-sm font-medium text-accent hover:underline">
+          {t("more")}
+        </Link>
+      </div>
+      {shown.length === 0 ? (
+        <p className="panel p-5 text-sm text-muted-foreground">{t("noSavedMaterials")}</p>
+      ) : (
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((m) => {
+            const Icon = KIND_ICON[m.kind] ?? FileText;
+            const course = courses.find((c) => c.id === m.course_id);
+            return (
+              <li key={m.id}>
+                <Link
+                  to="/study-library"
+                  onClick={() => sessionStorage.setItem("study-library:focus", m.id)}
+                  className="panel flex h-full flex-col gap-2 p-4 transition-colors hover:border-accent/50"
+                >
+                  <Icon className="size-5 text-accent" />
+                  <span className="line-clamp-2 text-sm font-semibold">{m.title}</span>
+                  <span className="mt-auto text-xs text-muted-foreground">
+                    {t(TOOL_LABEL_KEY[m.kind as Tool] ?? "toolSummarize")}
+                    {course ? ` · ${course.code || primaryNickname(course.nickname) || course.name}` : ""}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+const KIND_ICON: Record<string, typeof FileText> = {
+  summarize: FileText,
+  flashcards: ListChecks,
+  quiz: Brain,
+  explain: BookOpen,
+  studyPlan: Sparkles,
+};
