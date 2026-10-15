@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { STUDY_COPY } from "@/lib/study-options";
 import { createStudyPdf, downloadStudyPdf, shareStudyPdf } from "@/lib/study-pdf";
 
-export function StudyDocument({ text, title, subtitle }: { text: string; title: string; subtitle?: string }) {
+export function StudyDocument({ text, title, subtitle }: { text: string; title: string; subtitle?: string | undefined }) {
   const { lang, dir } = useI18n(); const c = STUDY_COPY[lang]; const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false); const [blob, setBlob] = useState<Blob | null>(null);
   useEffect(() => setBlob(null), [text, title, subtitle, lang]);

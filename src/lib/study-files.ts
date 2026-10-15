@@ -26,7 +26,7 @@ async function imageDocument(file: File): Promise<PreparedDoc> {
   if (ext === "heic" || ext === "heif") {
     const { default: convert } = await import("heic2any");
     const result = await convert({ blob: file, toType: "image/jpeg" });
-    blob = Array.isArray(result) ? result[0] : result;
+    blob = (Array.isArray(result) ? result[0] : result) ?? file;
   }
   const canvas = document.createElement("canvas");
   if (ext === "tif" || ext === "tiff") {

@@ -25,7 +25,7 @@ export async function createStudyPdf(element: HTMLElement): Promise<Blob> {
     }
     clone.remove();
     for (let i = 0; i < pages.length; i++) {
-      const canvas = await html2canvas(pages[i], { scale: 2, backgroundColor: getComputedStyle(host).backgroundColor, logging: false });
+      const canvas = await html2canvas(pages[i]!, { scale: 2, backgroundColor: getComputedStyle(host).backgroundColor, logging: false });
       const height = canvas.height * 186 / canvas.width;
       if (i) pdf.addPage();
       // Oversized single blocks are scaled as a unit, never cut through text.
