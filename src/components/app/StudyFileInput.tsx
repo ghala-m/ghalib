@@ -1,3 +1,4 @@
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { FileCode, FileImage, FileText, Loader2, Presentation, Upload, X } from "lucide-react";
 import { toast } from "sonner";
@@ -63,7 +64,9 @@ export function StudyFileInput({
   onChange,
   disabled = false,
   onBusyChange,
+  children,
 }: {
+  children?: React.ReactNode;
   value: PreparedDoc[];
   onChange: (files: PreparedDoc[]) => void;
   disabled?: boolean;
@@ -106,7 +109,7 @@ export function StudyFileInput({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 rounded-2xl border border-input bg-background p-3 focus-within:ring-1 focus-within:ring-ring">
       <input
         ref={ref}
         type="file"
@@ -133,6 +136,7 @@ export function StudyFileInput({
           ))}
         </ul>
       )}
+      {children}
       <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
