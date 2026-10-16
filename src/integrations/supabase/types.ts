@@ -225,6 +225,8 @@ export type Database = {
         Row: {
           alt_group: string | null
           archived: boolean
+          box_name: string | null
+          box_required: number | null
           calendar_default_view: string
           category: Database["public"]["Enums"]["course_category"]
           code: string | null
@@ -255,6 +257,8 @@ export type Database = {
         Insert: {
           alt_group?: string | null
           archived?: boolean
+          box_name?: string | null
+          box_required?: number | null
           calendar_default_view?: string
           category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
@@ -285,6 +289,8 @@ export type Database = {
         Update: {
           alt_group?: string | null
           archived?: boolean
+          box_name?: string | null
+          box_required?: number | null
           calendar_default_view?: string
           category?: Database["public"]["Enums"]["course_category"]
           code?: string | null
