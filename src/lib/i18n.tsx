@@ -752,6 +752,10 @@ const dict = {
   briefingStatus: { ar: "حالة البريفنج", en: "Briefing status" },
   briefingActive: { ar: "مفعّل", en: "Enabled" },
   briefingInactive: { ar: "غير مفعّل", en: "Disabled" },
+  briefingEnable: { ar: "تفعيل", en: "Enable" },
+  briefingDisable: { ar: "إيقاف", en: "Disable" },
+  languageArabic: { ar: "العربية", en: "العربية" },
+  languageEnglish: { ar: "English", en: "English" },
   briefingHint: {
     ar: "إشعار قبل محاضراتك بساعة: وقت الخروج المثالي حسب الزحمة، الطقس، عدد المحاضرات، وأي اختبار اليوم.",
     en: "A notification an hour before your first class: ideal departure time based on traffic, weather, class count, and any exam today.",

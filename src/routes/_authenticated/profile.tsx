@@ -292,6 +292,30 @@ function ProfilePage() {
     onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : e.message),
   });
 
+  // Enable/disable straight from the saved summary — locations are already stored,
+  // so this only flips the switch without touching the rest of the section.
+  const toggleBriefing = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      if (!user) throw new Error("no user");
+      if (
+        enabled &&
+        (typeof Notification === "undefined" || Notification.permission !== "granted")
+      ) {
+        throw new Error(t("briefingNeedsPush"));
+      }
+      const { error } = await supabase
+        .from("profiles")
+        .update({ briefing_enabled: enabled })
+        .eq("id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(t("saved"));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const fields: { key: keyof typeof form; label: string; type?: string; step?: string }[] = [
     { key: "full_name", label: t("fullName") },
     { key: "major", label: t("major") },
