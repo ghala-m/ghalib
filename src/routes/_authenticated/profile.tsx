@@ -425,8 +425,46 @@ function ProfilePage() {
         </div>
       </SectionCard>
 
-      <SectionCard icon={UserRound} title={t("languageSettings")} className="mt-6">
-        <LangToggle variant="outline" />
+      <SectionCard
+        icon={Languages}
+        title={t("languageSettings")}
+        description={t("languageSettingsHint")}
+        className="mt-6"
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          {(["ar", "en"] as const).map((code) => {
+            const active = lang === code;
+            return (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setLang(code)}
+                aria-pressed={active}
+                className={cn(
+                  "flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-start transition-colors",
+                  active
+                    ? "border-accent bg-accent/10"
+                    : "border-border hover:bg-muted/50",
+                )}
+              >
+                <span className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "flex size-9 items-center justify-center rounded-lg text-sm font-bold",
+                      active ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {code === "ar" ? "ع" : "A"}
+                  </span>
+                  <span className="text-sm font-medium">
+                    {code === "ar" ? t("languageArabic") : t("languageEnglish")}
+                  </span>
+                </span>
+                {active ? <Check className="size-4 text-accent" /> : null}
+              </button>
+            );
+          })}
+        </div>
       </SectionCard>
 
       {/* Appearance: light/dark + accent colour, including a fully custom colour */}
@@ -513,6 +551,20 @@ function ProfilePage() {
                 </div>
               ))}
             </dl>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3">
+              <p className="text-sm font-medium">{t("briefingStatus")}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {t(profile.briefing_enabled ? "briefingActive" : "briefingInactive")}
+                </span>
+                <Switch
+                  aria-label={t("briefingTitle")}
+                  checked={profile.briefing_enabled}
+                  disabled={toggleBriefing.isPending}
+                  onCheckedChange={(checked) => toggleBriefing.mutate(checked)}
+                />
+              </div>
+            </div>
             <Button variant="outline" disabled={saveBriefing.isPending} onClick={() => saveBriefing.mutate(true)}>
               {saveBriefing.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
               {t("briefingReset")}
