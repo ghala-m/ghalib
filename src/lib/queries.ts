@@ -318,15 +318,25 @@ export function matchesCourse(c: Course, query: string) {
 
 const normCode = (v: string) => v.replace(/\s+/g, "").toUpperCase();
 
-/** A course is blocked when another course in its alternatives group is already taken. */
+/** A course is blocked when another course in its alternatives group is already taken,
+ * or when its choice box already has enough taken courses. */
 export function blockedByAlternative(course: Course, all: Course[]) {
-  if (!course.alt_group || course.status === "completed" || course.status === "current")
-    return false;
+  if (course.status === "completed" || course.status === "current") return false;
+  const taken = (o: Course) => o.status === "completed" || o.status === "current";
+  if (course.box_name) {
+    const need = Math.max(1, course.box_required ?? 1);
+    const box = normCode(course.box_name);
+    const count = all.filter(
+      (o) => o.id !== course.id && o.box_name && normCode(o.box_name) === box && taken(o),
+    ).length;
+    if (count >= need) return true;
+  }
+  if (!course.alt_group) return false;
   return all.some(
     (o) =>
       o.id !== course.id &&
       o.alt_group &&
       normCode(o.alt_group) === normCode(course.alt_group!) &&
-      (o.status === "completed" || o.status === "current"),
+      taken(o),
   );
 }
