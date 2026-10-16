@@ -12,6 +12,10 @@
 - Remove obsolete Maps-key message and collapse saved briefing into a summary with section-only reset; verify saving and reset.
 
 ## Done this session
+- Multiple study-file uploads (up to 5) with name chips inside the text box
+- Study library grid preview in tools + "More" link + edit dialog to reassign an item to another course
+- Briefing renamed to "رفيق الصباح" with an enable/disable switch inside the saved summary
+- Language section redesigned as two clear Arabic/English option cards
 - Term calendar feature verified in preview
 - Edit current term dialog (term details, add/remove courses, calendar events)
 - Registration simulator page (/simulator) with unlock preview + best-combination suggester
