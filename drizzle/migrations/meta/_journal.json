@@ -15,6 +15,13 @@
       "when": 1792079652450,
       "tag": "0001_study_materials_update_own",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792112250331,
+      "tag": "0002_course_boxes",
+      "breakpoints": true
     }
   ]
 }
