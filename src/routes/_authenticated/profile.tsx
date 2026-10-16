@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Award,
   BookOpenCheck,
+  Check,
+  Languages,
   Palette,
   Sunrise,
   TrendingUp,
@@ -37,7 +39,6 @@ import {
   BackgroundPatternPicker,
   ThemeModeToggle,
 } from "@/components/app/ThemeControls";
-import { LangToggle } from "@/components/LangToggle";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -152,7 +153,7 @@ function SectionCard({
 }
 
 function ProfilePage() {
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
