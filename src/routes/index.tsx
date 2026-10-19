@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import {
   BookOpenCheck,
   CalendarClock,
@@ -36,6 +38,13 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { t, dir } = useI18n();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // Google OAuth returns to the site root; send signed-in users straight to the app.
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/dashboard" });
+  }, [loading, user, navigate]);
 
   const features = [
     { icon: FileUp, title: t("f1t"), body: t("f1b") },

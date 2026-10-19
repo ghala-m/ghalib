@@ -39,32 +39,56 @@ function AuthPage() {
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) {
+        const msg = error.message.toLowerCase();
+        if (msg.includes("email not confirmed")) toast.error(t("authEmailNotConfirmed"));
+        else if (msg.includes("invalid login credentials")) toast.error(t("authInvalidCredentials"));
+        else toast.error(error.message);
+        return;
+      }
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
     }
-    navigate({ to: "/dashboard" });
   }
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { full_name: fullName },
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      // Supabase returns a user with no identities (and no error) when the email is already taken.
+      if (data.user && (data.user.identities?.length ?? 0) === 0) {
+        toast.error(t("authEmailExists"));
+        return;
+      }
+      // No session means email confirmation is required: don't bounce to /dashboard
+      // (the auth guard would send the user straight back here with no explanation).
+      if (!data.session) {
+        toast.success(t("authCheckEmail"), { duration: 10000 });
+        return;
+      }
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
     }
-    navigate({ to: "/dashboard" });
   }
 
   async function google() {

@@ -55,6 +55,22 @@ const dict = {
   password: { ar: "كلمة المرور", en: "Password" },
   fullName: { ar: "الاسم الكامل", en: "Full name" },
   continueGoogle: { ar: "المتابعة عبر Google", en: "Continue with Google" },
+  authCheckEmail: {
+    ar: "تم إنشاء الحساب. افتح بريدك الإلكتروني واضغط رابط التأكيد ثم سجّل الدخول.",
+    en: "Account created. Check your email and click the confirmation link, then sign in.",
+  },
+  authEmailExists: {
+    ar: "هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول بدلاً من إنشاء حساب.",
+    en: "This email is already registered. Try signing in instead.",
+  },
+  authInvalidCredentials: {
+    ar: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    en: "Incorrect email or password.",
+  },
+  authEmailNotConfirmed: {
+    ar: "لم يتم تأكيد بريدك بعد. افتح رابط التأكيد المرسل إلى بريدك.",
+    en: "Your email isn't confirmed yet. Open the confirmation link sent to your inbox.",
+  },
   or: { ar: "أو", en: "or" },
   dashboard: { ar: "اللوحة الرئيسية", en: "Dashboard" },
   profile: { ar: "الملف الأكاديمي", en: "Academic profile" },
