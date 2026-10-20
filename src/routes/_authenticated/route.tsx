@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { profileQuery } from "@/lib/queries";
 import { useI18n } from "@/lib/i18n";
 import { AppSidebar, MobileNav } from "@/components/app/AppSidebar";
+import { FeedbackButton } from "@/components/app/FeedbackButton";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -51,6 +52,7 @@ function AuthenticatedLayout() {
           <Outlet />
         </main>
       </div>
+      <FeedbackButton />
     </div>
   );
 }

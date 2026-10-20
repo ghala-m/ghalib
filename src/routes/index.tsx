@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+import { CopyrightNotice, FeedbackButton } from "@/components/app/FeedbackButton";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -121,7 +122,9 @@ function Index() {
 
       <footer className="mx-auto max-w-6xl px-6 py-10 text-sm text-muted-foreground">
         {t("appName")} — {t("tagline")}
+        <CopyrightNotice className="mt-2 text-xs" />
       </footer>
+      <FeedbackButton />
     </div>
   );
 }

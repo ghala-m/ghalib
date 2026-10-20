@@ -63,6 +63,10 @@ const dict = {
     ar: "هذا البريد مسجّل مسبقاً. جرّب تسجيل الدخول بدلاً من إنشاء حساب.",
     en: "This email is already registered. Try signing in instead.",
   },
+  authNetworkError: {
+    ar: "تعذّر الاتصال بالخادم. تأكد من الإنترنت (وأوقف VPN أو مانع الإعلانات)، وإذا استمرت المشكلة فقد يكون الخادم متوقفاً مؤقتاً.",
+    en: "Couldn't reach the server. Check your internet (turn off VPN/ad blockers). If it persists, the server may be temporarily paused.",
+  },
   authInvalidCredentials: {
     ar: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
     en: "Incorrect email or password.",

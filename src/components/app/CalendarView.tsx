@@ -174,7 +174,7 @@ export function CalendarView({
           >
             <Download className="size-4" />
           </Button>
-          {notif !== "granted" && notif !== "unsupported" && (
+          {notif !== "granted" && (
             <Button
               asChild
               variant="ghost"

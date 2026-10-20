@@ -11,6 +11,7 @@ import {
   ListChecks,
   Loader2,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { runStudyTool } from "@/lib/tools.functions";
@@ -40,6 +41,7 @@ import {
 import { FlashcardsViewer, type Flashcard } from "@/components/app/FlashcardsViewer";
 import { QuizViewer, type QuizQuestion } from "@/components/app/QuizViewer";
 import { cn } from "@/lib/utils";
+import { TOOL_THEME, themeFor } from "@/lib/study-theme";
 import { withAiDetail } from "@/lib/ai-error-detail";
 
 export const Route = createFileRoute("/_authenticated/tools")({
@@ -82,6 +84,15 @@ const TOOLS: {
   { id: "explain", icon: BookOpen, title: "toolExplain", body: "toolExplainBody" },
   { id: "studyPlan", icon: Sparkles, title: "toolStudyPlan", body: "toolStudyPlanBody" },
 ];
+
+/** Bento-style grid: tiles differ in size and corner shape so the picker feels alive. */
+const TILE_LAYOUT: Record<Tool, string> = {
+  summarize: "col-span-1 lg:col-span-2 rounded-[1.75rem]",
+  flashcards: "col-span-1 lg:col-span-2 rounded-3xl rounded-es-[0.75rem]",
+  quiz: "col-span-1 lg:col-span-2 rounded-[1.75rem] rounded-ee-[0.75rem]",
+  explain: "col-span-1 lg:col-span-3 rounded-3xl rounded-ss-[0.75rem]",
+  studyPlan: "col-span-2 lg:col-span-3 rounded-[1.75rem]",
+};
 
 const TOOL_LABEL_KEY = {
   summarize: "toolSummarize",
@@ -207,31 +218,64 @@ function ToolsPage() {
           </div>
         </header>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {TOOLS.map((item) => (
-            <Button
-              variant="outline"
-              disabled={execute.isPending}
-              aria-pressed={tool === item.id}
-              key={item.id}
-              type="button"
-              onClick={() => {
-                setTool(item.id);
-                setOutput(null);
-              }}
-              className={cn(
-                "h-auto flex-col items-start whitespace-normal rounded-lg p-4 text-start transition-colors",
-                tool === item.id ? "border-accent ring-1 ring-accent" : "hover:border-accent/50",
-              )}
-            >
-              <item.icon className="size-5 text-accent" />
-              <p className="mt-2 text-sm font-semibold">{t(item.title)}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{t(item.body)}</p>
-            </Button>
-          ))}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+          {TOOLS.map((item) => {
+            const th = TOOL_THEME[item.id];
+            const active = tool === item.id;
+            return (
+              <button
+                disabled={execute.isPending}
+                aria-pressed={active}
+                key={item.id}
+                type="button"
+                onClick={() => {
+                  setTool(item.id);
+                  setOutput(null);
+                }}
+                className={cn(
+                  "group relative flex flex-col items-start gap-3 overflow-hidden border-2 p-4 text-start transition-all duration-300 disabled:opacity-60",
+                  TILE_LAYOUT[item.id],
+                  active
+                    ? cn(th.grad, "border-transparent shadow-xl -translate-y-1", th.shadow)
+                    : cn("border-border bg-card hover:-translate-y-1 hover:border-accent/60 hover:shadow-lg", th.wash),
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute -end-6 -top-6 size-24 rounded-full opacity-30 transition-transform duration-500 group-hover:scale-125",
+                    active ? "bg-white" : th.grad,
+                  )}
+                />
+                <span
+                  className={cn(
+                    "relative flex size-11 items-center justify-center rounded-2xl shadow-md transition-transform group-hover:rotate-6",
+                    active ? "bg-white/25 text-white" : th.grad,
+                  )}
+                >
+                  <item.icon className="size-5" />
+                </span>
+                <span className="relative">
+                  <span className="block text-sm font-bold">{t(item.title)}</span>
+                  <span
+                    className={cn(
+                      "mt-1 block text-xs leading-relaxed",
+                      active ? "text-white/85" : "text-muted-foreground",
+                    )}
+                  >
+                    {t(item.body)}
+                  </span>
+                </span>
+                {active && (
+                  <span className="absolute bottom-3 end-3 flex size-6 items-center justify-center rounded-full bg-white/25">
+                    <Check className="size-3.5" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <div className="panel mt-6 space-y-4 p-6">
+        <div className={cn("panel mt-6 space-y-4 border-t-4 p-6", themeFor(tool).border)}>
           <div className="max-w-xs space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">{t("linkedCourse")}</label>
             <Select value={courseId} disabled={execute.isPending} onValueChange={setCourseId}>
@@ -262,7 +306,8 @@ function ToolsPage() {
           {tool === "studyPlan" && <StudyPlanOptions value={options} onChange={setOptions} disabled={execute.isPending} />}
           <div className="flex justify-end">
             <Button
-              className="ms-auto"
+              size="lg"
+              className={cn("ms-auto rounded-2xl shadow-lg hover:opacity-90", themeFor(tool).grad, themeFor(tool).shadow)}
               disabled={execute.isPending || reading}
               onClick={() => execute.mutate()}
             >
@@ -277,9 +322,14 @@ function ToolsPage() {
         </div>
 
         {output ? (
-          <div className="panel mt-6 p-6">
+          <div className="panel study-pop mt-6 overflow-hidden p-0">
+            <div className={cn("h-1.5", themeFor(tool).grad)} />
+            <div className="p-6">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-semibold">{t("result")}</h2>
+              <h2 className={cn("flex items-center gap-2 font-bold", themeFor(tool).text)}>
+                <Sparkles className="size-4" />
+                {t("result")}
+              </h2>
               {output.kind === "text" && (
                 <Button
                   variant="ghost"
@@ -297,6 +347,7 @@ function ToolsPage() {
             {output.kind === "text" && <StudyDocument text={output.text} title={tool === "studyPlan" ? c.plan : tool === "summarize" ? c.summary : t(TOOL_LABEL_KEY[tool])} subtitle={fileNames || undefined} />}
             {output.kind === "flashcards" && <FlashcardsViewer cards={output.cards} />}
             {output.kind === "quiz" && <QuizViewer questions={output.questions} />}
+            </div>
           </div>
         ) : null}
 
@@ -325,15 +376,18 @@ function LibraryPreview() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((m) => {
             const Icon = KIND_ICON[m.kind] ?? FileText;
+            const th = themeFor(m.kind);
             const course = courses.find((c) => c.id === m.course_id);
             return (
               <li key={m.id}>
                 <Link
                   to="/study-library"
                   onClick={() => sessionStorage.setItem("study-library:focus", m.id)}
-                  className="panel flex h-full flex-col gap-2 p-4 transition-colors hover:border-accent/50"
+                  className={cn("panel flex h-full flex-col gap-2 border-s-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-lg", th.border, th.wash)}
                 >
-                  <Icon className="size-5 text-accent" />
+                  <span className={cn("flex size-9 items-center justify-center rounded-xl shadow-sm", th.grad)}>
+                    <Icon className="size-4" />
+                  </span>
                   <span className="line-clamp-2 text-sm font-semibold">{m.title}</span>
                   <span className="mt-auto text-xs text-muted-foreground">
                     {t(TOOL_LABEL_KEY[m.kind as Tool] ?? "toolSummarize")}

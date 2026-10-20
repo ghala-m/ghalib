@@ -12,6 +12,24 @@ export function pushSupported() {
   return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
 }
 
+/** True on iPhone/iPad (including iPadOS, which reports itself as a Mac with a touch screen). */
+export function isIosDevice() {
+  if (typeof navigator === "undefined") return false;
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+}
+
+/** True when the site runs as an installed app (home-screen icon) rather than in a browser tab. */
+export function isStandaloneApp() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
+
 /** Registers the service worker (idempotent — safe to call on every app load). */
 export async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!pushSupported()) return null;

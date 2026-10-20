@@ -32,6 +32,8 @@ import { Button } from "@/components/ui/button";
 import { FlashcardsViewer, type Flashcard } from "@/components/app/FlashcardsViewer";
 import { QuizViewer, type QuizQuestion } from "@/components/app/QuizViewer";
 import { cn } from "@/lib/utils";
+import { themeFor } from "@/lib/study-theme";
+import { StudyDocument } from "@/components/app/StudyDocument";
 
 export const Route = createFileRoute("/_authenticated/study-library")({
   head: () => ({
@@ -171,7 +173,7 @@ function StudyLibraryPage() {
           <div className="space-y-8">
             {groups.courseGroups.map(({ course, items }) => (
               <section key={course.id}>
-                <h2 className="mb-3 text-sm font-bold tracking-wide text-accent">
+                <h2 className="mb-3 inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-sm font-bold tracking-wide text-accent-foreground">
                   {courseLabel(course)}
                 </h2>
                 <div className={viewMode === "grid" ? "grid gap-3 sm:grid-cols-3" : "space-y-2"}>
@@ -279,13 +281,14 @@ function MaterialCard({
 }) {
   const { t } = useI18n();
   const Icon = KIND_ICON[material.kind] ?? FileText;
+  const th = themeFor(material.kind);
   const content = material.content as
     { text: string } | { cards: Flashcard[] } | { questions: QuizQuestion[] };
 
   return (
     <div
       id={`material-${material.id}`}
-      className={cn("panel overflow-hidden p-0", gridMode && open && "sm:col-span-3")}
+      className={cn("panel overflow-hidden border-s-4 p-0 transition-shadow hover:shadow-lg", th.border, gridMode && open && "sm:col-span-3")}
     >
       <button
         type="button"
@@ -295,7 +298,9 @@ function MaterialCard({
           gridMode && !open && "h-full flex-col",
         )}
       >
-        <Icon className="size-4 shrink-0 text-accent" />
+        <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl shadow-sm", th.grad)}>
+          <Icon className="size-4" />
+        </span>
         <div className="min-w-0 flex-1">
           <p
             className={cn(
@@ -345,7 +350,7 @@ function MaterialCard({
       </button>
       {open ? (
         <div className="border-t border-border p-4">
-          {"text" in content && <p className="text-sm whitespace-pre-wrap">{content.text}</p>}
+          {"text" in content && <StudyDocument text={content.text} title={material.title} />}
           {"cards" in content && <FlashcardsViewer cards={content.cards} />}
           {"questions" in content && <QuizViewer questions={content.questions} />}
         </div>

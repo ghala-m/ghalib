@@ -42,7 +42,7 @@ const groups: { status: CourseStatus; icon: typeof BookMarked }[] = [
 
 export function AppSidebar() {
   return (
-    <aside className="sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-e border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="sticky top-0 hidden h-dvh w-72 shrink-0 flex-col overflow-hidden border-e border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
       <SidebarInner />
     </aside>
   );
@@ -53,7 +53,7 @@ export function MobileNav() {
   const { t, dir } = useI18n();
   const [open, setOpen] = useState(false);
   return (
-    <div className="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:hidden">
+    <div className="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-background/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" aria-label={t("openMenu")}>
@@ -65,9 +65,7 @@ export function MobileNav() {
           className="w-[85vw] max-w-80 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
         >
           <SheetTitle className="sr-only">{t("openMenu")}</SheetTitle>
-          <div className="flex h-full flex-col">
-            <SidebarInner onNavigate={() => setOpen(false)} />
-          </div>
+          <SidebarInner onNavigate={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-2">
@@ -103,8 +101,8 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
   }
 
   return (
-    <>
-      <div className="flex items-center gap-2 px-5 py-5">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col">
+      <div className="flex shrink-0 items-center gap-2 px-5 py-5">
         <div className="flex size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
           <ScrollText className="size-5" />
         </div>
@@ -114,6 +112,9 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
         </div>
       </div>
 
+      {/* Everything between the logo and the sign-out row scrolls as ONE area, so on short
+          phone screens (or with many courses) nothing gets squeezed out of reach. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2">
       <nav className="space-y-4 px-3">
         <div className="space-y-1">
           <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/50 uppercase">
@@ -201,7 +202,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
         </div>
       </div>
 
-      <div className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+      <div className="mt-4 space-y-5 px-3 pb-4">
         {groups.map(({ status, icon: Icon }) => {
           const list = filtered.filter((c) => c.status === status);
           const isCollapsed = collapsed[status] && !search.trim();
@@ -256,14 +257,15 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
           );
         })}
       </div>
+      </div>
 
-      <div className="flex items-center justify-between border-t border-sidebar-border px-3 py-3">
+      <div className="flex shrink-0 items-center justify-between border-t border-sidebar-border px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
         <Button variant="ghost" size="sm" onClick={signOut}>
           <LogOut className="size-4" />
           {t("signOut")}
         </Button>
       </div>
-    </>
+    </div>
   );
 }
 

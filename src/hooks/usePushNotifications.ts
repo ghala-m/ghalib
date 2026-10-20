@@ -5,9 +5,11 @@ export function usePushNotifications(userId: string | undefined) {
   const [subscribed, setSubscribed] = useState(false);
   const [checking, setChecking] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [supported, setSupported] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setSupported(pushSupported());
     (async () => {
       if (!pushSupported()) {
         setChecking(false);
@@ -47,5 +49,5 @@ export function usePushNotifications(userId: string | undefined) {
     }
   };
 
-  return { supported: pushSupported(), subscribed, checking, busy, enable, disable };
+  return { supported, subscribed, checking, busy, enable, disable };
 }

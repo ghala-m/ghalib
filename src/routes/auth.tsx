@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/hooks/useAuth";
+import { CopyrightNotice, FeedbackButton } from "@/components/app/FeedbackButton";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -22,6 +23,11 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+/** Safari says "Load failed", Chrome "Failed to fetch": the request never reached the server. */
+function isNetworkError(msg: string) {
+  return /load failed|failed to fetch|networkerror|network request failed|fetch/.test(msg);
+}
 
 function AuthPage() {
   const { t, dir } = useI18n();
@@ -45,12 +51,14 @@ function AuthPage() {
         const msg = error.message.toLowerCase();
         if (msg.includes("email not confirmed")) toast.error(t("authEmailNotConfirmed"));
         else if (msg.includes("invalid login credentials")) toast.error(t("authInvalidCredentials"));
+        else if (isNetworkError(msg)) toast.error(t("authNetworkError"), { duration: 10000 });
         else toast.error(error.message);
         return;
       }
       navigate({ to: "/dashboard" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      const m = err instanceof Error ? err.message : String(err);
+      toast.error(isNetworkError(m.toLowerCase()) ? t("authNetworkError") : m, { duration: 10000 });
     } finally {
       setBusy(false);
     }
@@ -69,7 +77,7 @@ function AuthPage() {
         },
       });
       if (error) {
-        toast.error(error.message);
+        toast.error(isNetworkError(error.message.toLowerCase()) ? t("authNetworkError") : error.message, { duration: 10000 });
         return;
       }
       // Supabase returns a user with no identities (and no error) when the email is already taken.
@@ -185,6 +193,8 @@ function AuthPage() {
           {t("continueGoogle")}
         </Button>
       </div>
+      <CopyrightNotice className="mt-6 max-w-md text-center text-xs text-muted-foreground" />
+      <FeedbackButton />
     </div>
   );
 }

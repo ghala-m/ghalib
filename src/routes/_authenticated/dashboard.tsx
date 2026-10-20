@@ -73,9 +73,34 @@ function DashboardPage() {
           ))}
         </div>
 
-        <div className="mt-6">
-          <StudyStreak />
-        </div>
+        <section className="mt-6">
+          <h2 className="mb-4 text-lg font-semibold">{t("upcoming")}</h2>
+          {upcoming.length === 0 ? (
+            <p className="panel p-6 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
+          ) : (
+            <ul className="panel divide-y divide-border">
+              {upcoming.map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-4 border-s-4 border-accent px-5 py-3 transition-colors hover:bg-accent/5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{item.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {item.courses?.name} · {t(item.type)}
+                    </p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold tabular-nums">
+                    {item.due_date
+                      ? new Date(item.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {
+                          day: "numeric",
+                          month: "short",
+                        })
+                      : "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
 
         <div className="mt-6">
           <GpaTrendChart />
@@ -95,31 +120,9 @@ function DashboardPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold">{t("upcoming")}</h2>
-          {upcoming.length === 0 ? (
-            <p className="panel p-6 text-sm text-muted-foreground">{t("nothingUpcoming")}</p>
-          ) : (
-            <ul className="panel divide-y divide-border">
-              {upcoming.map((item) => (
-                <li key={item.id} className="flex items-center justify-between gap-4 px-5 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{item.title}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {item.courses?.name} · {t(item.type)}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                    {item.due_date
-                      ? new Date(item.due_date).toLocaleDateString(lang === "ar" ? "ar" : "en-GB", {
-                          day: "numeric",
-                          month: "short",
-                        })
-                      : "—"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div>
+          <StudyStreak />
+        </div>
         </section>
 
         <section className="mt-10">

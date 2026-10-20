@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -6,7 +8,9 @@ import {
   Bot,
   CalendarClock,
   Compass,
+  History,
   Lightbulb,
+  X,
   Loader2,
   MessageSquare,
   MessageSquarePlus,
@@ -43,10 +47,21 @@ const TONE_ICON: Record<Insight["tone"], typeof Lightbulb> = {
   good: TrendingUp,
 };
 const TONE_CLASS: Record<Insight["tone"], string> = {
-  tip: "text-accent bg-accent/10",
-  warning: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
-  good: "text-cat-college bg-cat-college/10",
+  tip: "bg-gradient-to-br from-amber-400 to-orange-500 text-white",
+  warning: "bg-gradient-to-br from-rose-500 to-red-600 text-white",
+  good: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white",
 };
+const TONE_CARD: Record<Insight["tone"], string> = {
+  tip: "border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent hover:border-amber-500/70",
+  warning:
+    "border-rose-500/30 bg-gradient-to-br from-rose-500/10 to-transparent hover:border-rose-500/70",
+  good: "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent hover:border-emerald-500/70",
+};
+const SUGGESTION_STYLE = [
+  "from-sky-500 to-blue-600",
+  "from-violet-500 to-fuchsia-600",
+  "from-emerald-500 to-teal-600",
+] as const;
 
 function relativeDay(iso: string, lang: "ar" | "en") {
   const d = new Date(iso);
@@ -70,6 +85,7 @@ export function AdvisorChat() {
   // fresh conversation, while past ones stay one click away in the sidebar.
   const [sessionId, setSessionId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [showSessions, setShowSessions] = useState(false);
 
   const { data: sessions = [] } = useQuery(chatSessionsQuery());
   const { data: messages = [] } = useQuery(chatMessagesQuery(sessionId));
@@ -185,19 +201,34 @@ export function AdvisorChat() {
   }
 
   return (
-    <div className="panel-glass flex h-[calc(100vh-9rem)] overflow-hidden">
-      {/* Session sidebar */}
-      <div className="flex w-64 shrink-0 flex-col border-e border-border bg-muted/10">
-        <div className="p-3">
+    <div className="panel-glass relative flex h-[calc(100dvh-10.5rem)] min-h-[28rem] overflow-hidden md:h-[calc(100dvh-9rem)]">
+      {/* Session sidebar: always visible on desktop, slide-over on phones */}
+      <div
+        className={cn(
+          "z-20 flex w-64 shrink-0 flex-col border-e border-border bg-card md:static md:bg-muted/10",
+          showSessions ? "absolute inset-y-0 start-0 shadow-2xl" : "hidden md:flex",
+        )}
+      >
+        <div className="flex items-center gap-2 p-3">
           <Button
-            className="w-full justify-start gap-2 shadow-sm"
+            className="flex-1 justify-start gap-2 bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm hover:opacity-90"
             onClick={() => {
               setSessionId(null);
               setInput("");
+              setShowSessions(false);
             }}
           >
             <MessageSquarePlus className="size-4" />
             {t("newChat")}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setShowSessions(false)}
+            aria-label="close"
+          >
+            <X className="size-4" />
           </Button>
         </div>
         <div className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
@@ -211,16 +242,19 @@ export function AdvisorChat() {
             <button
               key={s.id}
               type="button"
-              onClick={() => setSessionId(s.id)}
+              onClick={() => {
+                setSessionId(s.id);
+                setShowSessions(false);
+              }}
               className={cn(
-                "group relative flex w-full items-center gap-2 rounded-lg py-2 ps-3 pe-2.5 text-start text-sm transition-colors",
+                "group relative flex w-full items-center gap-2 rounded-xl py-2.5 ps-3 pe-2.5 text-start text-sm transition-colors",
                 s.id === sessionId
                   ? "bg-accent/15 font-medium text-foreground"
                   : "text-muted-foreground hover:bg-muted/60",
               )}
             >
               {s.id === sessionId ? (
-                <span className="absolute inset-y-1.5 start-0 w-0.5 rounded-full bg-accent" />
+                <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-gradient-to-b from-amber-400 to-orange-600" />
               ) : null}
               <span className="min-w-0 flex-1 truncate">{s.title || t("untitledChat")}</span>
               <span className="shrink-0 text-[10px] text-muted-foreground">
@@ -233,7 +267,7 @@ export function AdvisorChat() {
                   e.stopPropagation();
                   deleteSession.mutate(s.id);
                 }}
-                className="shrink-0 rounded p-0.5 opacity-0 hover:bg-destructive/15 hover:text-destructive group-hover:opacity-100"
+                className="shrink-0 rounded p-0.5 opacity-60 hover:bg-destructive/15 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
               >
                 <Trash2 className="size-3.5" />
               </span>
@@ -241,33 +275,63 @@ export function AdvisorChat() {
           ))}
         </div>
       </div>
+      {showSessions && (
+        <button
+          type="button"
+          aria-label="close"
+          className="absolute inset-0 z-10 bg-black/40 md:hidden"
+          onClick={() => setShowSessions(false)}
+        />
+      )}
 
       {/* Active conversation */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-gradient-to-l from-accent/10 via-transparent to-transparent px-5 py-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
-            <Sparkles className="size-4" />
+        <div className="flex items-center gap-3 border-b border-border bg-gradient-to-l from-amber-500/15 via-transparent to-transparent px-4 py-3 sm:px-5 sm:py-4">
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 md:hidden"
+            onClick={() => setShowSessions(true)}
+            aria-label={t("newChat")}
+          >
+            <History className="size-4" />
+          </Button>
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-md">
+            <Sparkles className="size-5" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate font-semibold">
+            <h2 className="truncate font-bold">
               {sessionId
                 ? sessions.find((s) => s.id === sessionId)?.title || t("advisorTitle")
                 : t("advisorTitle")}
             </h2>
-            <p className="truncate text-xs text-muted-foreground">{t("advisorHint")}</p>
+            <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+              <span className="size-2 shrink-0 rounded-full bg-emerald-500" />
+              {t("advisorHint")}
+            </p>
           </div>
         </div>
 
-        <div className="flex-1 space-y-4 overflow-y-auto p-5">
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
           {messages.length === 0 && (
-            <div className="space-y-4">
+            <div className="space-y-5">
+              <div className="chat-in rounded-3xl bg-gradient-to-br from-amber-500/15 via-card to-violet-500/10 p-5 text-center">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-lg">
+                  <Bot className="size-7" />
+                </div>
+                <h3 className="mt-3 font-display text-lg font-bold">{t("advisorTitle")}</h3>
+                <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+                  {t("advisorHint")}
+                </p>
+              </div>
+
               {insights.length > 0 ? (
                 <div>
-                  <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Sparkles className="size-3.5 text-accent" />
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                    <Sparkles className="size-3.5 text-amber-500" />
                     {t("advisorInsightsTitle")}
                   </p>
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     {insights.map((ins) => {
                       const Icon = TONE_ICON[ins.tone];
                       return (
@@ -275,19 +339,22 @@ export function AdvisorChat() {
                           key={ins.id}
                           type="button"
                           onClick={() => submit(ins.prompt)}
-                          className="flex items-start gap-2.5 rounded-xl border border-border bg-card/60 p-3 text-start text-sm shadow-sm transition-colors hover:border-accent hover:shadow-md"
+                          className={cn(
+                            "chat-in flex items-start gap-3 rounded-2xl border p-3.5 text-start text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
+                            TONE_CARD[ins.tone],
+                          )}
                         >
                           <span
                             className={cn(
-                              "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full",
+                              "mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl shadow-sm",
                               TONE_CLASS[ins.tone],
                             )}
                           >
-                            <Icon className="size-3.5" />
+                            <Icon className="size-4" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block font-medium">{ins.title}</span>
-                            <span className="mt-0.5 block text-xs text-muted-foreground">
+                            <span className="block font-semibold">{ins.title}</span>
+                            <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
                               {ins.body}
                             </span>
                           </span>
@@ -300,25 +367,32 @@ export function AdvisorChat() {
 
               <div>
                 {insights.length > 0 ? (
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">
                     {t("advisorMoreQuestions")}
                   </p>
                 ) : null}
-                <div className="grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-2.5 sm:grid-cols-3">
                   {(
                     [
                       { key: "suggestion1", icon: Compass },
                       { key: "suggestion2", icon: CalendarClock },
                       { key: "suggestion3", icon: Sparkles },
                     ] as const
-                  ).map(({ key, icon: Icon }) => (
+                  ).map(({ key, icon: Icon }, idx) => (
                     <button
                       key={key}
                       type="button"
                       onClick={() => submit(t(key))}
-                      className="flex flex-col items-start gap-2 rounded-xl border border-border bg-card/60 p-3 text-start text-sm shadow-sm transition-colors hover:border-accent hover:shadow-md"
+                      className="chat-in flex flex-col items-start gap-2.5 rounded-2xl border border-border bg-card/70 p-3.5 text-start text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
                     >
-                      <Icon className="size-4 text-accent" />
+                      <span
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
+                          SUGGESTION_STYLE[idx],
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </span>
                       {t(key)}
                     </button>
                   ))}
@@ -331,35 +405,43 @@ export function AdvisorChat() {
             <div
               key={m.id}
               className={cn(
-                "flex items-end gap-2",
+                "chat-in flex items-end gap-2",
                 m.role === "user" ? "justify-end" : "justify-start",
               )}
             >
               {m.role === "assistant" ? (
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm">
                   <Bot className="size-4" />
                 </div>
               ) : null}
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap shadow-sm",
+                  "max-w-[88%] rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm sm:max-w-[80%]",
                   m.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground",
+                    ? "rounded-ee-md bg-gradient-to-br from-primary to-primary/80 text-primary-foreground whitespace-pre-wrap"
+                    : "chat-md rounded-es-md border border-amber-500/20 bg-card text-foreground",
                 )}
               >
-                {m.content}
+                {m.role === "user" ? (
+                  m.content
+                ) : (
+                  <Markdown remarkPlugins={[remarkGfm]}>{m.content}</Markdown>
+                )}
               </div>
             </div>
           ))}
 
           {send.isPending && (
-            <div className="flex items-center gap-2">
-              <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
+            <div className="chat-in flex items-end gap-2">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm">
                 <Bot className="size-4" />
               </div>
-              <p className="flex items-center gap-2 rounded-2xl bg-muted px-4 py-2.5 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
+              <p className="flex items-center gap-2 rounded-3xl rounded-es-md border border-amber-500/20 bg-card px-4 py-3 text-sm text-muted-foreground">
+                <span className="flex gap-1">
+                  <span className="typing-dot size-2 rounded-full bg-amber-500" />
+                  <span className="typing-dot size-2 rounded-full bg-orange-500 [animation-delay:.15s]" />
+                  <span className="typing-dot size-2 rounded-full bg-rose-500 [animation-delay:.3s]" />
+                </span>
                 {t("thinking")}
               </p>
             </div>
@@ -367,7 +449,7 @@ export function AdvisorChat() {
           <div ref={endRef} />
         </div>
 
-        <div className="flex items-end gap-2 border-t border-border bg-muted/10 p-4">
+        <div className="flex items-end gap-2 border-t border-border bg-muted/10 p-3 sm:p-4">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -386,9 +468,13 @@ export function AdvisorChat() {
             disabled={send.isPending || !input.trim()}
             size="icon"
             aria-label={t("send")}
-            className="size-11 shrink-0 rounded-full shadow-sm"
+            className="size-11 shrink-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-md hover:opacity-90"
           >
-            <SendHorizonal className="size-4" />
+            {send.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <SendHorizonal className="size-4 rtl:-scale-x-100" />
+            )}
           </Button>
         </div>
       </div>

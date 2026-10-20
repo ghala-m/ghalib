@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, RefreshCw } from "lucide-react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { CalendarCheck2, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -64,22 +66,62 @@ export function WeeklyPlanCard({
   });
 
   return (
-    <section className="panel mb-6 p-6">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Sparkles className="size-4 text-primary" />
-          {t("weeklyPlanTitle")}
-        </h2>
-        <Button size="sm" variant="outline" onClick={() => gen.mutate()} disabled={gen.isPending}>
-          {text ? <RefreshCw className="size-4" /> : null}
+    <section className="panel mb-6 overflow-hidden p-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-transparent p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-md">
+            <CalendarCheck2 className="size-5" />
+          </span>
+          <div>
+            <h2 className="flex items-center gap-2 font-bold">
+              {t("weeklyPlanTitle")}
+              <Sparkles className="size-4 text-fuchsia-500" />
+            </h2>
+            <p className="text-xs text-muted-foreground">{courseName}</p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant={text ? "outline" : "default"}
+          onClick={() => gen.mutate()}
+          disabled={gen.isPending}
+          className={
+            text
+              ? ""
+              : "rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-md hover:opacity-90"
+          }
+        >
+          {gen.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : text ? (
+            <RefreshCw className="size-4" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
           {text ? t("weeklyPlanRefresh") : t("weeklyPlanGenerate")}
         </Button>
       </div>
-      {text ? (
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7">{text}</p>
-      ) : (
-        <p className="mt-3 text-sm text-muted-foreground">{t("weeklyPlanHint")}</p>
-      )}
+      <div className="p-5 pt-4">
+        {gen.isPending ? (
+          <div className="space-y-2" aria-busy="true">
+            {[90, 75, 85, 60].map((w) => (
+              <div
+                key={w}
+                className="h-3 animate-pulse rounded-full bg-muted"
+                style={{ width: `${w}%` }}
+              />
+            ))}
+          </div>
+        ) : text ? (
+          <div className="chat-md study-pop rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm leading-7">
+            <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-dashed border-violet-500/30 bg-violet-500/5 p-4 text-center text-sm text-muted-foreground">
+            {t("weeklyPlanHint")}
+          </p>
+        )}
+      </div>
     </section>
   );
 }
