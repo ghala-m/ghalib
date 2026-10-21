@@ -14,13 +14,24 @@ export function useAuth() {
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
 
-    return () => sub.subscription.unsubscribe();
+    // If the backend never answers (paused project, offline, blocked network) getSession() can
+    // wait on a token refresh for a long time. Don't leave the whole app stuck on "Loading…":
+    // after a few seconds give up and let the route guard send the visitor to the sign-in page.
+    const timer = window.setTimeout(() => setLoading(false), 8000);
+
+    return () => {
+      window.clearTimeout(timer);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   return { session, user, loading };

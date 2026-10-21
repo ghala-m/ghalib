@@ -100,6 +100,16 @@ function AuthPage() {
   }
 
   async function google() {
+    // On your own Supabase project (not Lovable Cloud) set VITE_NATIVE_GOOGLE_AUTH="true":
+    // Google sign-in then goes straight through Supabase instead of Lovable's broker.
+    if (import.meta.env["VITE_NATIVE_GOOGLE_AUTH"] === "true") {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/dashboard` },
+      });
+      if (error) toast.error(error.message);
+      return;
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
