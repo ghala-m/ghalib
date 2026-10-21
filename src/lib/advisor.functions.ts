@@ -25,7 +25,7 @@ export const askAdvisor = createServerFn({ method: "POST" })
 
     const { getAiModel, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const model = getAiModel();
+    const model = getAiModel("chat");
 
     const system = [
       "You are Ghalib, a warm and practical AI academic advisor for university students.",

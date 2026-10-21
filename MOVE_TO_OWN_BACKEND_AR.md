@@ -63,3 +63,21 @@
 ## أشياء لاحقة (مو ضرورية لأول زوار)
 - **تنبيهات الدفع وملخص الصباح**: تعتمد على دوال Supabase Edge Functions الموجودة بمجلد `supabase/functions` وتحتاج نشر عبر Supabase CLI. باقي الموقع يشتغل بدونها.
 - **الدومين الخاص**: من Cloudflare ← Workers ← Domains.
+
+---
+
+## إضافات: Groq / OpenRouter وإبقاء Supabase شغالاً
+
+### مزوّد ذكاء اصطناعي إضافي للمحادثة (اختياري)
+مفتاح Gemini يبقى الأساس (هو اللي يقرأ ملفات PDF والصور). لتخفيف الضغط عليه، أضيفي هالمتغيرات في Cloudflare:
+
+| الاسم | القيمة |
+|---|---|
+| `GROQ_API_KEY` أو `OPENROUTER_API_KEY` | المفتاح من console.groq.com أو openrouter.ai |
+| `AI_CHAT_PROVIDER` | `groq` أو `openrouter` |
+| `AI_CHAT_MODEL_NAME` | (اختياري) اسم النموذج إذا تبين غير الافتراضي |
+
+بهالإعداد: المرشد وخطة الأسبوع وأدوات الدراسة (على النص المكتوب) تروح لـ Groq/OpenRouter، وكل ما فيه PDF أو صورة يروح لـ Gemini. أسماء النماذج المجانية تتغير، فإذا طلع خطأ غيّري `AI_CHAT_MODEL_NAME`.
+
+### منع إيقاف Supabase
+الملف `.github/workflows/keep-supabase-alive.yml` يرسل طلب يومي للقاعدة. فعّليه بإضافة سرّين في GitHub (Settings ← Secrets and variables ← Actions): `SUPABASE_URL` و`SUPABASE_PUBLISHABLE_KEY`.

@@ -31,7 +31,50 @@ export function createLovableAiGatewayProvider(apiKey: string) {
  * Falls back to the existing Lovable AI Gateway (LOVABLE_API_KEY) if none of the three are set —
  * so this is purely additive, nothing breaks for anyone who doesn't configure one.
  */
-export function getAiModel(): LanguageModel {
+/**
+ * `purpose`:
+ *  - "files" (default): the request may contain PDFs/images, so only providers that can read them
+ *    are preferred (OpenAI / Google / Anthropic / Lovable). Groq and OpenRouter's free Llama models
+ *    are text-only and are used here only when nothing else is configured.
+ *  - "chat": plain text (advisor, weekly plan, study tools on pasted text). If AI_CHAT_PROVIDER is
+ *    set to "groq" or "openrouter" (and its key exists) it is used first, which spreads the load
+ *    and keeps Gemini's free quota for document reading.
+ *
+ * Extra optional secrets: GROQ_API_KEY, OPENROUTER_API_KEY, AI_CHAT_PROVIDER,
+ * AI_CHAT_MODEL_NAME (model override for the chat provider only), AI_MODEL_NAME (override for the
+ * default provider).
+ */
+export function getAiModel(purpose: "files" | "chat" = "files"): LanguageModel {
+  const chatProvider = (process.env["AI_CHAT_PROVIDER"] || "").toLowerCase();
+  const groqKey = process.env["GROQ_API_KEY"];
+  const openrouterKey = process.env["OPENROUTER_API_KEY"];
+
+  const groq = () =>
+    createOpenAICompatible({
+      name: "groq",
+      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: groqKey as string,
+    })(
+      (purpose === "chat" && process.env["AI_CHAT_MODEL_NAME"]) ||
+        process.env["AI_MODEL_NAME"] ||
+        "llama-3.3-70b-versatile",
+    ) as unknown as LanguageModel;
+  const openrouter = () =>
+    createOpenAICompatible({
+      name: "openrouter",
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: openrouterKey as string,
+    })(
+      (purpose === "chat" && process.env["AI_CHAT_MODEL_NAME"]) ||
+        process.env["AI_MODEL_NAME"] ||
+        "meta-llama/llama-3.3-70b-instruct:free",
+    ) as unknown as LanguageModel;
+
+  if (purpose === "chat") {
+    if (chatProvider === "groq" && groqKey) return groq();
+    if (chatProvider === "openrouter" && openrouterKey) return openrouter();
+  }
+
   // Cast needed below: @ai-sdk/openai, @ai-sdk/google and @ai-sdk/anthropic each ship their own
   // nested copy of @ai-sdk/provider, at a slightly newer version than the one `ai` itself
   // resolves to at the top level (an npm dedup artifact, not a real incompatibility — the actual
@@ -57,6 +100,10 @@ export function getAiModel(): LanguageModel {
     return createAnthropic({ apiKey: anthropicKey })(
       process.env["AI_MODEL_NAME"] || "claude-haiku-5-5",
     ) as unknown as LanguageModel;
+
+  // Text-only free providers: used when they are the only thing configured.
+  if (groqKey) return groq();
+  if (openrouterKey) return openrouter();
 
   const lovableKey = process.env["LOVABLE_API_KEY"];
   if (!lovableKey) throw new Error("Missing LOVABLE_API_KEY");

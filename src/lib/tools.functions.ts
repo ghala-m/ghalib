@@ -56,7 +56,7 @@ export const runStudyTool = createServerFn({ method: "POST" })
 
     const { getAiModel, extractJson, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const model = getAiModel();
+    const model = getAiModel(attachments.length ? "files" : "chat");
     const langLine = data.lang === "ar" ? "Answer in Arabic." : "Answer in English.";
     const content = attachments.length
       ? [

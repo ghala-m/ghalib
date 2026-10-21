@@ -38,7 +38,7 @@ export const generateWeeklyPlan = createServerFn({ method: "POST" })
     });
     const { getAiModel, aiError } = await import("./ai-gateway.server");
     const { generateText } = await import("ai");
-    const model = getAiModel();
+    const model = getAiModel("chat");
 
     const pending = data.items.filter((i) => !i.completed);
     const prompt = [

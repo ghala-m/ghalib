@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Mail, MessageCircleHeart, MessageCircle } from "lucide-react";
+import { Instagram, Mail, MessageCircleHeart, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,19 +10,27 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
-import { CONTACT_EMAIL, CONTACT_WHATSAPP, COPYRIGHT_YEAR, OWNER_NAME } from "@/lib/app-info";
+import {
+  CONTACT_EMAIL,
+  CONTACT_INSTAGRAM,
+  CONTACT_WHATSAPP,
+  COPYRIGHT_YEAR,
+  OWNER_NAME,
+  OWNER_NAME_EN,
+} from "@/lib/app-info";
 
 const COPY = {
   ar: {
     button: "ملاحظات وتواصل",
     title: "شاركنا رأيك",
     intro:
-      "هذا التطبيق من تصميم وتطوير صاحبة المشروع، وهو حالياً نسخة تجريبية. تجربتك تساعدني على تحسينه قبل إطلاقه كتطبيق رسمي.",
+      "هذا التطبيق من تصميم وتطوير صاحبة المشروع: المهندسة غلا، وهو حالياً نسخة تجريبية. تجربتك تساعدني على تحسينه قبل إطلاقه كتطبيق رسمي.",
     ask: "للإبلاغ عن مشكلة، أو اقتراح، أو طلب ميزة، أو لأي سؤال، تواصل معي عبر:",
     email: "راسلني بالبريد الإلكتروني",
     whatsapp: "راسلني عبر واتساب",
+    instagram: "راسلني على انستغرام",
     none: "قنوات التواصل قيد الإعداد.",
-    tip: "عند الإبلاغ عن مشكلة اذكر: الصفحة، وما الذي ضغطت عليه، ونوع جهازك.",
+    tip: "عند الإبلاغ عن مشكلة اذكر: الصفحة، وما الذي ضغطت عليه، ونوع جهازك. ويفضّل إرفاق صورة للمشكلة.",
     subject: "ملاحظات على تطبيق غالِب",
     wa: "مرحباً، عندي ملاحظة على تطبيق غالِب:",
     rights: "جميع الحقوق محفوظة. لا يجوز نسخ التطبيق أو أي جزء منه أو إعادة استخدامه دون إذن خطي.",
@@ -32,12 +40,13 @@ const COPY = {
     button: "Feedback & contact",
     title: "Share your feedback",
     intro:
-      "This app was designed and built by its owner and is currently a beta version. Your experience helps improve it before it launches as an official app.",
+      "This app was designed and built by its owner, Eng. Ghala, and is currently a beta version. Your experience helps improve it before it launches as an official app.",
     ask: "To report a problem, suggest an idea, request a feature or ask a question, contact me via:",
     email: "Email me",
     whatsapp: "Message me on WhatsApp",
+    instagram: "DM me on Instagram",
     none: "Contact channels are being set up.",
-    tip: "When reporting a problem, mention the page, what you tapped, and your device.",
+    tip: "When reporting a problem, mention the page, what you tapped, and your device. A screenshot of the problem helps a lot.",
     subject: "Feedback on Ghalib",
     wa: "Hi, I have feedback on Ghalib:",
     rights:
@@ -50,9 +59,10 @@ const COPY = {
 export function CopyrightNotice({ className }: { className?: string | undefined }) {
   const { lang } = useI18n();
   const c = COPY[lang];
+  const owner = lang === "ar" ? OWNER_NAME : OWNER_NAME_EN;
   return (
     <p className={className}>
-      © {COPYRIGHT_YEAR} {OWNER_NAME ? `${OWNER_NAME} · ` : ""}
+      © {COPYRIGHT_YEAR} {owner ? `${owner} · ` : ""}
       {c.rights}
     </p>
   );
@@ -65,7 +75,8 @@ export function FeedbackButton({ className }: { className?: string | undefined }
   const [open, setOpen] = useState(false);
   const mailHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(c.subject)}`;
   const waHref = `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(c.wa)}`;
-  const hasChannel = Boolean(CONTACT_EMAIL || CONTACT_WHATSAPP);
+  const hasChannel = Boolean(CONTACT_EMAIL || CONTACT_WHATSAPP || CONTACT_INSTAGRAM);
+  const owner = lang === "ar" ? OWNER_NAME : OWNER_NAME_EN;
 
   return (
     <>
@@ -103,6 +114,22 @@ export function FeedbackButton({ className }: { className?: string | undefined }
                   </a>
                 </Button>
               )}
+              {CONTACT_INSTAGRAM && (
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-500 text-white hover:opacity-90"
+                >
+                  <a
+                    href={`https://instagram.com/${CONTACT_INSTAGRAM}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Instagram className="size-4" />
+                    {c.instagram}
+                  </a>
+                </Button>
+              )}
               {CONTACT_WHATSAPP && (
                 <Button
                   asChild
@@ -123,7 +150,7 @@ export function FeedbackButton({ className }: { className?: string | undefined }
 
           <div className="border-t border-border pt-3 text-xs text-muted-foreground">
             <p>
-              © {COPYRIGHT_YEAR} {OWNER_NAME ? `${c.madeBy} ${OWNER_NAME}. ` : ""}
+              © {COPYRIGHT_YEAR} {owner ? `${c.madeBy} ${owner}. ` : ""}
               {c.rights}
             </p>
             <Link
