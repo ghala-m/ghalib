@@ -23,10 +23,19 @@ import { universityLabel } from "@/lib/universities";
 import {
   ARCHIVE_DAYS,
   daysLeft,
+  isRestorable,
   listArchives,
+  readArchive,
   restoreArchive,
   switchUniversity,
 } from "@/lib/university-switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 /**
  * "University" field inside Settings → Basic info.
@@ -42,6 +51,13 @@ export function UniversityChangeSection({ current }: { current: string }) {
   const navigate = useNavigate();
   const [pending, setPending] = useState<string | null>(null);
   const [restoreId, setRestoreId] = useState<string | null>(null);
+  const [viewId, setViewId] = useState<string | null>(null);
+
+  const viewed = useQuery({
+    queryKey: ["university-archive", viewId],
+    enabled: !!user && !!viewId,
+    queryFn: () => readArchive(user!.id, viewId!),
+  });
 
   const archives = useQuery({
     queryKey: ["university-archives", user?.id],
@@ -129,19 +145,31 @@ export function UniversityChangeSection({ current }: { current: string }) {
             <History className="size-4 text-accent" />
             {t("previousUniversities")}
           </p>
-          {archives.data.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-              <div>
-                <p className="font-medium">{universityLabel(a.university, lang)}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("archiveDaysLeft").replace("{days}", String(daysLeft(a.expires_at)))}
-                </p>
+          {archives.data.map((a) => {
+            const restorable = isRestorable(a);
+            return (
+              <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div>
+                  <p className="font-medium">{universityLabel(a.university, lang)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {restorable
+                      ? t("archiveDaysLeft").replace("{days}", String(daysLeft(a.expires_at)))
+                      : `${t("archivedBadge")} · ${t("archiveDeletesOn").replace("{days}", String(daysLeft(a.delete_at)))}`}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" onClick={() => setViewId(a.id)}>
+                    {t("viewArchive")}
+                  </Button>
+                  {restorable && (
+                    <Button size="sm" variant="outline" onClick={() => setRestoreId(a.id)}>
+                      {t("restoreData")}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <Button size="sm" variant="outline" onClick={() => setRestoreId(a.id)}>
-                {t("restoreData")}
-              </Button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -205,6 +233,39 @@ export function UniversityChangeSection({ current }: { current: string }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Read-only archive viewer */}
+      <Dialog open={viewId !== null} onOpenChange={(o) => !o && setViewId(null)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {viewed.data ? universityLabel(viewed.data.university, lang) : t("viewArchive")}
+            </DialogTitle>
+            <DialogDescription>{t("archiveReadOnlyNote")}</DialogDescription>
+          </DialogHeader>
+          {viewed.data && viewed.data.courses.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("archiveEmpty")}</p>
+          ) : (
+            <ul className="divide-y divide-border text-sm">
+              {viewed.data?.courses.map((c, i) => (
+                <li key={i} className="flex items-center justify-between gap-3 py-2">
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{c.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {[c.code, c.term, c.credits != null ? `${c.credits} cr` : null]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-semibold tabular-nums">
+                    {c.final_grade ?? "—"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

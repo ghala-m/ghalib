@@ -683,6 +683,23 @@ const dict = {
     ar: "يُهمل أقل تقييم من نفس النوع (مثلاً 3 كويزات يُحسب أفضل اثنين). أدخل وزن الكويز الواحد عند احتسابه، وينطبق على كل تقييمات هذا النوع في المادة.",
     en: "The lowest item of this type is ignored (e.g. 3 quizzes, best 2 count). Enter the weight of one counted quiz; applies to every item of this type in the course.",
   },
+  collegeField: { ar: "الكلية", en: "College" },
+  pickCollege: { ar: "اختر الكلية", en: "Choose a college" },
+  pickCollegeFirst: { ar: "اختر الكلية أولاً", en: "Choose a college first" },
+  pickUniversityFirst: { ar: "اختر الجامعة أولاً", en: "Choose a university first" },
+  pickMajor: { ar: "اختر التخصص", en: "Choose a major" },
+  otherCollege: { ar: "كلية أخرى…", en: "Other college…" },
+  otherMajor: { ar: "تخصص آخر…", en: "Other major…" },
+  collegeNamePlaceholder: { ar: "اكتب اسم الكلية", en: "Type your college" },
+  majorNamePlaceholder: { ar: "اكتب اسم التخصص", en: "Type your major" },
+  archivedBadge: { ar: "أرشيف للقراءة فقط", en: "Read-only archive" },
+  archiveDeletesOn: { ar: "يُحذف نهائياً بعد {days} يوم", en: "Permanently deleted in {days} days" },
+  viewArchive: { ar: "عرض الأرشيف", en: "View archive" },
+  archiveReadOnlyNote: {
+    ar: "هذا أرشيف للقراءة فقط: لا يمكن تعديله أو استرجاعه بعد انتهاء مهلة الـ 30 يوماً، ويُحذف نهائياً بعد سنة.",
+    en: "Read-only archive: it can't be edited or restored after the 30-day window, and is deleted after one more year.",
+  },
+  archiveEmpty: { ar: "لا توجد مواد في هذا الأرشيف.", en: "No courses in this archive." },
   droppedBadge: { ar: "مُسقطة (الأقل)", en: "dropped (lowest)" },
   gradeTotal: { ar: "المجموع", en: "Total" },
   // --- University switching ---
@@ -700,8 +717,8 @@ const dict = {
     en: "Switching from “{from}” to “{to}” means you've left your previous university for a new one. You'll start a fresh study plan and your current courses and grades will be set aside.",
   },
   switchUniversityGrace: {
-    ar: "لديك {days} يوماً لاسترجاع بيانات جامعتك السابقة، وبعدها تُحذف نهائياً.",
-    en: "You have {days} days to restore your previous university's data before it's permanently deleted.",
+    ar: "لديك {days} يوماً لاسترجاع بيانات جامعتك السابقة، وبعدها تتحول إلى أرشيف للقراءة فقط لمدة سنة ثم تُحذف نهائياً.",
+    en: "You have {days} days to restore your previous university's data; after that it becomes a read-only archive for one year, then is permanently deleted.",
   },
   confirmSwitch: { ar: "نعم، غيّر الجامعة", en: "Yes, switch" },
   universitySwitched: {
@@ -709,7 +726,7 @@ const dict = {
     en: "University changed. Your previous data is kept for {days} days.",
   },
   previousUniversities: { ar: "جامعات سابقة (قابلة للاسترجاع)", en: "Previous universities (restorable)" },
-  archiveDaysLeft: { ar: "تُحذف نهائياً بعد {days} يوم", en: "Permanently deleted in {days} days" },
+  archiveDaysLeft: { ar: "متاح للاسترجاع لمدة {days} يوم", en: "Restorable for {days} more days" },
   restoreData: { ar: "استرجاع البيانات", en: "Restore data" },
   restoreTitle: { ar: "استرجاع بيانات الجامعة السابقة؟", en: "Restore previous university?" },
   restoreBody: {

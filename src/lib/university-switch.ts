@@ -1,8 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 
-/** Days the previous university's data stays recoverable before it is deleted for good. */
+/** Days the previous university's data can be restored. */
 export const ARCHIVE_DAYS = 30;
+/** After the restore window it stays as a read-only archive for this many more days, then is deleted. */
+export const ARCHIVE_READONLY_DAYS = 365;
 
 /** Parent tables first — restore inserts in this order, wipe deletes in reverse. */
 const TABLES = [
@@ -19,6 +21,7 @@ const TABLES = [
 type TableName = (typeof TABLES)[number];
 
 const PROFILE_FIELDS = [
+  "college",
   "major",
   "current_term",
   "term_number",
@@ -84,6 +87,9 @@ async function archiveCurrent(userId: string, university: string | null | undefi
     university: name,
     snapshot: snapshot as unknown as Json,
     expires_at: new Date(Date.now() + ARCHIVE_DAYS * 86_400_000).toISOString(),
+    delete_at: new Date(
+      Date.now() + (ARCHIVE_DAYS + ARCHIVE_READONLY_DAYS) * 86_400_000,
+    ).toISOString(),
   });
   if (error) throw error;
 }
@@ -103,6 +109,7 @@ export async function switchUniversity(
     .from("profiles")
     .update({
       university: newUniversity.trim(),
+      college: null,
       major: null,
       current_term: null,
       term_number: 1,
@@ -120,27 +127,33 @@ export type UniversityArchive = {
   id: string;
   university: string;
   created_at: string;
+  /** Restore deadline: until then restorable, afterwards a read-only archive. */
   expires_at: string;
+  /** Permanent deletion date. */
+  delete_at: string;
 };
+
+export const isRestorable = (a: Pick<UniversityArchive, "expires_at">) =>
+  new Date(a.expires_at).getTime() > Date.now();
 
 export async function listArchives(userId: string): Promise<UniversityArchive[]> {
   await purgeExpiredArchives(userId);
   const { data, error } = await supabase
     .from("university_archives")
-    .select("id,university,created_at,expires_at")
+    .select("id,university,created_at,expires_at,delete_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
-/** Permanently removes archives past their 30 days (runs whenever the student opens settings). */
+/** Permanently removes archives past their delete date (runs whenever the student opens settings). */
 export async function purgeExpiredArchives(userId: string) {
   await supabase
     .from("university_archives")
     .delete()
     .eq("user_id", userId)
-    .lt("expires_at", new Date().toISOString());
+    .lt("delete_at", new Date().toISOString());
 }
 
 export function daysLeft(expiresAt: string): number {
@@ -210,3 +223,27 @@ export async function restoreArchive(
 }
 
 export type { TableName };
+
+export type ArchivedCourse = {
+  name: string;
+  code: string | null;
+  term: string | null;
+  credits: number | null;
+  final_grade: string | null;
+  status: string;
+};
+
+/** Read-only view of an archive's courses (works for restorable and expired-but-kept archives). */
+export async function readArchive(userId: string, archiveId: string) {
+  const { data, error } = await supabase
+    .from("university_archives")
+    .select("university,snapshot,expires_at,delete_at")
+    .eq("id", archiveId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("missing");
+  const snap = data.snapshot as unknown as Snapshot;
+  const courses = (snap.tables["courses"] ?? []) as unknown as ArchivedCourse[];
+  return { university: data.university, profile: snap.profile, courses };
+}

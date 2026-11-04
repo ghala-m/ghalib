@@ -478,6 +478,7 @@ export type Database = {
           briefing_buffer_minutes: number
           briefing_enabled: boolean
           briefing_lead_minutes: number
+          college: string | null
           commute_mode: string
           created_at: string
           current_term: string | null
@@ -508,6 +509,7 @@ export type Database = {
           briefing_buffer_minutes?: number
           briefing_enabled?: boolean
           briefing_lead_minutes?: number
+          college?: string | null
           commute_mode?: string
           created_at?: string
           current_term?: string | null
@@ -538,6 +540,7 @@ export type Database = {
           briefing_buffer_minutes?: number
           briefing_enabled?: boolean
           briefing_lead_minutes?: number
+          college?: string | null
           commute_mode?: string
           created_at?: string
           current_term?: string | null
@@ -743,6 +746,7 @@ export type Database = {
       university_archives: {
         Row: {
           created_at: string
+          delete_at: string
           expires_at: string
           id: string
           snapshot: Json
@@ -751,6 +755,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          delete_at?: string
           expires_at?: string
           id?: string
           snapshot: Json
@@ -759,6 +764,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          delete_at?: string
           expires_at?: string
           id?: string
           snapshot?: Json
