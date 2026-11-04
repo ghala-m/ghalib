@@ -1,3 +1,4 @@
+import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -260,7 +261,15 @@ function OnboardingPage() {
             {(["full_name", "university", "major", "current_term"] as const).map((key, i) => (
               <div key={key} className="space-y-2">
                 <Label htmlFor={`setup-${key}`}>{[t("fullName"), t("university"), t("major"), t("currentTerm")][i]}</Label>
-                <Input id={`setup-${key}`} required maxLength={160} value={student[key]} onChange={e => setStudent(s => ({ ...s, [key]: e.target.value }))} />
+                {key === "university" ? (
+                  <UniversitySelect
+                    id="setup-university"
+                    value={student.university}
+                    onChange={(v) => setStudent(s => ({ ...s, university: v }))}
+                  />
+                ) : (
+                  <Input id={`setup-${key}`} required maxLength={160} value={student[key]} onChange={e => setStudent(s => ({ ...s, [key]: e.target.value }))} />
+                )}
               </div>
             ))}
             <Button type="submit">{t("next")}</Button>

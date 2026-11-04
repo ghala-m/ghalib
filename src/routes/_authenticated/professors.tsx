@@ -20,7 +20,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { profileQuery } from "@/lib/queries";
 import { professorsQuery, professorReviewsQuery, professorSummaryQuery } from "@/lib/professors";
-import { COLLEGES, collegeLabel, collegeStyle, sameUniversity } from "@/lib/colleges";
+import { collegeLabel, collegeStyle, sameUniversity } from "@/lib/colleges";
+import { collegesForUniversity, universityLabel } from "@/lib/universities";
+import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +71,7 @@ const COPY = {
     reviewsTitle: "تقييمات الطلاب",
     distribution: "توزيع التقييمات",
     pickCollege: "اختر الكلية",
+    pickUniversityFirst: "اختر الجامعة أولاً",
     universityFallback: "الجامعة",
     emptyFiltered: "لا يوجد دكاترة في هذه الكلية بعد. كن أول من يضيف!",
     avg: "المتوسط",
@@ -88,6 +91,7 @@ const COPY = {
     reviewsTitle: "Student reviews",
     distribution: "Rating breakdown",
     pickCollege: "Choose a college",
+    pickUniversityFirst: "Choose a university first",
     universityFallback: "University",
     emptyFiltered: "No professors in this college yet. Be the first to add one!",
     avg: "Average",
@@ -162,6 +166,8 @@ function ProfessorsPage() {
     comment: "",
     is_anonymous: true,
   });
+  const dialogUniversity = myUniversity || newProfessor.university;
+  const dialogColleges = useMemo(() => collegesForUniversity(dialogUniversity), [dialogUniversity]);
   const [reportId, setReportId] = useState("");
   const [reason, setReason] = useState("");
   const own = reviews.data?.find((r) => r.is_own);
@@ -694,17 +700,48 @@ function ProfessorsPage() {
                   onChange={(e) => setNewProfessor((p) => ({ ...p, name: e.target.value }))}
                 />
               </div>
+              {/* University first: the college list below depends on it. */}
+              {myUniversity ? (
+                <div className="space-y-2">
+                  <Label>{c.universityFallback}</Label>
+                  <p className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2 text-sm">
+                    <Building2 className="size-4 text-muted-foreground" />
+                    {universityLabel(myUniversity, lang)}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="professor-university">{c.universityFallback}</Label>
+                  <UniversitySelect
+                    id="professor-university"
+                    value={newProfessor.university}
+                    onChange={(v) =>
+                      setNewProfessor((p) => ({
+                        ...p,
+                        university: v,
+                        // keep the college only if the new university actually has it
+                        department: collegesForUniversity(v).some((col) => col.ar === p.department)
+                          ? p.department
+                          : "",
+                      }))
+                    }
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>{c.college}</Label>
                 <Select
                   value={newProfessor.department}
+                  disabled={!dialogUniversity.trim()}
                   onValueChange={(v) => setNewProfessor((p) => ({ ...p, department: v }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={c.pickCollege} />
+                    <SelectValue
+                      placeholder={dialogUniversity.trim() ? c.pickCollege : c.pickUniversityFirst}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {COLLEGES.map((col) => (
+                    {dialogColleges.map((col) => (
                       <SelectItem key={col.ar} value={col.ar}>
                         {col[lang]}
                       </SelectItem>
@@ -712,26 +749,10 @@ function ProfessorsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* The university is filled in automatically from the profile; only ask if it's missing. */}
-              {myUniversity ? (
-                <p className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                  <Building2 className="size-4" />
-                  {myUniversity}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="professor-university">{c.universityFallback}</Label>
-                  <Input
-                    id="professor-university"
-                    required
-                    minLength={2}
-                    maxLength={160}
-                    value={newProfessor.university}
-                    onChange={(e) => setNewProfessor((p) => ({ ...p, university: e.target.value }))}
-                  />
-                </div>
-              )}
-              <Button type="submit" disabled={add.isPending || !newProfessor.department}>
+              <Button
+                type="submit"
+                disabled={add.isPending || !newProfessor.department || !dialogUniversity.trim()}
+              >
                 {add.isPending && <Loader2 className="size-4 animate-spin" />}
                 {t("addProfessor")}
               </Button>

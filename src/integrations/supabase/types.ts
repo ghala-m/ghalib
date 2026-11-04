@@ -168,11 +168,14 @@ export type Database = {
           course_id: string
           created_at: string
           description: string | null
+          drop_lowest: boolean
           due_date: string | null
           due_time: string | null
           from_syllabus: boolean
           id: string
           notified_at: string | null
+          score_earned: number | null
+          score_max: number | null
           score_percent: number | null
           title: string
           type: Database["public"]["Enums"]["item_type"]
@@ -184,11 +187,14 @@ export type Database = {
           course_id: string
           created_at?: string
           description?: string | null
+          drop_lowest?: boolean
           due_date?: string | null
           due_time?: string | null
           from_syllabus?: boolean
           id?: string
           notified_at?: string | null
+          score_earned?: number | null
+          score_max?: number | null
           score_percent?: number | null
           title: string
           type?: Database["public"]["Enums"]["item_type"]
@@ -200,11 +206,14 @@ export type Database = {
           course_id?: string
           created_at?: string
           description?: string | null
+          drop_lowest?: boolean
           due_date?: string | null
           due_time?: string | null
           from_syllabus?: boolean
           id?: string
           notified_at?: string | null
+          score_earned?: number | null
+          score_max?: number | null
           score_percent?: number | null
           title?: string
           type?: Database["public"]["Enums"]["item_type"]
@@ -491,6 +500,7 @@ export type Database = {
           university_address: string | null
           university_lat: number | null
           university_lng: number | null
+          university_switched_at: string | null
           updated_at: string
         }
         Insert: {
@@ -520,6 +530,7 @@ export type Database = {
           university_address?: string | null
           university_lat?: number | null
           university_lng?: number | null
+          university_switched_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -549,6 +560,7 @@ export type Database = {
           university_address?: string | null
           university_lat?: number | null
           university_lng?: number | null
+          university_switched_at?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -725,6 +737,33 @@ export type Database = {
           term_number?: number
           user_id?: string
           weeks_count?: number | null
+        }
+        Relationships: []
+      }
+      university_archives: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          snapshot: Json
+          university: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          snapshot: Json
+          university: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          snapshot?: Json
+          university?: string
+          user_id?: string
         }
         Relationships: []
       }

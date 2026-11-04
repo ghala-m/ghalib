@@ -91,6 +91,30 @@ export const COLLEGES: College[] = [
     dot: "bg-green-500",
   },
   {
+    ar: "كلية العلوم الاجتماعية",
+    en: "Social Sciences",
+    chip: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300 border-yellow-500/30",
+    dot: "bg-yellow-500",
+  },
+  {
+    ar: "كلية العلوم الطبية المساندة",
+    en: "Allied Health Sciences",
+    chip: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
+    dot: "bg-red-500",
+  },
+  {
+    ar: "كلية طب الأسنان",
+    en: "Dentistry",
+    chip: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+    dot: "bg-blue-500",
+  },
+  {
+    ar: "كلية الصحة العامة",
+    en: "Public Health",
+    chip: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30",
+    dot: "bg-purple-500",
+  },
+  {
     ar: "أخرى",
     en: "Other",
     chip: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",

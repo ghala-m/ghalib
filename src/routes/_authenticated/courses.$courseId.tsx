@@ -12,6 +12,7 @@ import {
   studyMaterialsQuery,
 } from "@/lib/queries";
 import { CourseMaterialsSection } from "@/components/app/CourseMaterialsSection";
+import { GradeDistribution } from "@/components/app/GradeDistribution";
 import { summarizeGrades, neededAverage } from "@/lib/grades";
 import { Input } from "@/components/ui/input";
 import { pointsFor } from "@/lib/plan";
@@ -224,31 +225,7 @@ function CoursePage() {
 
       {(() => {
         const sectionBlocks: Record<SectionKey, ReactNode> = {
-          grades: (
-            <div key="grades" className="panel mt-6 p-6">
-              <h2 className="font-semibold">{t("gradeWeights")}</h2>
-              {weights.length === 0 ? (
-                <p className="mt-2 text-sm text-muted-foreground">{t("none")}</p>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {weights.map((w) => (
-                    <li key={w.id}>
-                      <div className="flex justify-between text-sm">
-                        <span>{w.category}</span>
-                        <span className="tabular-nums">{w.percentage}%</span>
-                      </div>
-                      <div className="mt-1 h-1.5 rounded-full bg-muted">
-                        <div
-                          className="h-1.5 rounded-full bg-accent"
-                          style={{ width: `${Math.min(100, Number(w.percentage))}%` }}
-                        />
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ),
+          grades: <GradeDistribution key="grades" weights={weights} />,
           materials: (
             <CourseMaterialsSection
               key="materials"
@@ -318,7 +295,8 @@ function CoursePage() {
                         />
                       </div>
                       <p className="mt-1.5 text-xs text-muted-foreground">
-                        {grade.coverage.toFixed(0)}% {t("gradeCoverage")}
+                        {grade.coverage.toFixed(0)}% {t("gradeCoverage")} ·{" "}
+                        {Number(grade.earnedPoints.toFixed(2))}/{Number(grade.gradedWeight.toFixed(2))}
                       </p>
                     </>
                   ) : (
@@ -380,7 +358,7 @@ function CoursePage() {
                       />
                       <div className="min-w-0 flex-1">
                         <p
-                          className={`truncate text-sm ${i.completed ? "text-muted-foreground line-through" : ""}`}
+                          className={`truncate text-sm ${i.completed || (i.drop_lowest && grade.droppedIds.has(i.id) && i.score_percent !== null) ? "text-muted-foreground" : ""} ${i.completed ? "line-through" : ""}`}
                         >
                           {i.title}
                         </p>
@@ -388,7 +366,12 @@ function CoursePage() {
                           {t(i.type)}
                           {i.weight ? ` · ${t("weight")}: ${i.weight}%` : ""}
                           {i.score_percent !== null
-                            ? ` · ${t("scoreLabel")}: ${i.score_percent}%`
+                            ? i.score_earned !== null && i.score_max !== null
+                              ? ` · ${Number(i.score_earned)}/${Number(i.score_max)} (${Number(i.score_percent)}%)`
+                              : ` · ${t("scoreLabel")}: ${i.score_percent}%`
+                            : ""}
+                          {i.drop_lowest && grade.droppedIds.has(i.id) && i.score_percent !== null
+                            ? ` · ${t("droppedBadge")}`
                             : ""}
                         </p>
                       </div>

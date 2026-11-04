@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   FileOutput,
@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { UniversityChangeSection } from "@/components/app/UniversityChangeSection";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { MapsLinkInput } from "@/components/app/MapsLinkInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
@@ -389,8 +390,11 @@ function ProfilePage() {
       {/* Basic info */}
       <SectionCard icon={UserRound} title={t("basicInfoTitle")} className="mt-6">
         <div className="space-y-5">
-          {fields.map((f) => (
-            <div key={f.key} className="space-y-2">
+          {fields.map((f, idx) => (
+            <Fragment key={f.key}>
+            {/* University sits right after the name, inside Basic info. */}
+            {idx === 1 && <UniversityChangeSection current={profile?.university ?? ""} />}
+            <div className="space-y-2">
               <Label htmlFor={f.key}>{f.label}</Label>
               <Input
                 id={f.key}
@@ -400,6 +404,7 @@ function ProfilePage() {
                 onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
               />
             </div>
+            </Fragment>
           ))}
           <div className="space-y-2">
             <Label>{t("timezone")}</Label>
