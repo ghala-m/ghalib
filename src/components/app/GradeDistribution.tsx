@@ -5,16 +5,17 @@ import { cn } from "@/lib/utils";
 
 type Weight = { id: string; category: string; percentage: number | string };
 
-/** Distinct, theme-safe hues — one per category so the bar and the list read as one system. */
-const PALETTE = [
-  { bar: "bg-rose-500", soft: "bg-rose-500/15 text-rose-600 dark:text-rose-300" },
-  { bar: "bg-sky-500", soft: "bg-sky-500/15 text-sky-600 dark:text-sky-300" },
-  { bar: "bg-amber-500", soft: "bg-amber-500/15 text-amber-600 dark:text-amber-300" },
-  { bar: "bg-emerald-500", soft: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" },
-  { bar: "bg-violet-500", soft: "bg-violet-500/15 text-violet-600 dark:text-violet-300" },
-  { bar: "bg-teal-500", soft: "bg-teal-500/15 text-teal-600 dark:text-teal-300" },
-  { bar: "bg-fuchsia-500", soft: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300" },
-  { bar: "bg-orange-500", soft: "bg-orange-500/15 text-orange-600 dark:text-orange-300" },
+/**
+ * Shades of the student's theme colour (Settings → colours): the biggest category is the strongest
+ * tint, smaller ones fade — so the chart always matches the app instead of introducing new hues.
+ */
+const SHADES = [
+  { bar: "bg-accent", soft: "bg-accent/25 text-foreground" },
+  { bar: "bg-accent/80", soft: "bg-accent/20 text-foreground" },
+  { bar: "bg-accent/65", soft: "bg-accent/15 text-foreground" },
+  { bar: "bg-accent/50", soft: "bg-accent/15 text-foreground" },
+  { bar: "bg-accent/40", soft: "bg-accent/10 text-foreground" },
+  { bar: "bg-accent/30", soft: "bg-accent/10 text-foreground" },
 ];
 
 const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
@@ -32,7 +33,7 @@ export function GradeDistribution({ weights }: { weights: Weight[] }) {
       weights
         .map((w) => ({ id: w.id, category: w.category, value: Number(w.percentage) || 0 }))
         .sort((a, b) => b.value - a.value)
-        .map((r, i) => ({ ...r, color: PALETTE[i % PALETTE.length]! })),
+        .map((r, i) => ({ ...r, color: SHADES[Math.min(i, SHADES.length - 1)]! })),
     [weights],
   );
   const total = rows.reduce((s, r) => s + r.value, 0);
@@ -46,9 +47,7 @@ export function GradeDistribution({ weights }: { weights: Weight[] }) {
           <span
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
-              balanced
-                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
-                : "bg-amber-500/15 text-amber-600 dark:text-amber-300",
+              balanced ? "bg-accent/20 text-foreground" : "bg-destructive/15 text-destructive",
             )}
           >
             {!balanced && <TriangleAlert className="size-3.5" />}
