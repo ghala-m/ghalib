@@ -157,8 +157,8 @@ export const COLLEGES: College[] = [
     dot: "bg-sky-500",
   },
   {
-    ar: "قسم الملاحة البحرية",
-    en: "Maritime Department",
+    ar: "قطاع الدراسات البحرية",
+    en: "Maritime Studies",
     chip: "bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30",
     dot: "bg-cyan-500",
   },
@@ -215,6 +215,12 @@ export const COLLEGES: College[] = [
     en: "Kuwait Maastricht Business School",
     chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
     dot: "bg-amber-500",
+  },
+  {
+    ar: "كلية الهندسة والعمارة",
+    en: "Engineering and Architecture",
+    chip: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+    dot: "bg-orange-500",
   },
   {
     ar: "أخرى",

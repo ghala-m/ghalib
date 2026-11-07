@@ -43,9 +43,10 @@ export const UNIVERSITIES: University[] = [
         majors: [
           m("Arabic Language and Literature", "اللغة العربية وآدابها"),
           m("English Language and Literature", "اللغة الإنجليزية وآدابها"),
-          m("French Language and Literature", "اللغة الفرنسية وآدابها"),
-          m("History", "التاريخ"),
+          m("French Language and Cultures", "اللغة الفرنسية وثقافاتها"),
+          m("History and Archaeology", "التاريخ والآثار"),
           m("Philosophy", "الفلسفة"),
+          m("Comparative Literary and Cultural Studies", "الدراسات الأدبية والثقافية المقارنة"),
           m("Mass Communication", "الإعلام"),
         ],
       },
@@ -62,7 +63,9 @@ export const UNIVERSITIES: University[] = [
           m("Statistics and Operations Research", "الإحصاء وبحوث العمليات"),
           m("Applied Statistics", "الإحصاء التطبيقي"),
           m("Computer Science", "علوم الحاسوب"),
-          m("Computer Science (Cybersecurity)", "علوم الحاسوب (الأمن السيبراني)"),
+          m("Cybersecurity", "الأمن السيبراني"),
+          m("Data Science and Artificial Intelligence", "علوم البيانات والذكاء الاصطناعي"),
+          m("Human Biology", "علم الأحياء البشري"),
         ],
       },
       {
@@ -91,8 +94,6 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية علوم الحياة",
         majors: [
-          m("Information Science", "علوم المعلومات"),
-          m("Data Science and Artificial Intelligence", "علم البيانات والذكاء الاصطناعي"),
           m("Food Science and Nutrition", "علوم الأغذية والتغذية"),
           m("Environmental Technology Management", "إدارة التقنية البيئية"),
         ],
@@ -100,7 +101,8 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية العلوم الاجتماعية",
         majors: [
-          m("Geography", "الجغرافيا"),
+          m("Geography (GIS)", "الجغرافيا (نظم المعلومات الجغرافية)"),
+          m("Information Studies", "دراسات المعلومات"),
           m("Political Science", "العلوم السياسية"),
           m("Psychology", "علم النفس"),
           m("Sociology and Social Work", "علم الاجتماع والخدمة الاجتماعية"),
@@ -109,9 +111,10 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية التربية",
         majors: [
-          m("Early Childhood Education", "تربية الطفولة المبكرة"),
-          m("Elementary Education", "التعليم الابتدائي"),
-          m("Middle and Secondary Education", "التعليم المتوسط والثانوي"),
+          m("Kindergarten", "رياض الأطفال"),
+          m("Elementary Education", "المرحلة الابتدائية"),
+          m("Middle and Secondary (Arts)", "المتوسط والثانوي (تخصصات أدبية)"),
+          m("Middle and Secondary (Sciences)", "المتوسط والثانوي (تخصصات علمية)"),
         ],
       },
       {
@@ -136,7 +139,10 @@ export const UNIVERSITIES: University[] = [
       { ar: "كلية الطب", majors: [m("Medicine", "الطب البشري")] },
       { ar: "كلية الصيدلة", majors: [m("Pharmacy (PharmD)", "الصيدلة (دكتور صيدلة)")] },
       { ar: "كلية طب الأسنان", majors: [m("Dentistry", "طب الأسنان")] },
-      { ar: "كلية الحقوق", majors: [m("Law", "القانون")] },
+      {
+        ar: "كلية الحقوق",
+        majors: [m("Public Law", "القانون العام"), m("Private Law", "القانون الخاص")],
+      },
       {
         ar: "كلية العمارة والتصميم",
         majors: [
@@ -147,10 +153,9 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية الشريعة",
         majors: [
-          m("Dawah and Creed", "الدعوة والعقيدة"),
-          m("Hadith and Quran Interpretation", "التفسير والحديث"),
+          m("Creed and Dawah", "العقيدة والدعوة"),
+          m("Tafsir and Hadith", "التفسير والحديث"),
           m("Fiqh and Usul Al-Fiqh", "الفقه وأصوله"),
-          m("Comparative Jurisprudence", "الفقه المقارن"),
           m("Sharia Politics", "السياسة الشرعية"),
         ],
       },
@@ -162,28 +167,35 @@ export const UNIVERSITIES: University[] = [
     en: "Gulf University for Science and Technology",
     type: "private",
     aliases: ["GUST"],
-    verified: false,
+    verified: true,
     colleges: [
-      {
-        ar: "كلية الآداب والعلوم",
-        majors: [
-          m("Computer Science", "علوم الحاسوب"),
-          m("English Linguistics", "اللغويات الإنجليزية"),
-          m("English Translation", "الترجمة الإنجليزية"),
-          m("English Literature", "الأدب الإنجليزي"),
-          m("English Education", "تعليم اللغة الإنجليزية"),
-          m("Mass Communication and Multimedia", "الإعلام والوسائط المتعددة"),
-          m("Mathematics", "الرياضيات"),
-        ],
-      },
       {
         ar: "كلية إدارة الأعمال",
         majors: [
           m("Accounting", "المحاسبة"),
-          m("Business Administration", "إدارة الأعمال"),
-          m("Finance", "المالية"),
-          m("Management Information Systems", "نظم المعلومات الإدارية"),
+          m("Finance", "التمويل والمنشآت المالية"),
+          m("Management Information Systems", "إدارة نظم المعلومات"),
+          m("International Business", "إدارة الأعمال الدولية"),
+          m("Marketing", "التسويق"),
         ],
+      },
+      {
+        ar: "كلية الآداب والعلوم",
+        majors: [
+          m("English (Literature)", "اللغة الإنجليزية (الأدب)"),
+          m("English (Translation and Linguistics)", "اللغة الإنجليزية (الترجمة واللغويات)"),
+          m("Mass Communication (Radio and Television)", "الإعلام (الراديو والتلفزيون)"),
+          m(
+            "Mass Communication (Public Relations and Communication)",
+            "الإعلام (العلاقات العامة والاتصال)",
+          ),
+          m("Mass Communication (Visual Communication)", "الإعلام (الاتصال المرئي)"),
+          m("Computer Science", "علوم الحاسوب"),
+        ],
+      },
+      {
+        ar: "كلية الهندسة والعمارة",
+        majors: [m("Computer Engineering", "هندسة الحاسوب")],
       },
     ],
   },
@@ -257,39 +269,47 @@ export const UNIVERSITIES: University[] = [
     ],
   },
   {
+    // Formerly "Australian College of Kuwait"; `official` is kept as the stored key.
     official: "Australian College of Kuwait",
-    ar: "الكلية الأسترالية في الكويت",
-    en: "Australian College of Kuwait",
+    ar: "الجامعة الأسترالية",
+    en: "Australian University",
     type: "private",
-    aliases: ["ACK", "Australian University", "Australian University of Kuwait"],
-    verified: false,
+    aliases: ["ACK", "AU", "Australian University of Kuwait", "Australian University (Kuwait)"],
+    verified: true,
     colleges: [
       {
         ar: "كلية الهندسة",
         majors: [
           m("Civil Engineering", "الهندسة المدنية"),
-          m("Mechanical Engineering", "الهندسة الميكانيكية"),
-          m("Electrical and Electronics Engineering", "الهندسة الكهربائية والإلكترونية"),
           m("Petroleum Engineering", "هندسة البترول"),
+          m("Mechanical Engineering", "الهندسة الميكانيكية"),
+          m("Electrical and Electronics Engineering", "هندسة الكهرباء والإلكترونيات"),
+          m("Computer Engineering", "هندسة الحاسوب"),
         ],
       },
       {
         ar: "كلية إدارة الأعمال",
         majors: [
-          m("Management", "الإدارة"),
+          m("Management", "إدارة الأعمال / الإدارة"),
           m("Marketing", "التسويق"),
+          m("Human Resources Management", "إدارة الموارد البشرية"),
           m("Accounting", "المحاسبة"),
-          m("Finance", "المالية"),
+          m("Logistics", "الخدمات اللوجستية"),
+          m("Banking and Finance", "البنوك والتمويل"),
+          m("Management Information Systems", "إدارة نظم المعلومات"),
+          m("Events Management", "إدارة المناسبات"),
         ],
       },
       {
         ar: "كلية الطيران",
         majors: [
-          m("Aircraft Maintenance Engineering", "هندسة صيانة الطائرات"),
-          m("Aviation and Airport Operations", "الطيران وعمليات المطارات"),
+          m("Aircraft Maintenance (Mechanical)", "صيانة الطائرات - ميكانيكا"),
+          m("Aircraft Maintenance (Avionics)", "صيانة الطائرات - إلكترونيات الطيران"),
+          m("Aviation and Airport Operations", "تشغيل الطيران والمطارات"),
+          m("Air Traffic Control", "مراقبة الملاحة الجوية"),
         ],
       },
-      { ar: "قسم الملاحة البحرية", majors: [m("Nautical Science", "علوم الملاحة")] },
+      { ar: "قطاع الدراسات البحرية", majors: [m("Nautical Science", "العلوم البحرية / الملاحة")] },
     ],
   },
   {
@@ -298,42 +318,36 @@ export const UNIVERSITIES: University[] = [
     en: "Arab Open University - Kuwait",
     type: "private",
     aliases: ["AOU", "Arab Open University"],
-    verified: false,
+    verified: true,
     colleges: [
       {
         ar: "كلية الدراسات التجارية",
         majors: [
-          m("Business Studies (Accounting)", "الدراسات التجارية (المحاسبة)"),
-          m("Business Studies (Economics)", "الدراسات التجارية (الاقتصاد)"),
-          m(
-            "Business Studies (Management Information Systems)",
-            "الدراسات التجارية (نظم المعلومات الإدارية)",
-          ),
-          m("Business Studies (Management)", "الدراسات التجارية (الإدارة)"),
-          m("Business Studies (Marketing)", "الدراسات التجارية (التسويق)"),
-          m("Business Studies (Systems Practice)", "الدراسات التجارية (ممارسة النظم)"),
-          m("Law", "القانون"),
+          m("Management (Systems Practice)", "الإدارة / النظم الإدارية"),
+          m("Marketing", "التسويق"),
+          m("Accounting", "المحاسبة"),
+          m("Economics", "الاقتصاد"),
+          m("Management Information Systems", "نظم المعلومات الإدارية"),
         ],
       },
       {
         ar: "كلية الدراسات الحاسوبية",
         majors: [
-          m("Information Technology and Computing", "تقنية المعلومات والحوسبة"),
-          m("Graphics and Multimedia Design Technology", "تقنية تصميم الجرافيكس والوسائط المتعددة"),
+          m("IT and Computing (Computer Science)", "تقنية المعلومات والحوسبة (علوم الكمبيوتر)"),
+          m(
+            "IT and Computing (Computing with Business)",
+            "تقنية المعلومات والحوسبة (الحوسبة مع الأعمال)",
+          ),
+          m(
+            "IT and Computing (Networking and Data Security)",
+            "تقنية المعلومات والحوسبة (الشبكات وأمن البيانات)",
+          ),
+          m("IT and Computing (Web Development)", "تقنية المعلومات والحوسبة (تطوير حلول الويب)"),
         ],
       },
       {
         ar: "كلية دراسات اللغات",
-        majors: [
-          m("English Language and Literature", "اللغة الإنجليزية وآدابها"),
-          m("Media", "الإعلام"),
-        ],
-      },
-      {
-        ar: "كلية التربية",
-        majors: [
-          m("Education (Intermediate and Secondary)", "التربية (المرحلتان المتوسطة والثانوية)"),
-        ],
+        majors: [m("English Language and Literature", "اللغة الإنجليزية وآدابها")],
       },
     ],
   },
@@ -391,13 +405,14 @@ export const UNIVERSITIES: University[] = [
     en: "Kuwait College of Science and Technology",
     type: "private",
     aliases: ["KCST"],
-    verified: false,
+    verified: true,
     colleges: [
       {
-        ar: "كلية الهندسة",
+        ar: "كلية الهندسة والتقنية",
         majors: [
           m("Computer Engineering", "هندسة الحاسوب"),
           m("Electronics and Communications Engineering", "هندسة الإلكترونيات والاتصالات"),
+          m("Computer Science", "علوم الكمبيوتر"),
         ],
       },
     ],
