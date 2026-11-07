@@ -133,7 +133,7 @@ export const COLLEGES: College[] = [
     dot: "bg-lime-500",
   },
   {
-    ar: "كلية الأعمال والاقتصاد",
+    ar: "كلية الإدارة والاقتصاد",
     en: "Business and Economics",
     chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
     dot: "bg-amber-500",
@@ -145,7 +145,7 @@ export const COLLEGES: College[] = [
     dot: "bg-orange-500",
   },
   {
-    ar: "كلية الهندسة والتقنية",
+    ar: "كلية الهندسة والتكنولوجيا",
     en: "Engineering and Technology",
     chip: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
     dot: "bg-orange-500",
@@ -181,7 +181,7 @@ export const COLLEGES: College[] = [
     dot: "bg-lime-500",
   },
   {
-    ar: "كلية النظم وهندسة الحاسوب",
+    ar: "كلية هندسة الحاسوب والنظم",
     en: "Systems and Computer Engineering",
     chip: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
     dot: "bg-indigo-500",
@@ -221,6 +221,24 @@ export const COLLEGES: College[] = [
     en: "Engineering and Architecture",
     chip: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
     dot: "bg-orange-500",
+  },
+  {
+    ar: "كلية العلوم والفنون",
+    en: "Arts and Sciences",
+    chip: "bg-lime-500/15 text-lime-700 dark:text-lime-300 border-lime-500/30",
+    dot: "bg-lime-500",
+  },
+  {
+    ar: "كلية العمارة",
+    en: "Architecture",
+    chip: "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-500/30",
+    dot: "bg-fuchsia-500",
+  },
+  {
+    ar: "كلية العلوم الإدارية",
+    en: "Business Administration",
+    chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    dot: "bg-amber-500",
   },
   {
     ar: "أخرى",

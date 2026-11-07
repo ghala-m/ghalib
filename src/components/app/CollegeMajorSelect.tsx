@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ReportCatalogIssue } from "@/components/app/ReportCatalogIssue";
 import { Label } from "@/components/ui/label";
 import { SelectWithOther } from "@/components/app/SelectWithOther";
 import { useI18n } from "@/lib/i18n";
@@ -54,6 +55,7 @@ export function CollegeMajorSelect({
           onChange={(v) => onChange({ college, major: v })}
         />
       </div>
+      <ReportCatalogIssue university={university} college={college} major={major} />
     </>
   );
 }
