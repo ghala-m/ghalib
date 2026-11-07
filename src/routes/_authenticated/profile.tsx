@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   FileOutput,
@@ -27,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { CollegeMajorSelect } from "@/components/app/CollegeMajorSelect";
+import { UniversityChangeSection } from "@/components/app/UniversityChangeSection";
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { MapsLinkInput } from "@/components/app/MapsLinkInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
@@ -163,6 +165,7 @@ function ProfilePage() {
 
   const [form, setForm] = useState({
     full_name: "",
+    college: "",
     major: "",
     current_term: "",
     home_lat: "",
@@ -182,6 +185,7 @@ function ProfilePage() {
     if (!profile) return;
     setForm({
       full_name: profile.full_name ?? "",
+      college: profile.college ?? "",
       major: profile.major ?? "",
       current_term: profile.current_term ?? "",
       home_lat: profile.home_lat?.toString() ?? "",
@@ -229,6 +233,7 @@ function ProfilePage() {
         .from("profiles")
         .update({
           full_name: form.full_name || null,
+          college: form.college || null,
           major: form.major || null,
           current_term: form.current_term || null,
           home_lat: form.home_lat ? Number(form.home_lat) : null,
@@ -319,7 +324,6 @@ function ProfilePage() {
 
   const fields: { key: keyof typeof form; label: string; type?: string; step?: string }[] = [
     { key: "full_name", label: t("fullName") },
-    { key: "major", label: t("major") },
     { key: "current_term", label: t("currentTerm") },
   ];
 
@@ -389,8 +393,22 @@ function ProfilePage() {
       {/* Basic info */}
       <SectionCard icon={UserRound} title={t("basicInfoTitle")} className="mt-6">
         <div className="space-y-5">
-          {fields.map((f) => (
-            <div key={f.key} className="space-y-2">
+          {fields.map((f, idx) => (
+            <Fragment key={f.key}>
+            {/* University sits right after the name, inside Basic info. */}
+            {idx === 1 && (
+              <>
+                <UniversityChangeSection current={profile?.university ?? ""} />
+                <CollegeMajorSelect
+                  idPrefix="profile"
+                  university={profile?.university ?? ""}
+                  college={form.college}
+                  major={form.major}
+                  onChange={(v) => setForm((s) => ({ ...s, ...v }))}
+                />
+              </>
+            )}
+            <div className="space-y-2">
               <Label htmlFor={f.key}>{f.label}</Label>
               <Input
                 id={f.key}
@@ -400,6 +418,7 @@ function ProfilePage() {
                 onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
               />
             </div>
+            </Fragment>
           ))}
           <div className="space-y-2">
             <Label>{t("timezone")}</Label>

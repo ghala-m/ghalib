@@ -1,3 +1,5 @@
+import { CollegeMajorSelect } from "@/components/app/CollegeMajorSelect";
+import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -68,11 +70,12 @@ function OnboardingPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [stage, setStage] = useState<0 | 1 | 2 | 3>(0);
   const { data: profile } = useQuery(profileQuery(user?.id));
-  const [student, setStudent] = useState({ full_name: "", university: "", major: "", current_term: "" });
+  const [student, setStudent] = useState({ full_name: "", university: "", college: "", major: "", current_term: "" });
   useEffect(() => {
     if (profile) setStudent(s => ({
       full_name: s.full_name || profile.full_name || "",
       university: s.university || profile.university || "",
+      college: s.college || profile.college || "",
       major: s.major || profile.major || "",
       current_term: s.current_term || profile.current_term || "",
     }));
@@ -180,6 +183,7 @@ function OnboardingPage() {
           onboarding_completed: true,
           full_name: student.full_name.trim(),
           university: student.university.trim(),
+          college: student.college.trim(),
           major: student.major.trim(),
           current_term: student.current_term.trim(),
           total_credits: credits,
@@ -257,12 +261,37 @@ function OnboardingPage() {
             setStage(1);
           }}>
             <h2 className="text-xl font-semibold">{t("studentDetails")}</h2>
-            {(["full_name", "university", "major", "current_term"] as const).map((key, i) => (
-              <div key={key} className="space-y-2">
-                <Label htmlFor={`setup-${key}`}>{[t("fullName"), t("university"), t("major"), t("currentTerm")][i]}</Label>
-                <Input id={`setup-${key}`} required maxLength={160} value={student[key]} onChange={e => setStudent(s => ({ ...s, [key]: e.target.value }))} />
-              </div>
-            ))}
+            {(["full_name", "university", "college", "major", "current_term"] as const).map((key) => {
+              if (key === "college") {
+                return (
+                  <CollegeMajorSelect
+                    key="college-major"
+                    idPrefix="setup"
+                    university={student.university}
+                    college={student.college}
+                    major={student.major}
+                    onChange={(v) => setStudent((s) => ({ ...s, ...v }))}
+                  />
+                );
+              }
+              if (key === "major") return null;
+              return (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={`setup-${key}`}>
+                    {key === "full_name" ? t("fullName") : key === "university" ? t("university") : t("currentTerm")}
+                  </Label>
+                  {key === "university" ? (
+                    <UniversitySelect
+                      id="setup-university"
+                      value={student.university}
+                      onChange={(v) => setStudent((s) => ({ ...s, university: v, college: "", major: "" }))}
+                    />
+                  ) : (
+                    <Input id={`setup-${key}`} required maxLength={160} value={student[key]} onChange={e => setStudent(s => ({ ...s, [key]: e.target.value }))} />
+                  )}
+                </div>
+              );
+            })}
             <Button type="submit">{t("next")}</Button>
           </form>
         )}
