@@ -181,6 +181,42 @@ export const COLLEGES: College[] = [
     dot: "bg-lime-500",
   },
   {
+    ar: "كلية النظم وهندسة الحاسوب",
+    en: "Systems and Computer Engineering",
+    chip: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30",
+    dot: "bg-indigo-500",
+  },
+  {
+    ar: "كلية الهندسة والطاقة",
+    en: "Engineering and Energy",
+    chip: "bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30",
+    dot: "bg-orange-500",
+  },
+  {
+    ar: "كلية إدارة وريادة الأعمال",
+    en: "Business Management and Entrepreneurship",
+    chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    dot: "bg-amber-500",
+  },
+  {
+    ar: "كلية الطب والعلوم الصحية",
+    en: "Medicine and Health Sciences",
+    chip: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
+    dot: "bg-rose-500",
+  },
+  {
+    ar: "كلية الدراسات التكاملية",
+    en: "Integrative Studies",
+    chip: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
+    dot: "bg-slate-500",
+  },
+  {
+    ar: "كلية كويت ماسترخت لإدارة الأعمال",
+    en: "Kuwait Maastricht Business School",
+    chip: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+    dot: "bg-amber-500",
+  },
+  {
     ar: "أخرى",
     en: "Other",
     chip: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",

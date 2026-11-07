@@ -402,16 +402,43 @@ export const UNIVERSITIES: University[] = [
       },
     ],
   },
-  // Listed so students can select them; faculties/majors could not be confirmed from public
-  // sources yet → the college & major pickers fall back to "Other" (typed manually).
   {
     official: "Abdullah Al Salem University",
     ar: "جامعة عبدالله السالم",
     en: "Abdullah Al Salem University",
     type: "public",
     aliases: ["AASU"],
-    verified: false,
-    colleges: [],
+    verified: false, // Engineering & Energy majors list is incomplete ("such as …")
+    colleges: [
+      {
+        ar: "كلية النظم وهندسة الحاسوب",
+        majors: [
+          m("Computer Systems Engineering", "هندسة أنظمة الحاسوب"),
+          m("Cybersecurity Engineering", "هندسة الأمن السيبراني"),
+          m("Data Science and Artificial Intelligence", "علوم البيانات والذكاء الاصطناعي"),
+          m("Software Engineering", "هندسة البرمجيات"),
+        ],
+      },
+      {
+        ar: "كلية الهندسة والطاقة",
+        majors: [
+          m("Biomedical Engineering", "الهندسة الطبية الحيوية"),
+          m("Energy Systems Engineering", "هندسة أنظمة الطاقة"),
+          m("Environmental Engineering", "الهندسة البيئية"),
+          m("Robotics and Mechatronics Engineering", "هندسة الروبوتات والميكاترونكس"),
+        ],
+      },
+      {
+        ar: "كلية إدارة وريادة الأعمال",
+        majors: [
+          m("Digital Marketing", "التسويق الرقمي"),
+          m("Entrepreneurship and Innovation", "ريادة الأعمال والابتكار"),
+          m("Supply Chain Management", "إدارة سلسلة التوريد"),
+        ],
+      },
+      { ar: "كلية الطب والعلوم الصحية", majors: [m("Medicine (MD)", "الطب (دكتور في الطب)")] },
+      { ar: "كلية الدراسات التكاملية", majors: [] },
+    ],
   },
   {
     official: "American International University - Kuwait",
@@ -419,17 +446,64 @@ export const UNIVERSITIES: University[] = [
     en: "American International University - Kuwait",
     type: "private",
     aliases: ["AIU"],
-    verified: false,
-    colleges: [],
+    verified: true,
+    colleges: [
+      {
+        ar: "كلية إدارة الأعمال",
+        majors: [
+          m("Entrepreneurship", "ريادة الأعمال"),
+          m("Marketing", "التسويق"),
+          m("Accounting", "المحاسبة"),
+          m("Finance", "المالية"),
+          m("Global Supply Chain Management", "إدارة سلاسل الإمداد العالمية"),
+          m("Management", "الإدارة"),
+        ],
+      },
+      {
+        ar: "كلية العمارة والتصميم",
+        majors: [m("Graphic Design", "التصميم الجرافيكي"), m("Interior Design", "التصميم الداخلي")],
+      },
+      {
+        ar: "كلية الهندسة",
+        majors: [
+          m("Chemical Engineering", "الهندسة الكيميائية"),
+          m("Biomedical Engineering", "الهندسة الطبية الحيوية"),
+          m("Civil Engineering", "الهندسة المدنية"),
+          m("Computer Science", "علوم الحاسوب"),
+          m("Electrical and Computer Engineering", "الهندسة الكهربائية وهندسة الحاسوب"),
+          m("Industrial Engineering", "الهندسة الصناعية"),
+          m("Mechanical Engineering", "الهندسة الميكانيكية"),
+        ],
+      },
+      {
+        ar: "كلية التربية",
+        majors: [
+          m("Education in Science", "التربية في العلوم"),
+          m("Secondary Education in English", "التعليم الثانوي في اللغة الإنجليزية"),
+          m("Secondary Education in Math", "التعليم الثانوي في الرياضيات"),
+          m("Elementary Education in Math", "التعليم الابتدائي في الرياضيات"),
+          m("Elementary Education in English", "التعليم الابتدائي في اللغة الإنجليزية"),
+        ],
+      },
+      { ar: "كلية الآداب والعلوم", majors: [m("Biotechnology", "التقنية الحيوية")] },
+    ],
   },
   {
     official: "Kuwait Maastricht Business School",
-    ar: "كلية الكويت ماستريخت لإدارة الأعمال",
+    ar: "كلية كويت ماسترخت لإدارة الأعمال",
     en: "Kuwait Maastricht Business School",
     type: "private",
-    aliases: ["KMBS"],
-    verified: false,
-    colleges: [],
+    aliases: ["KMBS", "Kuwait Maastricht College of Management"],
+    verified: true, // postgraduate only
+    colleges: [
+      {
+        ar: "كلية كويت ماسترخت لإدارة الأعمال",
+        majors: [
+          m("MBA Program", "ماجستير إدارة الأعمال (MBA)"),
+          m("MM Program", "ماجستير الإدارة العامة (MM)"),
+        ],
+      },
+    ],
   },
 ];
 
