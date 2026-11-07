@@ -743,6 +743,42 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_reports: {
+        Row: {
+          college: string | null
+          created_at: string
+          id: string
+          kind: string
+          major: string | null
+          message: string
+          status: string
+          university: string | null
+          user_id: string
+        }
+        Insert: {
+          college?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          major?: string | null
+          message: string
+          status?: string
+          university?: string | null
+          user_id: string
+        }
+        Update: {
+          college?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          major?: string | null
+          message?: string
+          status?: string
+          university?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       university_archives: {
         Row: {
           created_at: string

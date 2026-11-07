@@ -71,13 +71,13 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية الهندسة والبترول",
         majors: [
-          m("Chemical Engineering", "الهندسة الكيميائية"),
           m("Civil Engineering", "الهندسة المدنية"),
-          m("Computer Engineering", "هندسة الحاسوب"),
-          m("Electrical Engineering", "الهندسة الكهربائية"),
-          m("Industrial and Management Systems Engineering", "الهندسة الصناعية ونظم الإدارة"),
           m("Mechanical Engineering", "الهندسة الميكانيكية"),
+          m("Electrical Engineering", "الهندسة الكهربائية"),
+          m("Chemical Engineering", "الهندسة الكيميائية"),
           m("Petroleum Engineering", "هندسة البترول"),
+          m("Industrial and Management Engineering", "الهندسة الصناعية والإدارية"),
+          m("Computer Engineering", "هندسة الكمبيوتر"),
         ],
       },
       {
@@ -94,8 +94,9 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية علوم الحياة",
         majors: [
-          m("Food Science and Nutrition", "علوم الأغذية والتغذية"),
           m("Environmental Technology Management", "إدارة التقنية البيئية"),
+          m("Food Science and Human Nutrition", "علم الغذاء وتغذية الإنسان"),
+          m("Communication Disorders", "اضطرابات التواصل"),
         ],
       },
       {
@@ -120,21 +121,16 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية العلوم الطبية المساندة",
         majors: [
-          m("Occupational Therapy", "العلاج الوظيفي"),
-          m("Physical Therapy", "العلاج الطبيعي"),
+          m("Biomedical Science Technology", "تكنولوجيا العلوم الطبية الحيوية"),
           m("Radiologic Sciences", "علوم الأشعة"),
-          m("Medical Laboratory Sciences", "علوم المختبرات الطبية"),
+          m("Physical Therapy", "العلاج الطبيعي"),
+          m("Occupational Therapy", "العلاج المهني"),
           m("Health Information Management", "إدارة المعلومات الصحية"),
         ],
       },
       {
         ar: "كلية الصحة العامة",
-        majors: [
-          m("Environmental and Occupational Health", "الصحة البيئية والمهنية"),
-          m("Epidemiology and Biostatistics", "الوبائيات والإحصاء الحيوي"),
-          m("Health Policy and Management", "السياسات والإدارة الصحية"),
-          m("Social and Behavioral Sciences", "العلوم الاجتماعية والسلوكية"),
-        ],
+        majors: [m("Public Health Practice", "ممارسة الصحة العامة")],
       },
       { ar: "كلية الطب", majors: [m("Medicine", "الطب البشري")] },
       { ar: "كلية الصيدلة", majors: [m("Pharmacy (PharmD)", "الصيدلة (دكتور صيدلة)")] },
@@ -144,11 +140,8 @@ export const UNIVERSITIES: University[] = [
         majors: [m("Public Law", "القانون العام"), m("Private Law", "القانون الخاص")],
       },
       {
-        ar: "كلية العمارة والتصميم",
-        majors: [
-          m("Architecture", "العمارة"),
-          m("Visual Communication and Interiors", "الاتصال البصري والتصميم الداخلي"),
-        ],
+        ar: "كلية العمارة",
+        majors: [m("Architecture", "العمارة"), m("Interior Design", "التصميم الداخلي")],
       },
       {
         ar: "كلية الشريعة",
@@ -208,34 +201,37 @@ export const UNIVERSITIES: University[] = [
     verified: true,
     colleges: [
       {
-        ar: "كلية الآداب والعلوم",
+        ar: "كلية العلوم والفنون",
         majors: [
-          m("Design", "التصميم"),
-          m("Communication and Media", "الاتصال والإعلام"),
-          m("English", "اللغة الإنجليزية"),
+          m("Design (Graphic Design)", "التصميم (مسار التصميم الجرافيكي)"),
+          m("Media and Communication Studies", "الإعلام والدراسات الإعلامية"),
+          m("English Language and Literature", "اللغة الإنجليزية وآدابها"),
           m("International Relations", "العلاقات الدولية"),
-          m("Social and Behavioral Science", "العلوم الاجتماعية والسلوكية"),
-        ],
-      },
-      {
-        ar: "كلية الأعمال والاقتصاد",
-        majors: [
-          m("Accounting", "المحاسبة"),
-          m("Marketing", "التسويق"),
-          m("Management", "الإدارة"),
-          m("Finance", "المالية"),
-          m("Economics", "الاقتصاد"),
-          m("Human Resource Management", "إدارة الموارد البشرية"),
+          m(
+            "Social and Behavioral Sciences (Anthropology)",
+            "العلوم الاجتماعية والسلوكية (مسار الأنثروبولوجيا)",
+          ),
         ],
       },
       {
         ar: "كلية الهندسة والعلوم التطبيقية",
         majors: [
+          m("Computer Engineering", "هندسة الكمبيوتر"),
           m("Electrical Engineering", "الهندسة الكهربائية"),
-          m("Computer Engineering", "هندسة الحاسوب"),
-          m("Systems Engineering", "هندسة النظم"),
-          m("Computer Science", "علوم الحاسوب"),
+          m("Systems Engineering", "هندسة الأنظمة"),
+          m("Computer Science", "علوم الكمبيوتر"),
           m("Information Systems", "نظم المعلومات"),
+        ],
+      },
+      {
+        ar: "كلية الإدارة والاقتصاد",
+        majors: [
+          m("Accounting", "المحاسبة"),
+          m("Finance", "التمويل"),
+          m("Management", "الإدارة"),
+          m("Marketing", "التسويق"),
+          m("Economics", "الاقتصاد"),
+          m("Human Resource Management", "إدارة الموارد البشرية"),
         ],
       },
     ],
@@ -249,67 +245,31 @@ export const UNIVERSITIES: University[] = [
     verified: true,
     colleges: [
       {
-        ar: "كلية الهندسة والتقنية",
+        ar: "كلية الهندسة والتكنولوجيا",
         majors: [
-          m("Architectural Engineering", "الهندسة المعمارية"),
           m("Civil Engineering", "الهندسة المدنية"),
-          m("Industrial Engineering", "الهندسة الصناعية"),
-          m("Computer Engineering", "هندسة الحاسوب"),
+          m("Mechanical Engineering", "الهندسة الميكانيكية"),
           m("Electrical Engineering", "الهندسة الكهربائية"),
-          m("Mechanical Engineering", "الهندسة الميكانيكية"),
           m("Chemical Engineering", "الهندسة الكيميائية"),
-          m("Information System and Technology", "نظم وتقنية المعلومات"),
-          m("Telecommunications and Networking Technology", "تقنية الاتصالات والشبكات"),
-        ],
-      },
-      {
-        ar: "كلية إدارة الأعمال",
-        majors: [m("Accounting", "المحاسبة"), m("Business Administration", "إدارة الأعمال")],
-      },
-    ],
-  },
-  {
-    // Formerly "Australian College of Kuwait"; `official` is kept as the stored key.
-    official: "Australian College of Kuwait",
-    ar: "الجامعة الأسترالية",
-    en: "Australian University",
-    type: "private",
-    aliases: ["ACK", "AU", "Australian University of Kuwait", "Australian University (Kuwait)"],
-    verified: true,
-    colleges: [
-      {
-        ar: "كلية الهندسة",
-        majors: [
-          m("Civil Engineering", "الهندسة المدنية"),
-          m("Petroleum Engineering", "هندسة البترول"),
-          m("Mechanical Engineering", "الهندسة الميكانيكية"),
-          m("Electrical and Electronics Engineering", "هندسة الكهرباء والإلكترونيات"),
-          m("Computer Engineering", "هندسة الحاسوب"),
+          m("Industrial Engineering", "الهندسة الصناعية"),
+          m("Computer Engineering", "هندسة الكمبيوتر"),
+          m("Architectural Engineering", "الهندسة المعمارية"),
+          m(
+            "Information Systems and Technology / Telecommunications and Networking",
+            "نظم وتكنولوجيا المعلومات / تكنولوجيا الاتصالات والشبكات",
+          ),
         ],
       },
       {
         ar: "كلية إدارة الأعمال",
         majors: [
-          m("Management", "إدارة الأعمال / الإدارة"),
-          m("Marketing", "التسويق"),
-          m("Human Resources Management", "إدارة الموارد البشرية"),
           m("Accounting", "المحاسبة"),
-          m("Logistics", "الخدمات اللوجستية"),
-          m("Banking and Finance", "البنوك والتمويل"),
-          m("Management Information Systems", "إدارة نظم المعلومات"),
-          m("Events Management", "إدارة المناسبات"),
+          m("Finance", "التمويل"),
+          m("Human Resource Management", "إدارة الموارد البشرية"),
+          m("Marketing", "التسويق"),
+          m("Management Information Systems (MIS)", "نظم المعلومات الإدارية (MIS)"),
         ],
       },
-      {
-        ar: "كلية الطيران",
-        majors: [
-          m("Aircraft Maintenance (Mechanical)", "صيانة الطائرات - ميكانيكا"),
-          m("Aircraft Maintenance (Avionics)", "صيانة الطائرات - إلكترونيات الطيران"),
-          m("Aviation and Airport Operations", "تشغيل الطيران والمطارات"),
-          m("Air Traffic Control", "مراقبة الملاحة الجوية"),
-        ],
-      },
-      { ar: "قطاع الدراسات البحرية", majors: [m("Nautical Science", "العلوم البحرية / الملاحة")] },
     ],
   },
   {
@@ -408,7 +368,7 @@ export const UNIVERSITIES: University[] = [
     verified: true,
     colleges: [
       {
-        ar: "كلية الهندسة والتقنية",
+        ar: "كلية الهندسة والتكنولوجيا",
         majors: [
           m("Computer Engineering", "هندسة الحاسوب"),
           m("Electronics and Communications Engineering", "هندسة الإلكترونيات والاتصالات"),
@@ -423,10 +383,10 @@ export const UNIVERSITIES: University[] = [
     en: "Abdullah Al Salem University",
     type: "public",
     aliases: ["AASU"],
-    verified: false, // Engineering & Energy majors list is incomplete ("such as …")
+    verified: true,
     colleges: [
       {
-        ar: "كلية النظم وهندسة الحاسوب",
+        ar: "كلية هندسة الحاسوب والنظم",
         majors: [
           m("Computer Systems Engineering", "هندسة أنظمة الحاسوب"),
           m("Cybersecurity Engineering", "هندسة الأمن السيبراني"),
@@ -437,9 +397,11 @@ export const UNIVERSITIES: University[] = [
       {
         ar: "كلية الهندسة والطاقة",
         majors: [
-          m("Biomedical Engineering", "الهندسة الطبية الحيوية"),
+          m("Biomedical Engineering and Microsystems", "الهندسة الطبية الحيوية والآلات الدقيقة"),
+          m("Agricultural and Bioresource Engineering", "الهندسة الزراعية والموارد الحيوية"),
           m("Energy Systems Engineering", "هندسة أنظمة الطاقة"),
-          m("Environmental Engineering", "الهندسة البيئية"),
+          m("Environmental Engineering and Sustainability", "الهندسة البيئية والاستدامة"),
+          m("Materials Science and Engineering", "هندسة وعلوم المواد"),
           m("Robotics and Mechatronics Engineering", "هندسة الروبوتات والميكاترونكس"),
         ],
       },
@@ -448,10 +410,13 @@ export const UNIVERSITIES: University[] = [
         majors: [
           m("Digital Marketing", "التسويق الرقمي"),
           m("Entrepreneurship and Innovation", "ريادة الأعمال والابتكار"),
-          m("Supply Chain Management", "إدارة سلسلة التوريد"),
+          m("Supply Chain and Logistics Management", "إدارة سلسلة التوريد والخدمات اللوجستية"),
         ],
       },
-      { ar: "كلية الطب والعلوم الصحية", majors: [m("Medicine (MD)", "الطب (دكتور في الطب)")] },
+      {
+        ar: "كلية الطب والعلوم الصحية",
+        majors: [m("Medicine (MD)", "الطب (دكتور في الطب)")],
+      },
       { ar: "كلية الدراسات التكاملية", majors: [] },
     ],
   },

@@ -48,3 +48,26 @@ RETURNS void LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
   DELETE FROM public.university_archives WHERE delete_at < now();
 $$;
 REVOKE ALL ON FUNCTION public.purge_expired_university_archives() FROM PUBLIC, anon, authenticated;
+
+-- 3) "Report a missing item or mistake" in the University > College > Major pickers.
+CREATE TABLE IF NOT EXISTS public.catalog_reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  kind text NOT NULL CHECK (kind IN ('missing', 'error')),
+  university text,
+  college text,
+  major text,
+  message text NOT NULL CHECK (char_length(message) BETWEEN 1 AND 1000),
+  status text NOT NULL DEFAULT 'open',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.catalog_reports ENABLE ROW LEVEL SECURITY;
+
+-- Students can send and see their own reports; the owner reads all of them from the Supabase dashboard.
+CREATE POLICY "Users insert own catalog reports"
+  ON public.catalog_reports FOR INSERT TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users read own catalog reports"
+  ON public.catalog_reports FOR SELECT TO authenticated
+  USING (auth.uid() = user_id);

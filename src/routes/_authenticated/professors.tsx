@@ -20,8 +20,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
 import { profileQuery } from "@/lib/queries";
 import { professorsQuery, professorReviewsQuery, professorSummaryQuery } from "@/lib/professors";
-import { collegeLabel, collegeStyle, sameUniversity } from "@/lib/colleges";
+import { COLLEGES, collegeLabel, collegeStyle, sameUniversity } from "@/lib/colleges";
 import { collegesForUniversity, universityLabel } from "@/lib/universities";
+import { ReportCatalogIssue } from "@/components/app/ReportCatalogIssue";
 import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -167,7 +168,10 @@ function ProfessorsPage() {
     is_anonymous: true,
   });
   const dialogUniversity = myUniversity || newProfessor.university;
-  const dialogColleges = useMemo(() => collegesForUniversity(dialogUniversity), [dialogUniversity]);
+  const dialogColleges = useMemo(
+    () => [...collegesForUniversity(dialogUniversity), ...COLLEGES.filter((x) => x.ar === "أخرى")],
+    [dialogUniversity],
+  );
   const [reportId, setReportId] = useState("");
   const [reason, setReason] = useState("");
   const own = reviews.data?.find((r) => r.is_own);
@@ -749,6 +753,7 @@ function ProfessorsPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <ReportCatalogIssue university={dialogUniversity} college={newProfessor.department} />
               <Button
                 type="submit"
                 disabled={add.isPending || !newProfessor.department || !dialogUniversity.trim()}
