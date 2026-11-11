@@ -67,15 +67,15 @@ export function WeeklyPlanCard({
 
   return (
     <section className="panel mb-6 overflow-hidden p-0">
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-transparent p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-accent/20 via-accent/10 to-transparent p-5">
         <div className="flex items-center gap-3">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-md">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-md">
             <CalendarCheck2 className="size-5" />
           </span>
           <div>
             <h2 className="flex items-center gap-2 font-bold">
               {t("weeklyPlanTitle")}
-              <Sparkles className="size-4 text-fuchsia-500" />
+              <Sparkles className="size-4 text-accent" />
             </h2>
             <p className="text-xs text-muted-foreground">{courseName}</p>
           </div>
@@ -88,7 +88,7 @@ export function WeeklyPlanCard({
           className={
             text
               ? ""
-              : "rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-md hover:opacity-90"
+              : "rounded-xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-md hover:opacity-90"
           }
         >
           {gen.isPending ? (
@@ -113,11 +113,11 @@ export function WeeklyPlanCard({
             ))}
           </div>
         ) : text ? (
-          <div className="chat-md study-pop rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4 text-sm leading-7">
+          <div className="chat-md study-pop rounded-2xl border border-accent/20 bg-accent/5 p-4 text-sm leading-7">
             <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
           </div>
         ) : (
-          <p className="rounded-2xl border border-dashed border-violet-500/30 bg-violet-500/5 p-4 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-dashed border-accent/30 bg-accent/5 p-4 text-center text-sm text-muted-foreground">
             {t("weeklyPlanHint")}
           </p>
         )}

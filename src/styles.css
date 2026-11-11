@@ -372,21 +372,18 @@
 
 .study-document { line-height: 1.9; overflow-wrap: anywhere; }
 .study-document h1, .study-document h2, .study-document h3 { letter-spacing: 0; }
-.study-document > h2 { --sd: var(--cat-general); color: var(--sd); font-size: 1.15rem; font-weight: 800; border-inline-start: 4px solid var(--sd); background: color-mix(in oklab, var(--sd) 10%, transparent); padding: 8px 12px; border-radius: 0 12px 12px 0; margin-top: 1.5rem; }
+.study-document > h2 { --sd: var(--primary); color: var(--sd); font-size: 1.15rem; font-weight: 800; border-inline-start: 4px solid var(--sd); background: color-mix(in oklab, var(--sd) 10%, transparent); padding: 8px 12px; border-radius: 0 12px 12px 0; margin-top: 1.5rem; }
 [dir="rtl"] .study-document > h2 { border-radius: 12px 0 0 12px; }
-.study-document > h2:nth-of-type(4n+2) { --sd: var(--cat-major); }
-.study-document > h2:nth-of-type(4n+3) { --sd: var(--cat-college); }
-.study-document > h2:nth-of-type(4n+4) { --sd: var(--cat-major_elective); }
-.study-document > h3 { color: var(--cat-college); font-size: 1rem; font-weight: 700; }
+.study-document > h3 { color: var(--primary); font-size: 1rem; font-weight: 700; }
 .study-document ul, .study-document ol { padding-inline-start: 1.5rem; }
 .study-document ul { list-style-type: disc; }
 .study-document ol { list-style-type: decimal; }
 .study-document li { margin-block: .4rem; }
-.study-document li::marker { color: var(--cat-college); }
+.study-document li::marker { color: var(--accent); }
 .study-document strong { color: var(--primary); background: color-mix(in oklab, var(--accent) 22%, transparent); padding: 0 .25em; border-radius: 4px; }
 .study-document pre { background: var(--muted); padding: 12px; border-radius: 6px; overflow: auto; direction: ltr; text-align: left; white-space: pre-wrap; }
 .study-document code { font-size: .85em; }
-.study-document blockquote { border-inline-start: 3px solid var(--success); padding: 12px; background: color-mix(in oklab, var(--success) 8%, var(--card)); }
+.study-document blockquote { border-inline-start: 3px solid var(--accent); padding: 12px; background: color-mix(in oklab, var(--accent) 8%, var(--card)); }
 .study-document table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: .85rem; }
 .study-document th, .study-document td { border: 1px solid var(--border); padding: 8px; overflow-wrap: anywhere; }
 .study-document th { background: var(--secondary); }

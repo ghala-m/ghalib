@@ -223,7 +223,7 @@ export function GpaHistoryManager() {
               key={row.key}
               className={cn(
                 "flex items-center justify-between gap-3 px-3 py-2 text-sm",
-                !row.label && "bg-amber-500/10",
+                !row.label && "bg-accent/10",
               )}
             >
               <span className="min-w-0 truncate">
@@ -254,8 +254,8 @@ export function GpaHistoryManager() {
       )}
 
       {emptyTerms.length ? (
-        <div className="mb-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-3">
-          <p className="mb-2 text-xs font-medium text-amber-600 dark:text-amber-400">
+        <div className="mb-4 rounded-xl border border-dashed border-accent/40 bg-accent/5 p-3">
+          <p className="mb-2 text-xs font-medium text-foreground">
             {t("gpaHistoryEmptyTermsHint")}
           </p>
           <ul className="space-y-1.5">

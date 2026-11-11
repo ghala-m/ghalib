@@ -163,8 +163,8 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
     return (
       <div className="relative mx-auto max-w-lg">
         <ConfettiBurst trigger={burst} className="pointer-events-none absolute inset-0 z-10" />
-        <div className="study-pop overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-card to-rose-500/10 p-6 text-center shadow-lg">
-          <Trophy className="mx-auto size-8 text-amber-500" />
+        <div className="study-pop overflow-hidden rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-card to-accent/10 p-6 text-center shadow-lg">
+          <Trophy className="mx-auto size-8 text-accent" />
           <h3 className="mt-2 font-display text-xl font-bold">{c.doneTitle}</h3>
           <div className="relative mx-auto mt-4 size-36">
             <svg viewBox="0 0 120 120" className="size-full -rotate-90">
@@ -185,7 +185,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
                 strokeLinecap="round"
                 strokeDasharray={ring.circ}
                 strokeDashoffset={ring.offset}
-                className="stroke-emerald-500 transition-[stroke-dashoffset] duration-1000"
+                className="stroke-success transition-[stroke-dashoffset] duration-1000"
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -199,7 +199,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
             {missed.size > 0 && (
               <Button
-                className="bg-gradient-to-br from-rose-500 to-pink-600 text-white hover:opacity-90"
+                className="bg-gradient-to-br from-accent to-accent/70 text-accent-foreground hover:opacity-90"
                 onClick={() => restart([...missed])}
               >
                 <RefreshCw className="size-4" />
@@ -227,11 +227,11 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
             {c.cardWord} {pos + 1} / {total}
           </span>
           <span className="flex items-center gap-3 tabular-nums">
-            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 text-success">
               <Check className="size-3.5" />
               {known.size}
             </span>
-            <span className="inline-flex items-center gap-1 text-rose-600 dark:text-rose-400">
+            <span className="inline-flex items-center gap-1 text-destructive">
               <X className="size-3.5" />
               {missed.size}
             </span>
@@ -239,7 +239,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 transition-all duration-500"
+            className="h-full rounded-full bg-gradient-to-r from-accent via-accent to-accent/70 transition-all duration-500"
             style={{ width: `${Math.max(progress, 4)}%` }}
           />
         </div>
@@ -280,9 +280,9 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
               </span>
             </div>
             {/* back: answer */}
-            <div className="flashcard-face-3d flashcard-back-3d absolute inset-0 flex flex-col overflow-hidden rounded-3xl border-2 border-emerald-500/50 bg-card p-6 shadow-xl">
-              <span className="absolute -end-10 -top-10 size-40 rounded-full bg-emerald-500/10" />
-              <span className="relative z-10 inline-flex w-fit items-center rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-300">
+            <div className="flashcard-face-3d flashcard-back-3d absolute inset-0 flex flex-col overflow-hidden rounded-3xl border-2 border-success/50 bg-card p-6 shadow-xl">
+              <span className="absolute -end-10 -top-10 size-40 rounded-full bg-success/10" />
+              <span className="relative z-10 inline-flex w-fit items-center rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success">
                 ✓ {c.answer}
               </span>
               <div className="relative z-10 flex flex-1 items-center justify-center overflow-y-auto py-3 text-center">
@@ -302,7 +302,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
           variant="outline"
           disabled={!flipped}
           onClick={() => rate(false)}
-          className="h-12 rounded-2xl border-rose-500/40 text-rose-600 hover:bg-rose-500/10 hover:text-rose-600 disabled:opacity-40 dark:text-rose-300"
+          className="h-12 rounded-2xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 dark:text-destructive"
         >
           <X className="size-4" />
           {c.again}
@@ -311,7 +311,7 @@ export function FlashcardsViewer({ cards }: { cards: Flashcard[] }) {
           size="lg"
           disabled={!flipped}
           onClick={() => rate(true)}
-          className="h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md hover:opacity-90 disabled:opacity-40"
+          className="h-12 rounded-2xl bg-gradient-to-br from-success to-accent/70 text-accent-foreground shadow-md hover:opacity-90 disabled:opacity-40"
         >
           <Check className="size-4" />
           {c.known}

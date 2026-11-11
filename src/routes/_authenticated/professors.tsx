@@ -102,12 +102,12 @@ const COPY = {
 } as const;
 
 const AVATAR_GRADIENTS = [
-  "from-sky-500 to-blue-600",
-  "from-amber-400 to-orange-600",
-  "from-emerald-500 to-teal-600",
-  "from-violet-500 to-fuchsia-600",
-  "from-rose-500 to-pink-600",
-  "from-lime-500 to-green-600",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
 ] as const;
 
 function hashIndex(text: string) {
@@ -133,9 +133,9 @@ function Stars({ value, className }: { value: number; className?: string }) {
           className={cn(
             "size-4",
             value >= n - 0.25
-              ? "fill-amber-400 text-amber-400"
+              ? "fill-accent text-accent"
               : value >= n - 0.75
-                ? "fill-amber-400/50 text-amber-400"
+                ? "fill-accent/50 text-accent"
                 : "text-muted-foreground/40",
           )}
         />
@@ -229,18 +229,16 @@ function ProfessorsPage() {
       if (!user || !selected) throw new Error(t("signIn"));
       if (!review.rating || review.comment.trim().length < 10)
         throw new Error(t("reviewValidation"));
-      const { error } = await supabase
-        .from("professor_reviews")
-        .upsert(
-          {
-            professor_id: selected,
-            user_id: user.id,
-            ...review,
-            comment: review.comment.trim(),
-            course_name: review.course_name.trim(),
-          },
-          { onConflict: "professor_id,user_id" },
-        );
+      const { error } = await supabase.from("professor_reviews").upsert(
+        {
+          professor_id: selected,
+          user_id: user.id,
+          ...review,
+          comment: review.comment.trim(),
+          course_name: review.course_name.trim(),
+        },
+        { onConflict: "professor_id,user_id" },
+      );
       if (error) throw error;
     },
     onSuccess: async () => {
@@ -330,7 +328,7 @@ function ProfessorsPage() {
         <header className="mb-6 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-accent/20 via-card to-primary/10 p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-lg">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-lg">
                 <GraduationCap className="size-6" />
               </span>
               <div>
@@ -352,7 +350,7 @@ function ProfessorsPage() {
                 {c.yourUniversity}: {myUniversity}
               </span>
             ) : (
-              <p className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+              <p className="rounded-2xl border border-accent/30 bg-accent/10 p-3 text-sm">
                 {c.setUniversity}{" "}
                 <Link to="/profile" className="font-semibold text-accent underline">
                   {c.setUniversityLink}
@@ -421,11 +419,11 @@ function ProfessorsPage() {
                       <div key={n} className="flex items-center gap-2 text-xs">
                         <span className="flex w-6 items-center gap-0.5 tabular-nums">
                           {n}
-                          <Star className="size-3 fill-amber-400 text-amber-400" />
+                          <Star className="size-3 fill-accent text-accent" />
                         </span>
                         <span className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                           <span
-                            className="block h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                            className="block h-full rounded-full bg-gradient-to-r from-accent to-accent/70"
                             style={{ width: `${(distribution[n - 1]! / reviewTotal) * 100}%` }}
                           />
                         </span>
@@ -525,7 +523,7 @@ function ProfessorsPage() {
                         className={cn(
                           "size-8",
                           n <= review.rating
-                            ? "fill-amber-400 text-amber-400"
+                            ? "fill-accent text-accent"
                             : "text-muted-foreground/40",
                         )}
                       />
@@ -753,9 +751,15 @@ function ProfessorsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <ReportCatalogIssue university={dialogUniversity} college={newProfessor.department} />
+              <div className="pt-1">
+                <ReportCatalogIssue
+                  university={dialogUniversity}
+                  college={newProfessor.department}
+                />
+              </div>
               <Button
                 type="submit"
+                className="mt-2 w-full"
                 disabled={add.isPending || !newProfessor.department || !dialogUniversity.trim()}
               >
                 {add.isPending && <Loader2 className="size-4 animate-spin" />}

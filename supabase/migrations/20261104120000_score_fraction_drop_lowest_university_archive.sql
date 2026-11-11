@@ -28,12 +28,15 @@ CREATE TABLE IF NOT EXISTS public.university_archives (
 
 ALTER TABLE public.university_archives ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users read own university archives" ON public.university_archives;
 CREATE POLICY "Users read own university archives"
   ON public.university_archives FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users insert own university archives" ON public.university_archives;
 CREATE POLICY "Users insert own university archives"
   ON public.university_archives FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users delete own university archives" ON public.university_archives;
 CREATE POLICY "Users delete own university archives"
   ON public.university_archives FOR DELETE TO authenticated
   USING (auth.uid() = user_id);
@@ -65,9 +68,11 @@ CREATE TABLE IF NOT EXISTS public.catalog_reports (
 ALTER TABLE public.catalog_reports ENABLE ROW LEVEL SECURITY;
 
 -- Students can send and see their own reports; the owner reads all of them from the Supabase dashboard.
+DROP POLICY IF EXISTS "Users insert own catalog reports" ON public.catalog_reports;
 CREATE POLICY "Users insert own catalog reports"
   ON public.catalog_reports FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users read own catalog reports" ON public.catalog_reports;
 CREATE POLICY "Users read own catalog reports"
   ON public.catalog_reports FOR SELECT TO authenticated
   USING (auth.uid() = user_id);

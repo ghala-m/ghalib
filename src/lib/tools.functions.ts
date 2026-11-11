@@ -71,7 +71,7 @@ export const runStudyTool = createServerFn({ method: "POST" })
 
     const isStructured = data.tool === "flashcards" || data.tool === "quiz";
     const system = [
-      "You are Ghalib, an AI study assistant for university students.",
+      "You are Ghalib (written غالب in Arabic — never introduce yourself with any other name such as غازي), an AI study assistant for university students.",
       isStructured
         ? data.tool === "flashcards"
           ? 'Create 12-20 revision flashcards from the material. Output ONLY a raw JSON array (no markdown fences, no prose before or after) of objects shaped exactly { "q": string, "a": string }.'
