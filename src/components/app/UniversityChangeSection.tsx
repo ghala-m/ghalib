@@ -81,7 +81,7 @@ export function UniversityChangeSection({ current }: { current: string }) {
         if (error) throw error;
         return { switched: false };
       }
-      await switchUniversity(user.id, current, next);
+      await switchUniversity(next);
       return { switched: true };
     },
     onSuccess: async ({ switched }) => {
@@ -103,16 +103,16 @@ export function UniversityChangeSection({ current }: { current: string }) {
   const restore = useMutation({
     mutationFn: async (id: string) => {
       if (!user) throw new Error("no user");
-      await restoreArchive(user.id, id, current);
+      await restoreArchive(id);
     },
     onSuccess: async () => {
       setRestoreId(null);
       await refreshAll();
       toast.success(t("universityRestored"));
     },
-    onError: (e: Error) => {
+    onError: (e: { message?: string }) => {
       setRestoreId(null);
-      toast.error(e.message === "expired" ? t("archiveExpired") : t("saveFailed"));
+      toast.error(e.message?.includes("expired") ? t("archiveExpired") : t("saveFailed"));
     },
   });
 

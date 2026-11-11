@@ -814,6 +814,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      switch_university: {
+        Args: { p_new_university: string }
+        Returns: undefined
+      }
+      restore_university_archive: {
+        Args: { p_archive_id: string }
+        Returns: undefined
+      }
       list_professor_reviews: {
         Args: { p_professor_id: string }
         Returns: {
