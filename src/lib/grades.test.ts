@@ -50,7 +50,7 @@ describe("summarizeGrades", () => {
     const s = summarizeGrades([
       item({ id: "a", type: "exam", weight: 30, score_percent: 80 }),
       item({ id: "b", type: "exam", weight: 10, score_percent: 40 }),
-      item({ id: "c", type: "final", weight: 60 }),
+      item({ id: "c", type: "project", weight: 60 }),
     ]);
     expect(s.totalWeight).toBe(100);
     expect(s.gradedWeight).toBe(40);
@@ -85,7 +85,9 @@ describe("summarizeGrades", () => {
     });
 
     it("does nothing for a single item or when the flag is off", () => {
-      const single = summarizeGrades([item({ id: "q1", weight: 10, score_percent: 50, drop_lowest: true })]);
+      const single = summarizeGrades([
+        item({ id: "q1", weight: 10, score_percent: 50, drop_lowest: true }),
+      ]);
       expect(single.droppedIds.size).toBe(0);
       const off = summarizeGrades([
         item({ id: "q1", weight: 10, score_percent: 50 }),
@@ -99,8 +101,8 @@ describe("summarizeGrades", () => {
       const s = summarizeGrades([
         item({ id: "q1", type: "quiz", weight: 5, score_percent: 40, drop_lowest: true }),
         item({ id: "q2", type: "quiz", weight: 5, score_percent: 80, drop_lowest: true }),
-        item({ id: "h1", type: "homework", weight: 5, score_percent: 10 }),
-        item({ id: "h2", type: "homework", weight: 5, score_percent: 20 }),
+        item({ id: "h1", type: "assignment", weight: 5, score_percent: 10 }),
+        item({ id: "h2", type: "assignment", weight: 5, score_percent: 20 }),
       ]);
       expect([...s.droppedIds]).toEqual(["q1"]);
       expect(s.totalWeight).toBe(15);
@@ -121,7 +123,7 @@ describe("neededAverage", () => {
   it("computes the average required on the remainder", () => {
     const s = summarizeGrades([
       item({ id: "a", type: "exam", weight: 50, score_percent: 80 }),
-      item({ id: "b", type: "final", weight: 50 }),
+      item({ id: "b", type: "project", weight: 50 }),
     ]);
     expect(neededAverage(s, 90)).toBe(100); // (9000 - 4000) / 50
     expect(neededAverage(s, 70)).toBe(60);
@@ -131,7 +133,7 @@ describe("neededAverage", () => {
     expect(neededAverage(done, 90)).toBeNull();
     const partial = summarizeGrades([
       item({ id: "a", type: "exam", weight: 30, score_percent: 80 }),
-      item({ id: "b", type: "final", weight: 30 }),
+      item({ id: "b", type: "project", weight: 30 }),
     ]);
     expect(neededAverage(partial, 90)).toBeNull();
   });

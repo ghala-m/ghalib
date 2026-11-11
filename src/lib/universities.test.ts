@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { COLLEGES } from "./colleges";
-import { UNIVERSITIES, collegesForUniversity, findUniversity, majorsForCollege } from "./universities";
+import {
+  UNIVERSITIES,
+  collegesForUniversity,
+  findUniversity,
+  majorsForCollege,
+} from "./universities";
 
 describe("university catalog integrity", () => {
   it("has unique official names", () => {
