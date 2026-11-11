@@ -118,7 +118,7 @@ export function FeedbackButton({ className }: { className?: string | undefined }
                 <Button
                   asChild
                   size="lg"
-                  className="bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-500 text-white hover:opacity-90"
+                  className="bg-gradient-to-br from-accent via-accent to-accent/70 text-accent-foreground hover:opacity-90"
                 >
                   <a
                     href={`https://instagram.com/${CONTACT_INSTAGRAM}`}
@@ -131,11 +131,7 @@ export function FeedbackButton({ className }: { className?: string | undefined }
                 </Button>
               )}
               {CONTACT_WHATSAPP && (
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-emerald-600 text-white hover:bg-emerald-600/90"
-                >
+                <Button asChild size="lg" className="bg-success text-white hover:bg-success/90">
                   <a href={waHref} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="size-4" />
                     {c.whatsapp}

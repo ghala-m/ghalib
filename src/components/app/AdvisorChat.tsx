@@ -47,20 +47,20 @@ const TONE_ICON: Record<Insight["tone"], typeof Lightbulb> = {
   good: TrendingUp,
 };
 const TONE_CLASS: Record<Insight["tone"], string> = {
-  tip: "bg-gradient-to-br from-amber-400 to-orange-500 text-white",
-  warning: "bg-gradient-to-br from-rose-500 to-red-600 text-white",
-  good: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white",
+  tip: "bg-gradient-to-br from-accent to-accent/70 text-accent-foreground",
+  warning: "bg-gradient-to-br from-destructive to-destructive/70 text-white",
+  good: "bg-gradient-to-br from-success to-accent/70 text-accent-foreground",
 };
 const TONE_CARD: Record<Insight["tone"], string> = {
-  tip: "border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-transparent hover:border-amber-500/70",
+  tip: "border-accent/30 bg-gradient-to-br from-accent/10 to-transparent hover:border-accent/70",
   warning:
-    "border-rose-500/30 bg-gradient-to-br from-rose-500/10 to-transparent hover:border-rose-500/70",
-  good: "border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent hover:border-emerald-500/70",
+    "border-destructive/30 bg-gradient-to-br from-destructive/10 to-transparent hover:border-destructive/70",
+  good: "border-success/30 bg-gradient-to-br from-success/10 to-transparent hover:border-success/70",
 };
 const SUGGESTION_STYLE = [
-  "from-sky-500 to-blue-600",
-  "from-violet-500 to-fuchsia-600",
-  "from-emerald-500 to-teal-600",
+  "from-accent to-accent/70",
+  "from-accent to-accent/70",
+  "from-success to-accent/70",
 ] as const;
 
 function relativeDay(iso: string, lang: "ar" | "en") {
@@ -211,7 +211,7 @@ export function AdvisorChat() {
       >
         <div className="flex items-center gap-2 p-3">
           <Button
-            className="flex-1 justify-start gap-2 bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm hover:opacity-90"
+            className="flex-1 justify-start gap-2 bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-sm hover:opacity-90"
             onClick={() => {
               setSessionId(null);
               setInput("");
@@ -254,7 +254,7 @@ export function AdvisorChat() {
               )}
             >
               {s.id === sessionId ? (
-                <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-gradient-to-b from-amber-400 to-orange-600" />
+                <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-gradient-to-b from-accent to-accent/70" />
               ) : null}
               <span className="min-w-0 flex-1 truncate">{s.title || t("untitledChat")}</span>
               <span className="shrink-0 text-[10px] text-muted-foreground">
@@ -286,7 +286,7 @@ export function AdvisorChat() {
 
       {/* Active conversation */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex items-center gap-3 border-b border-border bg-gradient-to-l from-amber-500/15 via-transparent to-transparent px-4 py-3 sm:px-5 sm:py-4">
+        <div className="flex items-center gap-3 border-b border-border bg-gradient-to-l from-accent/15 via-transparent to-transparent px-4 py-3 sm:px-5 sm:py-4">
           <Button
             variant="outline"
             size="icon"
@@ -296,7 +296,7 @@ export function AdvisorChat() {
           >
             <History className="size-4" />
           </Button>
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-md">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-md">
             <Sparkles className="size-5" />
           </div>
           <div className="min-w-0">
@@ -306,7 +306,7 @@ export function AdvisorChat() {
                 : t("advisorTitle")}
             </h2>
             <p className="flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-              <span className="size-2 shrink-0 rounded-full bg-emerald-500" />
+              <span className="size-2 shrink-0 rounded-full bg-success" />
               {t("advisorHint")}
             </p>
           </div>
@@ -315,8 +315,8 @@ export function AdvisorChat() {
         <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-5">
           {messages.length === 0 && (
             <div className="space-y-5">
-              <div className="chat-in rounded-3xl bg-gradient-to-br from-amber-500/15 via-card to-violet-500/10 p-5 text-center">
-                <div className="mx-auto flex size-14 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-lg">
+              <div className="chat-in rounded-3xl bg-gradient-to-br from-accent/15 via-card to-accent/10 p-5 text-center">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-3xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-lg">
                   <Bot className="size-7" />
                 </div>
                 <h3 className="mt-3 font-display text-lg font-bold">{t("advisorTitle")}</h3>
@@ -328,7 +328,7 @@ export function AdvisorChat() {
               {insights.length > 0 ? (
                 <div>
                   <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                    <Sparkles className="size-3.5 text-amber-500" />
+                    <Sparkles className="size-3.5 text-accent" />
                     {t("advisorInsightsTitle")}
                   </p>
                   <div className="grid gap-2.5 sm:grid-cols-2">
@@ -410,7 +410,7 @@ export function AdvisorChat() {
               )}
             >
               {m.role === "assistant" ? (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-sm">
                   <Bot className="size-4" />
                 </div>
               ) : null}
@@ -419,7 +419,7 @@ export function AdvisorChat() {
                   "max-w-[88%] rounded-3xl px-4 py-3 text-sm leading-7 shadow-sm sm:max-w-[80%]",
                   m.role === "user"
                     ? "rounded-ee-md bg-gradient-to-br from-primary to-primary/80 text-primary-foreground whitespace-pre-wrap"
-                    : "chat-md rounded-es-md border border-amber-500/20 bg-card text-foreground",
+                    : "chat-md rounded-es-md border border-accent/20 bg-card text-foreground",
                 )}
               >
                 {m.role === "user" ? (
@@ -433,14 +433,14 @@ export function AdvisorChat() {
 
           {send.isPending && (
             <div className="chat-in flex items-end gap-2">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-sm">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-sm">
                 <Bot className="size-4" />
               </div>
-              <p className="flex items-center gap-2 rounded-3xl rounded-es-md border border-amber-500/20 bg-card px-4 py-3 text-sm text-muted-foreground">
+              <p className="flex items-center gap-2 rounded-3xl rounded-es-md border border-accent/20 bg-card px-4 py-3 text-sm text-muted-foreground">
                 <span className="flex gap-1">
-                  <span className="typing-dot size-2 rounded-full bg-amber-500" />
-                  <span className="typing-dot size-2 rounded-full bg-orange-500 [animation-delay:.15s]" />
-                  <span className="typing-dot size-2 rounded-full bg-rose-500 [animation-delay:.3s]" />
+                  <span className="typing-dot size-2 rounded-full bg-accent" />
+                  <span className="typing-dot size-2 rounded-full bg-accent [animation-delay:.15s]" />
+                  <span className="typing-dot size-2 rounded-full bg-accent [animation-delay:.3s]" />
                 </span>
                 {t("thinking")}
               </p>
@@ -468,7 +468,7 @@ export function AdvisorChat() {
             disabled={send.isPending || !input.trim()}
             size="icon"
             aria-label={t("send")}
-            className="size-11 shrink-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-md hover:opacity-90"
+            className="size-11 shrink-0 rounded-full bg-gradient-to-br from-accent to-accent/70 text-accent-foreground shadow-md hover:opacity-90"
           >
             {send.isPending ? (
               <Loader2 className="size-4 animate-spin" />

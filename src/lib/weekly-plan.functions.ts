@@ -56,7 +56,7 @@ export const generateWeeklyPlan = createServerFn({ method: "POST" })
       const result = await generateText({
         model,
         instructions: [
-          "You are Ghalib, a friendly study coach. Build a personalized plan for this one course.",
+          "You are Ghalib (written غالب in Arabic — never introduce yourself with any other name such as غازي), a friendly study coach. Build a personalized plan for this one course.",
           "Start with urgent reminders in the style: 'Remember! tomorrow you have a quiz — study chapters 4 and 5'.",
           data.options ? studyInstructions(data.options) : "Give a Markdown day-by-day plan for the next 7 days. Use only provided items; never invent dates or chapters.",
           "If nothing is pending, say so and plan review from the uploaded material or known course topics. Never invent source contents.",

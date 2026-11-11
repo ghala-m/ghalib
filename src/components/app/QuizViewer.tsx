@@ -120,15 +120,15 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
     const circ = 2 * Math.PI * r;
     const message = pct >= 90 ? c.perfect : pct >= 70 ? c.good : pct >= 50 ? c.ok : c.low;
     const ringColor =
-      pct >= 70 ? "stroke-emerald-500" : pct >= 50 ? "stroke-amber-500" : "stroke-rose-500";
+      pct >= 70 ? "stroke-success" : pct >= 50 ? "stroke-accent" : "stroke-destructive";
     const mistakes = questions
       .map((q, i) => ({ q, i }))
       .filter(({ q, i }) => answers[i] !== q.correctIndex);
     return (
       <div className="relative mx-auto max-w-2xl space-y-5">
         <ConfettiBurst trigger={burst} className="pointer-events-none absolute inset-0 z-10" />
-        <div className="study-pop rounded-3xl border border-violet-500/30 bg-gradient-to-br from-violet-500/15 via-card to-fuchsia-500/10 p-6 text-center shadow-lg">
-          <Trophy className="mx-auto size-8 text-violet-500" />
+        <div className="study-pop rounded-3xl border border-accent/30 bg-gradient-to-br from-accent/15 via-card to-accent/10 p-6 text-center shadow-lg">
+          <Trophy className="mx-auto size-8 text-accent" />
           <div className="relative mx-auto mt-3 size-36">
             <svg viewBox="0 0 120 120" className="size-full -rotate-90">
               <circle cx="60" cy="60" r={r} fill="none" strokeWidth="10" className="stroke-muted" />
@@ -153,7 +153,7 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
           </div>
           <p className="mt-3 text-sm text-muted-foreground">{message}</p>
           <Button
-            className="mt-4 bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white hover:opacity-90"
+            className="mt-4 bg-gradient-to-br from-accent to-accent/70 text-accent-foreground hover:opacity-90"
             onClick={restart}
           >
             <RotateCcw className="size-4" />
@@ -163,23 +163,26 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
 
         {mistakes.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-rose-600 dark:text-rose-300">
+            <h4 className="text-sm font-bold text-destructive">
               {c.review} ({mistakes.length})
             </h4>
             {mistakes.map(({ q, i }) => (
-              <div key={i} className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
+              <div
+                key={i}
+                className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4"
+              >
                 <p className="text-sm font-semibold">
                   {i + 1}. {q.prompt}
                 </p>
                 {answers[i] !== undefined && (
-                  <p className="mt-2 flex items-start gap-2 text-xs text-rose-600 dark:text-rose-300">
+                  <p className="mt-2 flex items-start gap-2 text-xs text-destructive">
                     <XCircle className="mt-0.5 size-3.5 shrink-0" />
                     <span>
                       {c.yourAnswer}: {q.options[answers[i]!]}
                     </span>
                   </p>
                 )}
-                <p className="mt-1 flex items-start gap-2 text-xs text-emerald-600 dark:text-emerald-300">
+                <p className="mt-1 flex items-start gap-2 text-xs text-success">
                   <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
                   <span>
                     {c.rightAnswer}: {q.options[q.correctIndex]}
@@ -218,10 +221,10 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
                 className={cn(
                   "size-7 rounded-full text-[11px] font-bold transition-all",
                   i === current &&
-                    "scale-110 ring-2 ring-violet-500 ring-offset-2 ring-offset-background",
+                    "scale-110 ring-2 ring-accent ring-offset-2 ring-offset-background",
                   a === undefined && "bg-muted text-muted-foreground hover:bg-muted/70",
-                  a !== undefined && a === qq.correctIndex && "bg-emerald-500 text-white",
-                  a !== undefined && a !== qq.correctIndex && "bg-rose-500 text-white",
+                  a !== undefined && a === qq.correctIndex && "bg-success text-white",
+                  a !== undefined && a !== qq.correctIndex && "bg-destructive text-white",
                 )}
               >
                 {i + 1}
@@ -230,7 +233,7 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
           })}
         </div>
         {streak >= 2 && (
-          <span className="study-pop inline-flex shrink-0 items-center gap-1 rounded-full bg-orange-500/15 px-2.5 py-1 text-xs font-bold text-orange-600 dark:text-orange-300">
+          <span className="study-pop inline-flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-xs font-bold text-foreground">
             <Flame className="size-3.5" />
             {streak} {c.streak}
           </span>
@@ -239,9 +242,9 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
 
       <div
         key={current}
-        className="study-pop rounded-3xl border border-violet-500/25 bg-card p-5 shadow-md sm:p-6"
+        className="study-pop rounded-3xl border border-accent/25 bg-card p-5 shadow-md sm:p-6"
       >
-        <span className="inline-flex items-center rounded-full bg-violet-500/15 px-3 py-1 text-xs font-bold text-violet-600 dark:text-violet-300">
+        <span className="inline-flex items-center rounded-full bg-accent/15 px-3 py-1 text-xs font-bold text-foreground">
           {c.question} {current + 1} / {total}
         </span>
         <p className="mt-3 text-base leading-relaxed font-semibold sm:text-lg">{q.prompt}</p>
@@ -262,29 +265,30 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
                 className={cn(
                   "flex items-center gap-3 rounded-2xl border-2 px-3 py-3 text-start text-sm transition-all",
                   !answered &&
-                    "border-border hover:-translate-y-0.5 hover:border-violet-500/60 hover:bg-violet-500/5 hover:shadow-md",
-                  answered && isCorrect && "border-emerald-500 bg-emerald-500/10",
-                  answered && isPicked && !isCorrect && "quiz-shake border-rose-500 bg-rose-500/10",
+                    "border-border hover:-translate-y-0.5 hover:border-accent/60 hover:bg-accent/5 hover:shadow-md",
+                  answered && isCorrect && "border-success bg-success/10",
+                  answered &&
+                    isPicked &&
+                    !isCorrect &&
+                    "quiz-shake border-destructive bg-destructive/10",
                   answered && !isPicked && !isCorrect && "border-border opacity-55",
                 )}
               >
                 <span
                   className={cn(
                     "flex size-8 shrink-0 items-center justify-center rounded-xl text-xs font-bold",
-                    !answered && "bg-violet-500/15 text-violet-600 dark:text-violet-300",
-                    answered && isCorrect && "bg-emerald-500 text-white",
-                    answered && isPicked && !isCorrect && "bg-rose-500 text-white",
+                    !answered && "bg-accent/15 text-foreground",
+                    answered && isCorrect && "bg-success text-white",
+                    answered && isPicked && !isCorrect && "bg-destructive text-white",
                     answered && !isPicked && !isCorrect && "bg-muted text-muted-foreground",
                   )}
                 >
                   {c.letters[oi] ?? oi + 1}
                 </span>
                 <span className="flex-1">{opt}</span>
-                {answered && isCorrect && (
-                  <CheckCircle2 className="size-5 shrink-0 text-emerald-500" />
-                )}
+                {answered && isCorrect && <CheckCircle2 className="size-5 shrink-0 text-success" />}
                 {answered && isPicked && !isCorrect && (
-                  <XCircle className="size-5 shrink-0 text-rose-500" />
+                  <XCircle className="size-5 shrink-0 text-destructive" />
                 )}
               </button>
             );
@@ -295,22 +299,15 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
           <div
             className={cn(
               "study-pop mt-4 rounded-2xl p-4 text-sm",
-              gotIt ? "bg-emerald-500/10" : "bg-rose-500/10",
+              gotIt ? "bg-success/10" : "bg-destructive/10",
             )}
           >
-            <p
-              className={cn(
-                "font-bold",
-                gotIt
-                  ? "text-emerald-600 dark:text-emerald-300"
-                  : "text-rose-600 dark:text-rose-300",
-              )}
-            >
+            <p className={cn("font-bold", gotIt ? "text-success" : "text-destructive")}>
               {gotIt ? c.correct : c.wrong}
             </p>
             {q.explanation && (
               <p className="mt-1.5 flex items-start gap-2 text-muted-foreground">
-                <Lightbulb className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                <Lightbulb className="mt-0.5 size-4 shrink-0 text-accent" />
                 <span>{q.explanation}</span>
               </p>
             )}
@@ -330,7 +327,7 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
           <Button
             disabled={answeredCount < total}
             onClick={() => setShowResults(true)}
-            className="bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white hover:opacity-90"
+            className="bg-gradient-to-br from-accent to-accent/70 text-accent-foreground hover:opacity-90"
           >
             {c.results}
           </Button>
@@ -338,7 +335,7 @@ export function QuizViewer({ questions }: { questions: QuizQuestion[] }) {
           <Button
             disabled={!answered}
             onClick={() => setCurrent((n) => n + 1)}
-            className="bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white hover:opacity-90"
+            className="bg-gradient-to-br from-accent to-accent/70 text-accent-foreground hover:opacity-90"
           >
             {c.next}
             <ArrowLeft className="size-4 ltr:hidden" />

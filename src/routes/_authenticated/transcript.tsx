@@ -283,7 +283,7 @@ const GRADE_TIER_STYLE: Record<ReturnType<typeof gradeTier>, string> = {
   a: "bg-cat-general/15 text-cat-general",
   b: "bg-accent/15 text-accent",
   c: "bg-cat-college/20 text-cat-college",
-  d: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  d: "bg-accent/25 text-foreground",
   f: "bg-destructive/15 text-destructive",
   p: "bg-muted text-muted-foreground",
   none: "bg-muted text-muted-foreground",

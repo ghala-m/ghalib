@@ -203,8 +203,8 @@ function ReimportPlanPage() {
             </div>
 
             {unresolved.length > 0 && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
-                <p className="font-medium text-amber-600 dark:text-amber-400">
+              <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 text-sm">
+                <p className="font-medium text-foreground">
                   {t("unresolvedPrereqsTitle")}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">{t("unresolvedPrereqsHint")}</p>
