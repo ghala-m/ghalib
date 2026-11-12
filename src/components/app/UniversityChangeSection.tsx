@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
-import { universityLabel } from "@/lib/universities";
+import { useCatalog } from "@/hooks/useCatalog";
 import {
   ARCHIVE_DAYS,
   daysLeft,
@@ -45,6 +45,7 @@ import {
  *  - Lists archived universities with a "restore" button until their 30 days run out.
  */
 export function UniversityChangeSection({ current }: { current: string }) {
+  const catalog = useCatalog();
   const { t, lang } = useI18n();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -150,7 +151,7 @@ export function UniversityChangeSection({ current }: { current: string }) {
             return (
               <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                 <div>
-                  <p className="font-medium">{universityLabel(a.university, lang)}</p>
+                  <p className="font-medium">{catalog.universityLabel(a.university, lang)}</p>
                   <p className="text-xs text-muted-foreground">
                     {restorable
                       ? t("archiveDaysLeft").replace("{days}", String(daysLeft(a.expires_at)))
@@ -181,8 +182,8 @@ export function UniversityChangeSection({ current }: { current: string }) {
             <AlertDialogDescription className="space-y-2">
               <span className="block">
                 {t("switchUniversityBody")
-                  .replace("{from}", universityLabel(current, lang))
-                  .replace("{to}", pending ? universityLabel(pending, lang) : "")}
+                  .replace("{from}", catalog.universityLabel(current, lang))
+                  .replace("{to}", pending ? catalog.universityLabel(pending, lang) : "")}
               </span>
               <span className="block font-medium text-foreground">
                 {t("switchUniversityGrace").replace("{days}", String(ARCHIVE_DAYS))}
@@ -213,9 +214,9 @@ export function UniversityChangeSection({ current }: { current: string }) {
               {t("restoreBody")
                 .replace(
                   "{to}",
-                  restoreTarget ? universityLabel(restoreTarget.university, lang) : "",
+                  restoreTarget ? catalog.universityLabel(restoreTarget.university, lang) : "",
                 )
-                .replace("{from}", universityLabel(current, lang) || "—")
+                .replace("{from}", catalog.universityLabel(current, lang) || "—")
                 .replace("{days}", String(ARCHIVE_DAYS))}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -239,7 +240,9 @@ export function UniversityChangeSection({ current }: { current: string }) {
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {viewed.data ? universityLabel(viewed.data.university, lang) : t("viewArchive")}
+              {viewed.data
+                ? catalog.universityLabel(viewed.data.university, lang)
+                : t("viewArchive")}
             </DialogTitle>
             <DialogDescription>{t("archiveReadOnlyNote")}</DialogDescription>
           </DialogHeader>

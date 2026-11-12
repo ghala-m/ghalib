@@ -5,6 +5,7 @@ import {
   collegesForUniversity,
   findUniversity,
   majorsForCollege,
+  universityLabel,
 } from "./universities";
 
 describe("university catalog integrity", () => {
@@ -47,5 +48,38 @@ describe("university catalog integrity", () => {
     const u = UNIVERSITIES.find((x) => x.colleges.some((c) => c.majors.length))!;
     const c = u.colleges.find((x) => x.majors.length)!;
     expect(majorsForCollege(u.official, c.ar).length).toBe(c.majors.length);
+  });
+});
+
+describe("catalog helpers with a database-provided list", () => {
+  const list = [
+    {
+      official: "New U",
+      ar: "جامعة جديدة",
+      en: "New U",
+      type: "private" as const,
+      aliases: ["Old Name U"],
+      verified: true,
+      colleges: [
+        { ar: "كلية الهندسة", majors: [{ en: "Civil", ar: "مدني" }] },
+        { ar: "كلية مضافة حديثاً", en: "Brand New", majors: [] },
+      ],
+    },
+  ];
+
+  it("finds by alias (renamed universities keep matching old saved values)", () => {
+    expect(findUniversity("old name u", list)?.official).toBe("New U");
+    expect(findUniversity("Kuwait University", list)).toBeUndefined();
+  });
+
+  it("keeps colleges an admin added that are not in COLLEGES", () => {
+    const names = collegesForUniversity("New U", list).map((c) => c.ar);
+    expect(names).toEqual(["كلية الهندسة", "كلية مضافة حديثاً"]);
+    expect(collegesForUniversity("New U", list)[1]!.en).toBe("Brand New");
+  });
+
+  it("resolves majors and labels from the given list", () => {
+    expect(majorsForCollege("New U", "كلية الهندسة", list)).toHaveLength(1);
+    expect(universityLabel("New U", "ar", list)).toBe("جامعة جديدة");
   });
 });

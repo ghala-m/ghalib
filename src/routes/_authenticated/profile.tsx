@@ -1,3 +1,4 @@
+import { useAdminRole } from "@/hooks/useCatalog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { Fragment, useEffect, useState } from "react";
@@ -158,15 +159,8 @@ function SectionCard({
 function ProfilePage() {
   const { t, lang, setLang } = useI18n();
   const { user } = useAuth();
-  // Only the site owner (row in app_admins) sees the catalog-reports link; false if the migration isn't applied.
-  const { data: isAdmin } = useQuery({
-    queryKey: ["is-app-admin", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("is_app_admin");
-      return !error && data === true;
-    },
-  });
+  // Admins (a row in app_admins) get a link to the control panel; null when not an admin / migration missing.
+  const { data: adminRole } = useAdminRole(user?.id);
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [locating, setLocating] = useState(false);
@@ -390,13 +384,13 @@ function ProfilePage() {
               <GraduationCap className="size-4" />
               {t("exportTranscript")}
             </Link>
-            {isAdmin ? (
+            {adminRole ? (
               <Link
-                to="/admin-reports"
+                to="/admin"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm transition-colors hover:bg-muted/50"
               >
                 <Flag className="size-4" />
-                {lang === "ar" ? "بلاغات الكتالوج" : "Catalog reports"}
+                {lang === "ar" ? "صفحة التحكم" : "Control panel"}
               </Link>
             ) : null}
           </div>

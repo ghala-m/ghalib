@@ -1,30 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Flag, Check, X, RotateCcw, ShieldAlert } from "lucide-react";
+import { Check, X, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/lib/i18n";
-import { universityLabel } from "@/lib/universities";
+import { useCatalog } from "@/hooks/useCatalog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-export const Route = createFileRoute("/_authenticated/admin-reports")({
-  head: () => ({ meta: [{ title: "Catalog reports — Ghalib" }] }),
-  component: AdminReportsPage,
-});
 
 type Status = "open" | "resolved" | "dismissed";
 type Filter = Status | "all";
 
 const TEXT = {
   ar: {
-    title: "بلاغات الكتالوج",
-    subtitle: "النقص والأخطاء في قوائم الجامعات والكليات والتخصصات التي أرسلها الطلاب.",
-    notAllowed: "هذه الصفحة للمشرف فقط.",
-    notAllowedHint:
-      "إذا كنت صاحب الموقع، أضف حسابك إلى جدول app_admins (الخطوات في ملف الـ migration).",
     open: "مفتوحة",
     resolved: "تمت المعالجة",
     dismissed: "مرفوضة",
@@ -41,14 +29,9 @@ const TEXT = {
     college: "الكلية",
     major: "التخصص",
     loading: "جارٍ التحميل…",
+    hint: "النقص والأخطاء في قوائم الجامعات والكليات والتخصصات التي أرسلها الطلاب. عدّل الكتالوج من تبويب «الكتالوج» ثم علّم البلاغ كمُعالَج.",
   },
   en: {
-    title: "Catalog reports",
-    subtitle:
-      "Missing items and mistakes in the university / college / major lists, sent by students.",
-    notAllowed: "This page is for the site admin only.",
-    notAllowedHint:
-      "If you own the site, add your account to the app_admins table (steps are in the migration file).",
     open: "Open",
     resolved: "Resolved",
     dismissed: "Dismissed",
@@ -65,29 +48,19 @@ const TEXT = {
     college: "College",
     major: "Major",
     loading: "Loading…",
+    hint: "Missing items and mistakes in the university / college / major lists, sent by students. Fix the catalog in the Catalog tab, then mark the report resolved.",
   },
 } as const;
 
-function AdminReportsPage() {
-  const { user } = useAuth();
-  const { lang, dir } = useI18n();
+export function ReportsTab() {
+  const { lang } = useI18n();
+  const catalog = useCatalog();
   const c = TEXT[lang];
   const qc = useQueryClient();
   const [filter, setFilter] = useState<Filter>("open");
 
-  const { data: isAdmin, isLoading: checking } = useQuery({
-    queryKey: ["is-app-admin", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("is_app_admin");
-      if (error) return false; // function missing (migration not run) → treat as not admin
-      return data === true;
-    },
-  });
-
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["catalog-reports"],
-    enabled: isAdmin === true,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("catalog_reports")
@@ -111,20 +84,6 @@ function AdminReportsPage() {
     onError: () => toast.error(c.failed),
   });
 
-  if (checking) {
-    return <div className="p-10 text-sm text-muted-foreground">{c.loading}</div>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div dir={dir} className="mx-auto max-w-xl px-4 py-16 text-center">
-        <ShieldAlert className="mx-auto mb-3 size-10 text-muted-foreground" />
-        <p className="font-semibold">{c.notAllowed}</p>
-        <p className="mt-2 text-sm text-muted-foreground">{c.notAllowedHint}</p>
-      </div>
-    );
-  }
-
   const counts = {
     all: reports.length,
     open: reports.filter((r) => r.status === "open").length,
@@ -135,17 +94,8 @@ function AdminReportsPage() {
   const filters: Filter[] = ["open", "resolved", "dismissed", "all"];
 
   return (
-    <div dir={dir} className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
-      <header className="mb-6 flex items-center gap-3">
-        <div className="flex size-11 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-sm">
-          <Flag className="size-5" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">{c.title}</h1>
-          <p className="text-sm text-muted-foreground">{c.subtitle}</p>
-        </div>
-      </header>
-
+    <div>
+      <p className="mb-4 text-sm text-muted-foreground">{c.hint}</p>
       <div className="mb-4 flex flex-wrap gap-2">
         {filters.map((f) => (
           <Button
@@ -188,7 +138,7 @@ function AdminReportsPage() {
                   {r.university ? (
                     <div>
                       <dt className="inline font-medium">{c.university}: </dt>
-                      <dd className="inline">{universityLabel(r.university, lang)}</dd>
+                      <dd className="inline">{catalog.universityLabel(r.university, lang)}</dd>
                     </div>
                   ) : null}
                   {r.college ? (

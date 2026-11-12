@@ -21,7 +21,7 @@ import { useI18n } from "@/lib/i18n";
 import { profileQuery } from "@/lib/queries";
 import { professorsQuery, professorReviewsQuery, professorSummaryQuery } from "@/lib/professors";
 import { COLLEGES, collegeLabel, collegeStyle, sameUniversity } from "@/lib/colleges";
-import { collegesForUniversity, universityLabel } from "@/lib/universities";
+import { useCatalog } from "@/hooks/useCatalog";
 import { ReportCatalogIssue } from "@/components/app/ReportCatalogIssue";
 import { UniversitySelect } from "@/components/app/UniversitySelect";
 import { Button } from "@/components/ui/button";
@@ -167,10 +167,11 @@ function ProfessorsPage() {
     comment: "",
     is_anonymous: true,
   });
+  const catalog = useCatalog();
   const dialogUniversity = myUniversity || newProfessor.university;
   const dialogColleges = useMemo(
-    () => [...collegesForUniversity(dialogUniversity), ...COLLEGES.filter((x) => x.ar === "أخرى")],
-    [dialogUniversity],
+    () => [...catalog.collegesFor(dialogUniversity), ...COLLEGES.filter((x) => x.ar === "أخرى")],
+    [catalog, dialogUniversity],
   );
   const [reportId, setReportId] = useState("");
   const [reason, setReason] = useState("");
@@ -708,7 +709,7 @@ function ProfessorsPage() {
                   <Label>{c.universityFallback}</Label>
                   <p className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2 text-sm">
                     <Building2 className="size-4 text-muted-foreground" />
-                    {universityLabel(myUniversity, lang)}
+                    {catalog.universityLabel(myUniversity, lang)}
                   </p>
                 </div>
               ) : (
@@ -722,7 +723,7 @@ function ProfessorsPage() {
                         ...p,
                         university: v,
                         // keep the college only if the new university actually has it
-                        department: collegesForUniversity(v).some((col) => col.ar === p.department)
+                        department: catalog.collegesFor(v).some((col) => col.ar === p.department)
                           ? p.department
                           : "",
                       }))
