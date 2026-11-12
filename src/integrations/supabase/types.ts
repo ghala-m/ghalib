@@ -743,6 +743,21 @@ export type Database = {
         }
         Relationships: []
       }
+      app_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       catalog_reports: {
         Row: {
           college: string | null
@@ -814,6 +829,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_app_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       switch_university: {
         Args: { p_new_university: string }
         Returns: undefined
