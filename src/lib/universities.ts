@@ -14,7 +14,7 @@ import { COLLEGES, type College } from "@/lib/colleges";
  * offer "Other" so students are never blocked.
  */
 export type Major = { en: string; ar: string };
-export type UniversityCollege = { ar: string; majors: Major[] };
+export type UniversityCollege = { ar: string; en?: string; majors: Major[] };
 export type University = {
   official: string;
   ar: string;
@@ -516,38 +516,60 @@ export const OTHER_OPTION = "__other__";
 
 const norm = (x: string | null | undefined) => (x ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
-export function findUniversity(stored: string | null | undefined): University | undefined {
+/**
+ * Lookup helpers. They take the catalog as an optional last/first argument: the app passes the live
+ * catalog loaded from the database (see useCatalog), while tests and the first paint fall back to
+ * the bundled UNIVERSITIES list below.
+ */
+export function findUniversity(
+  stored: string | null | undefined,
+  list: University[] = UNIVERSITIES,
+): University | undefined {
   const v = norm(stored);
   if (!v) return undefined;
-  return UNIVERSITIES.find((u) =>
+  return list.find((u) =>
     [u.official, u.ar, u.en, ...(u.aliases ?? [])].some((n) => norm(n) === v),
   );
 }
 
-export function universityLabel(stored: string | null | undefined, lang: "ar" | "en"): string {
-  const u = findUniversity(stored);
+export function universityLabel(
+  stored: string | null | undefined,
+  lang: "ar" | "en",
+  list: University[] = UNIVERSITIES,
+): string {
+  const u = findUniversity(stored, list);
   return u ? u[lang] : (stored ?? "").trim();
 }
 
 /**
  * Colleges offered for a university (Level 2 of the cascade). A custom or not-yet-detailed
- * university gets the generic list so the student is never blocked.
+ * university gets the generic list so the student is never blocked. A college that exists in the
+ * catalog but not in COLLEGES (added by an admin) is shown with the shared theme styling.
  */
-export function collegesForUniversity(stored: string | null | undefined): College[] {
-  const u = findUniversity(stored);
+export function collegesForUniversity(
+  stored: string | null | undefined,
+  list: University[] = UNIVERSITIES,
+): College[] {
+  const u = findUniversity(stored, list);
   if (!u || u.colleges.length === 0) return COLLEGES.filter((c) => c.ar !== "أخرى");
-  const names = u.colleges.map((c) => c.ar);
-  return names
-    .map((ar) => COLLEGES.find((c) => c.ar === ar))
-    .filter((c): c is College => Boolean(c));
+  return u.colleges.map(
+    (c) =>
+      COLLEGES.find((x) => x.ar === c.ar) ?? {
+        ar: c.ar,
+        en: c.en ?? c.ar,
+        chip: COLLEGES[0]!.chip,
+        dot: COLLEGES[0]!.dot,
+      },
+  );
 }
 
 /** Majors offered by a college of a university (Level 3 of the cascade). Empty = type it manually. */
 export function majorsForCollege(
   university: string | null | undefined,
   collegeAr: string | null | undefined,
+  list: University[] = UNIVERSITIES,
 ): Major[] {
-  const u = findUniversity(university);
+  const u = findUniversity(university, list);
   return u?.colleges.find((c) => c.ar === (collegeAr ?? "").trim())?.majors ?? [];
 }
 
@@ -556,7 +578,10 @@ export function majorLabel(
   collegeAr: string | null | undefined,
   stored: string | null | undefined,
   lang: "ar" | "en",
+  list: University[] = UNIVERSITIES,
 ): string {
-  const hit = majorsForCollege(university, collegeAr).find((x) => norm(x.en) === norm(stored));
+  const hit = majorsForCollege(university, collegeAr, list).find(
+    (x) => norm(x.en) === norm(stored),
+  );
   return hit ? hit[lang] : (stored ?? "").trim();
 }

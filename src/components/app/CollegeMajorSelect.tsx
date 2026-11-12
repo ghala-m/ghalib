@@ -3,7 +3,7 @@ import { ReportCatalogIssue } from "@/components/app/ReportCatalogIssue";
 import { Label } from "@/components/ui/label";
 import { SelectWithOther } from "@/components/app/SelectWithOther";
 import { useI18n } from "@/lib/i18n";
-import { collegesForUniversity, majorsForCollege } from "@/lib/universities";
+import { useCatalog } from "@/hooks/useCatalog";
 
 /**
  * Levels 2 and 3 of University > College > Major. The college list depends on the university and
@@ -23,8 +23,12 @@ export function CollegeMajorSelect({
   idPrefix?: string;
 }) {
   const { t, lang } = useI18n();
-  const colleges = useMemo(() => collegesForUniversity(university), [university]);
-  const majors = useMemo(() => majorsForCollege(university, college), [university, college]);
+  const catalog = useCatalog();
+  const colleges = useMemo(() => catalog.collegesFor(university), [catalog, university]);
+  const majors = useMemo(
+    () => catalog.majorsFor(university, college),
+    [catalog, university, college],
+  );
   const noUniversity = !university.trim();
 
   return (

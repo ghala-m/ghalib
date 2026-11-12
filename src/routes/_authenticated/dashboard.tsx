@@ -11,6 +11,7 @@ import { NextTermPreview } from "@/components/app/NextTermPreview";
 import { StudyStreak } from "@/components/app/StudyStreak";
 import { GpaTrendChart } from "@/components/app/GpaTrendChart";
 import { TermControls } from "@/components/app/TermControls";
+import { ArchiveExpiryBanner } from "@/components/app/ArchiveExpiryBanner";
 import { CalendarView } from "@/components/app/CalendarView";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -59,6 +60,8 @@ function DashboardPage() {
             </p>
           </div>
         </header>
+
+        <ArchiveExpiryBanner />
 
         <div className="mb-6">
           <TermControls />

@@ -1,3 +1,4 @@
+import { removeAllUserFiles } from "@/lib/storage-cleanup";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -36,10 +37,7 @@ export async function resetAccount(userId: string) {
   if (termsError) throw termsError;
 
   // Uploaded syllabi / major sheets live under a per-user folder.
-  const { data: files } = await supabase.storage.from("syllabi").list(userId, { limit: 1000 });
-  if (files?.length) {
-    await supabase.storage.from("syllabi").remove(files.map((f) => `${userId}/${f.name}`));
-  }
+  await removeAllUserFiles(userId);
 
   const { error: profileError } = await supabase
     .from("profiles")

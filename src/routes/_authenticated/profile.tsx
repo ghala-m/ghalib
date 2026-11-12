@@ -1,9 +1,11 @@
+import { useAdminRole } from "@/hooks/useCatalog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
 import { Fragment, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   FileOutput,
+  Flag,
   GraduationCap,
   Loader2,
   MapPin,
@@ -157,11 +159,16 @@ function SectionCard({
 function ProfilePage() {
   const { t, lang, setLang } = useI18n();
   const { user } = useAuth();
+  // Admins (a row in app_admins) get a link to the control panel; null when not an admin / migration missing.
+  const { data: adminRole } = useAdminRole(user?.id);
   const qc = useQueryClient();
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [locating, setLocating] = useState(false);
-  const briefingSaved = profile?.home_lat != null && profile.home_lng != null &&
-    profile.university_lat != null && profile.university_lng != null;
+  const briefingSaved =
+    profile?.home_lat != null &&
+    profile.home_lng != null &&
+    profile.university_lat != null &&
+    profile.university_lng != null;
 
   const [form, setForm] = useState({
     full_name: "",
@@ -272,30 +279,42 @@ function ProfilePage() {
         if (!form.home_lat || !form.home_lng || !form.university_lat || !form.university_lng) {
           throw new Error(t("briefingNeedsLocation"));
         }
-        if (!form.briefing_lead_minutes || !form.briefing_buffer_minutes ||
-          !Number.isInteger(lead) || lead < 15 || !Number.isInteger(buffer) || buffer < 0) {
+        if (
+          !form.briefing_lead_minutes ||
+          !form.briefing_buffer_minutes ||
+          !Number.isInteger(lead) ||
+          lead < 15 ||
+          !Number.isInteger(buffer) ||
+          buffer < 0
+        ) {
           throw new Error(t("briefingInvalidTiming"));
         }
       }
-      const { error } = await supabase.from("profiles").update({
-        home_lat: reset ? null : Number(form.home_lat),
-        home_lng: reset ? null : Number(form.home_lng),
-        home_address: reset ? null : form.home_address || null,
-        university_lat: reset ? null : Number(form.university_lat),
-        university_lng: reset ? null : Number(form.university_lng),
-        university_address: reset ? null : form.university_address || null,
-        commute_mode: reset ? "driving" : form.commute_mode,
-        briefing_enabled: reset ? false : form.briefing_enabled,
-        briefing_lead_minutes: reset ? 60 : lead,
-        briefing_buffer_minutes: reset ? 10 : buffer,
-      }).eq("id", user.id).select("id").single();
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          home_lat: reset ? null : Number(form.home_lat),
+          home_lng: reset ? null : Number(form.home_lng),
+          home_address: reset ? null : form.home_address || null,
+          university_lat: reset ? null : Number(form.university_lat),
+          university_lng: reset ? null : Number(form.university_lng),
+          university_address: reset ? null : form.university_address || null,
+          commute_mode: reset ? "driving" : form.commute_mode,
+          briefing_enabled: reset ? false : form.briefing_enabled,
+          briefing_lead_minutes: reset ? 60 : lead,
+          briefing_buffer_minutes: reset ? 10 : buffer,
+        })
+        .eq("id", user.id)
+        .select("id")
+        .single();
       if (error) throw error;
     },
     onSuccess: async (_, reset) => {
       await qc.invalidateQueries({ queryKey: ["profile"] });
       toast.success(t(reset ? "briefingResetDone" : "saved"));
     },
-    onError: (e: Error) => toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : e.message),
+    onError: (e: Error) =>
+      toast.error(isMissingSchemaError(e) ? t("migrationMissingHint") : e.message),
   });
 
   // Enable/disable straight from the saved summary — locations are already stored,
@@ -365,6 +384,15 @@ function ProfilePage() {
               <GraduationCap className="size-4" />
               {t("exportTranscript")}
             </Link>
+            {adminRole ? (
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm transition-colors hover:bg-muted/50"
+              >
+                <Flag className="size-4" />
+                {lang === "ar" ? "صفحة التحكم" : "Control panel"}
+              </Link>
+            ) : null}
           </div>
         </div>
 
@@ -395,29 +423,29 @@ function ProfilePage() {
         <div className="space-y-5">
           {fields.map((f, idx) => (
             <Fragment key={f.key}>
-            {/* University sits right after the name, inside Basic info. */}
-            {idx === 1 && (
-              <>
-                <UniversityChangeSection current={profile?.university ?? ""} />
-                <CollegeMajorSelect
-                  idPrefix="profile"
-                  university={profile?.university ?? ""}
-                  college={form.college}
-                  major={form.major}
-                  onChange={(v) => setForm((s) => ({ ...s, ...v }))}
+              {/* University sits right after the name, inside Basic info. */}
+              {idx === 1 && (
+                <>
+                  <UniversityChangeSection current={profile?.university ?? ""} />
+                  <CollegeMajorSelect
+                    idPrefix="profile"
+                    university={profile?.university ?? ""}
+                    college={form.college}
+                    major={form.major}
+                    onChange={(v) => setForm((s) => ({ ...s, ...v }))}
+                  />
+                </>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor={f.key}>{f.label}</Label>
+                <Input
+                  id={f.key}
+                  type={f.type ?? "text"}
+                  step={f.step}
+                  value={String(form[f.key] ?? "")}
+                  onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
                 />
-              </>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor={f.key}>{f.label}</Label>
-              <Input
-                id={f.key}
-                type={f.type ?? "text"}
-                step={f.step}
-                value={String(form[f.key] ?? "")}
-                onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
-              />
-            </div>
+              </div>
             </Fragment>
           ))}
           <div className="space-y-2">
@@ -462,16 +490,16 @@ function ProfilePage() {
                 aria-pressed={active}
                 className={cn(
                   "flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5 text-start transition-colors",
-                  active
-                    ? "border-accent bg-accent/10"
-                    : "border-border hover:bg-muted/50",
+                  active ? "border-accent bg-accent/10" : "border-border hover:bg-muted/50",
                 )}
               >
                 <span className="flex items-center gap-3">
                   <span
                     className={cn(
                       "flex size-9 items-center justify-center rounded-lg text-sm font-bold",
-                      active ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground",
+                      active
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-muted text-muted-foreground",
                     )}
                   >
                     {code === "ar" ? "ع" : "A"}
@@ -532,38 +560,60 @@ function ProfilePage() {
         className="mt-6"
         description={briefingSaved ? undefined : t("briefingHint")}
         action={
-          briefingSaved ? undefined :
-          <Switch
-            aria-label={t("briefingTitle")}
-            checked={form.briefing_enabled}
-            onCheckedChange={(checked) => {
-              if (checked && (!form.home_lat || !form.university_lat)) {
-                toast.error(t("briefingNeedsLocation"));
-                return;
-              }
-              if (
-                checked &&
-                (typeof Notification === "undefined" || Notification.permission !== "granted")
-              ) {
-                toast.error(t("briefingNeedsPush"));
-                return;
-              }
+          briefingSaved ? undefined : (
+            <Switch
+              aria-label={t("briefingTitle")}
+              checked={form.briefing_enabled}
+              onCheckedChange={(checked) => {
+                if (checked && (!form.home_lat || !form.university_lat)) {
+                  toast.error(t("briefingNeedsLocation"));
+                  return;
+                }
+                if (
+                  checked &&
+                  (typeof Notification === "undefined" || Notification.permission !== "granted")
+                ) {
+                  toast.error(t("briefingNeedsPush"));
+                  return;
+                }
 
-              setForm((s) => ({ ...s, briefing_enabled: checked }));
-            }}
-          />
+                setForm((s) => ({ ...s, briefing_enabled: checked }));
+              }}
+            />
+          )
         }
       >
         {briefingSaved ? (
           <div className="space-y-4">
             <dl className="grid gap-4 sm:grid-cols-2">
               {[
-                [t("homeLocation"), profile.home_address || `${profile.home_lat}, ${profile.home_lng}`],
-                [t("universityLocation"), profile.university_address || `${profile.university_lat}, ${profile.university_lng}`],
-                [t("commuteMode"), t(profile.commute_mode === "walking" ? "walking" : profile.commute_mode === "transit" ? "transit" : profile.commute_mode === "bicycling" ? "bicycling" : "driving")],
+                [
+                  t("homeLocation"),
+                  profile.home_address || `${profile.home_lat}, ${profile.home_lng}`,
+                ],
+                [
+                  t("universityLocation"),
+                  profile.university_address ||
+                    `${profile.university_lat}, ${profile.university_lng}`,
+                ],
+                [
+                  t("commuteMode"),
+                  t(
+                    profile.commute_mode === "walking"
+                      ? "walking"
+                      : profile.commute_mode === "transit"
+                        ? "transit"
+                        : profile.commute_mode === "bicycling"
+                          ? "bicycling"
+                          : "driving",
+                  ),
+                ],
                 [t("briefingLeadMinutes"), String(profile.briefing_lead_minutes)],
                 [t("briefingBufferMinutes"), String(profile.briefing_buffer_minutes)],
-                [t("briefingStatus"), t(profile.briefing_enabled ? "briefingActive" : "briefingInactive")],
+                [
+                  t("briefingStatus"),
+                  t(profile.briefing_enabled ? "briefingActive" : "briefingInactive"),
+                ],
               ].map(([label, value]) => (
                 <div key={label} className="min-w-0">
                   <dt className="text-xs text-muted-foreground">{label}</dt>
@@ -585,141 +635,154 @@ function ProfilePage() {
                 />
               </div>
             </div>
-            <Button variant="outline" disabled={saveBriefing.isPending} onClick={() => saveBriefing.mutate(true)}>
-              {saveBriefing.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            <Button
+              variant="outline"
+              disabled={saveBriefing.isPending}
+              onClick={() => saveBriefing.mutate(true)}
+            >
+              {saveBriefing.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
               {t("briefingReset")}
             </Button>
           </div>
         ) : (
-        <div className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="min-w-0 space-y-2">
-              <p className="flex items-center gap-1.5 text-sm font-medium">
-                <MapPin className="size-4 text-accent" />
-                {t("homeLocation")}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={locating}
-                onClick={() => useMyLocation("home")}
-              >
-                {locating ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="min-w-0 space-y-2">
+                <p className="flex items-center gap-1.5 text-sm font-medium">
+                  <MapPin className="size-4 text-accent" />
+                  {t("homeLocation")}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={locating}
+                  onClick={() => useMyLocation("home")}
+                >
+                  {locating ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <MapPin className="size-3.5" />
+                  )}
+                  {t("useMyLocation")}
+                </Button>
+                <MapsLinkInput
+                  onSelect={(place) =>
+                    setForm((s) => ({
+                      ...s,
+                      home_lat: place.lat.toFixed(6),
+                      home_lng: place.lng.toFixed(6),
+                      home_address: place.address || s.home_address,
+                    }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  {form.home_lat && form.home_lng
+                    ? `${form.home_lat}, ${form.home_lng}`
+                    : t("notSet")}
+                </p>
+              </div>
+
+              <div className="min-w-0 space-y-2">
+                <p className="flex items-center gap-1.5 text-sm font-medium">
+                  <MapPin className="size-4 text-accent" />
+                  {t("universityLocation")}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={locating}
+                  onClick={() => useMyLocation("university")}
+                >
                   <MapPin className="size-3.5" />
-                )}
-                {t("useMyLocation")}
-              </Button>
-              <MapsLinkInput
-                onSelect={(place) =>
-                  setForm((s) => ({
-                    ...s,
-                    home_lat: place.lat.toFixed(6),
-                    home_lng: place.lng.toFixed(6),
-                    home_address: place.address || s.home_address,
-                  }))
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                {form.home_lat && form.home_lng
-                  ? `${form.home_lat}, ${form.home_lng}`
-                  : t("notSet")}
-              </p>
+                  {t("useMyLocation")}
+                </Button>
+                <MapsLinkInput
+                  onSelect={(place) =>
+                    setForm((s) => ({
+                      ...s,
+                      university_lat: place.lat.toFixed(6),
+                      university_lng: place.lng.toFixed(6),
+                      university_address: place.address || s.university_address,
+                    }))
+                  }
+                />
+                <PlaceSearchInput
+                  defaultValue={form.university_address}
+                  onSelect={(place) =>
+                    setForm((s) => ({
+                      ...s,
+                      university_lat: place.lat.toFixed(6),
+                      university_lng: place.lng.toFixed(6),
+                      university_address: place.address,
+                    }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  {form.university_lat && form.university_lng
+                    ? form.university_address || t("locationSet")
+                    : t("notSet")}
+                </p>
+              </div>
             </div>
 
-            <div className="min-w-0 space-y-2">
-              <p className="flex items-center gap-1.5 text-sm font-medium">
-                <MapPin className="size-4 text-accent" />
-                {t("universityLocation")}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={locating}
-                onClick={() => useMyLocation("university")}
-              >
-                <MapPin className="size-3.5" />
-                {t("useMyLocation")}
-              </Button>
-              <MapsLinkInput
-                onSelect={(place) =>
-                  setForm((s) => ({
-                    ...s,
-                    university_lat: place.lat.toFixed(6),
-                    university_lng: place.lng.toFixed(6),
-                    university_address: place.address || s.university_address,
-                  }))
-                }
-              />
-              <PlaceSearchInput
-                defaultValue={form.university_address}
-                onSelect={(place) =>
-                  setForm((s) => ({
-                    ...s,
-                    university_lat: place.lat.toFixed(6),
-                    university_lng: place.lng.toFixed(6),
-                    university_address: place.address,
-                  }))
-                }
-              />
-              <p className="text-xs text-muted-foreground">
-                {form.university_lat && form.university_lng
-                  ? form.university_address || t("locationSet")
-                  : t("notSet")}
-              </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <Label>{t("commuteMode")}</Label>
+                <Select
+                  value={form.commute_mode}
+                  onValueChange={(v) => setForm((s) => ({ ...s, commute_mode: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="driving">{t("driving")}</SelectItem>
+                    <SelectItem value="walking">{t("walking")}</SelectItem>
+                    <SelectItem value="transit">{t("transit")}</SelectItem>
+                    <SelectItem value="bicycling">{t("bicycling")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="briefing-lead">{t("briefingLeadMinutes")}</Label>
+                <Input
+                  id="briefing-lead"
+                  type="number"
+                  min={15}
+                  value={form.briefing_lead_minutes}
+                  onChange={(e) =>
+                    setForm((s) => ({ ...s, briefing_lead_minutes: e.target.value }))
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="briefing-buffer">{t("briefingBufferMinutes")}</Label>
+                <Input
+                  id="briefing-buffer"
+                  type="number"
+                  min={0}
+                  value={form.briefing_buffer_minutes}
+                  onChange={(e) =>
+                    setForm((s) => ({ ...s, briefing_buffer_minutes: e.target.value }))
+                  }
+                />
+              </div>
             </div>
+
+            <Button
+              onClick={() => saveBriefing.mutate(false)}
+              disabled={saveBriefing.isPending || locating}
+            >
+              {saveBriefing.isPending && <Loader2 className="size-4 animate-spin" />}
+              {t("save")}
+            </Button>
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-1.5">
-              <Label>{t("commuteMode")}</Label>
-              <Select
-                value={form.commute_mode}
-                onValueChange={(v) => setForm((s) => ({ ...s, commute_mode: v }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="driving">{t("driving")}</SelectItem>
-                  <SelectItem value="walking">{t("walking")}</SelectItem>
-                  <SelectItem value="transit">{t("transit")}</SelectItem>
-                  <SelectItem value="bicycling">{t("bicycling")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="briefing-lead">{t("briefingLeadMinutes")}</Label>
-              <Input
-                id="briefing-lead"
-                type="number"
-                min={15}
-                value={form.briefing_lead_minutes}
-                onChange={(e) => setForm((s) => ({ ...s, briefing_lead_minutes: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="briefing-buffer">{t("briefingBufferMinutes")}</Label>
-              <Input
-                id="briefing-buffer"
-                type="number"
-                min={0}
-                value={form.briefing_buffer_minutes}
-                onChange={(e) =>
-                  setForm((s) => ({ ...s, briefing_buffer_minutes: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-
-          <Button onClick={() => saveBriefing.mutate(false)} disabled={saveBriefing.isPending || locating}>
-            {saveBriefing.isPending && <Loader2 className="size-4 animate-spin" />}
-            {t("save")}
-          </Button>
-        </div>
         )}
       </SectionCard>
 

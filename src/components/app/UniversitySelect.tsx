@@ -9,7 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
-import { OTHER_UNIVERSITY, UNIVERSITIES, findUniversity } from "@/lib/universities";
+import { OTHER_UNIVERSITY } from "@/lib/universities";
+import { useCatalog } from "@/hooks/useCatalog";
 
 /**
  * University picker shared by onboarding and settings. Catalog universities are stored by their
@@ -33,19 +34,20 @@ export function UniversitySelect({
   disabled?: boolean;
 }) {
   const { t, lang } = useI18n();
-  const known = findUniversity(value);
+  const catalog = useCatalog();
+  const known = catalog.find(value);
   const [otherMode, setOtherMode] = useState(Boolean(value.trim()) && !known);
   const [custom, setCustom] = useState(known ? "" : value);
 
   useEffect(() => {
-    const k = findUniversity(value);
+    const k = catalog.find(value);
     if (k) {
       setOtherMode(false);
     } else if (value.trim()) {
       setOtherMode(true);
       setCustom(value);
     }
-  }, [value]);
+  }, [value, catalog]);
 
   const selectValue = otherMode ? OTHER_UNIVERSITY : (known?.official ?? "");
 
@@ -67,7 +69,7 @@ export function UniversitySelect({
           <SelectValue placeholder={t("pickUniversity")} />
         </SelectTrigger>
         <SelectContent className="max-h-72">
-          {UNIVERSITIES.map((u) => (
+          {catalog.universities.map((u) => (
             <SelectItem key={u.official} value={u.official}>
               {u[lang]}
             </SelectItem>
