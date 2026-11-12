@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { removeCourseFiles } from "@/lib/storage-cleanup";
 
 /** Days the previous university's data can be restored. */
 export const ARCHIVE_DAYS = 30;
@@ -48,13 +49,31 @@ export async function listArchives(userId: string): Promise<UniversityArchive[]>
   return data ?? [];
 }
 
-/** Permanently removes archives past their delete date (runs whenever the student opens settings). */
+/**
+ * Permanently removes archives past their delete date (runs whenever the student opens settings),
+ * together with the uploaded files of the courses they contained.
+ */
 export async function purgeExpiredArchives(userId: string) {
-  await supabase
+  const now = new Date().toISOString();
+  const { data: expired } = await supabase
     .from("university_archives")
-    .delete()
+    .select("id,snapshot")
     .eq("user_id", userId)
-    .lt("delete_at", new Date().toISOString());
+    .lt("delete_at", now);
+  if (!expired?.length) return;
+
+  // Delete the files first: if the row delete succeeded and this failed, the files would be orphaned.
+  const snaps = expired.map((a) => a.snapshot as unknown as Snapshot | null);
+  const ids = snaps.flatMap((s) => (s?.tables?.["courses"] ?? []).map((c) => String(c["id"])));
+  // Files of a course that is live again (restored) must stay.
+  const { data: live } = await supabase.from("courses").select("id").eq("user_id", userId);
+  const liveIds = new Set((live ?? []).map((c) => c.id));
+  await removeCourseFiles(
+    userId,
+    ids.filter((id) => !liveIds.has(id)),
+  );
+
+  await supabase.from("university_archives").delete().eq("user_id", userId).lt("delete_at", now);
 }
 
 export function daysLeft(expiresAt: string): number {
