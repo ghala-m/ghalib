@@ -710,6 +710,8 @@ const dict = {
   archivedBadge: { ar: "أرشيف للقراءة فقط", en: "Read-only archive" },
   archiveDeletesOn: { ar: "يُحذف نهائياً بعد {days} يوم", en: "Permanently deleted in {days} days" },
   viewArchive: { ar: "عرض الأرشيف", en: "View archive" },
+  downloadArchive: { ar: "تنزيل نسخة", en: "Download backup" },
+  downloadArchiveFailed: { ar: "تعذّر تنزيل النسخة", en: "Couldn't download the backup" },
   archiveReadOnlyNote: {
     ar: "هذا أرشيف للقراءة فقط: لا يمكن تعديله أو استرجاعه بعد انتهاء مهلة الـ 30 يوماً، ويُحذف نهائياً بعد سنة.",
     en: "Read-only archive: it can't be edited or restored after the 30-day window, and is deleted after one more year.",

@@ -113,3 +113,35 @@ export async function readArchive(userId: string, archiveId: string) {
   const courses = (snap.tables["courses"] ?? []) as unknown as ArchivedCourse[];
   return { university: data.university, profile: snap.profile, courses };
 }
+
+/**
+ * Saves an archived university's full snapshot as a JSON file on the student's device — a portable
+ * backup they can keep before the archive is permanently deleted.
+ */
+export async function downloadArchive(userId: string, archiveId: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("university_archives")
+    .select("university,snapshot,created_at,expires_at,delete_at")
+    .eq("id", archiveId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("missing");
+
+  const blob = new Blob(
+    [JSON.stringify({ exported_at: new Date().toISOString(), user_id: userId, ...data }, null, 2)],
+    { type: "application/json" },
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const slug = data.university
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+  a.href = url;
+  a.download = `ghalib-archive-${slug || "university"}-${data.created_at.slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
