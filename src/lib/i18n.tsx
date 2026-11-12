@@ -832,10 +832,6 @@ const dict = {
     en: "Notification permission was denied — enable it in your browser's site settings and try again.",
   },
   searchLocation: { ar: "ابحث عن اسم المكان أو العنوان…", en: "Search for a place or address…" },
-  mapsKeyMissing: {
-    ar: "بحث المواقع يحتاج مفتاح خرائط جوجل (VITE_GOOGLE_MAPS_API_KEY) — راجع EMERGENCE.md.",
-    en: "Location search needs a Google Maps key (VITE_GOOGLE_MAPS_API_KEY) — see EMERGENCE.md.",
-  },
   mapsLoadFailed: { ar: "تعذّر تحميل خرائط جوجل.", en: "Couldn't load Google Maps." },
   locationSet: { ar: "الموقع محدَّد", en: "Location set" },
   pasteMapsLink: {
