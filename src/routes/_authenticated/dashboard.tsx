@@ -12,6 +12,7 @@ import { StudyStreak } from "@/components/app/StudyStreak";
 import { GpaTrendChart } from "@/components/app/GpaTrendChart";
 import { TermControls } from "@/components/app/TermControls";
 import { ArchiveExpiryBanner } from "@/components/app/ArchiveExpiryBanner";
+import { InstallAppCard } from "@/components/app/InstallAppCard";
 import { CalendarView } from "@/components/app/CalendarView";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -62,6 +63,7 @@ function DashboardPage() {
         </header>
 
         <ArchiveExpiryBanner />
+        <InstallAppCard variant="banner" />
 
         <div className="mb-6">
           <TermControls />
