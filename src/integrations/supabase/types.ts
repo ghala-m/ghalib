@@ -35,6 +35,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_admins: {
+        Row: {
+          created_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       briefing_log: {
         Row: {
           briefing_date: string
@@ -102,6 +120,142 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      catalog_colleges: {
+        Row: {
+          ar: string
+          en: string | null
+          id: string
+          sort: number
+          university_id: string
+        }
+        Insert: {
+          ar: string
+          en?: string | null
+          id?: string
+          sort?: number
+          university_id: string
+        }
+        Update: {
+          ar?: string
+          en?: string | null
+          id?: string
+          sort?: number
+          university_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_colleges_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_majors: {
+        Row: {
+          ar: string
+          college_id: string
+          en: string
+          id: string
+          sort: number
+        }
+        Insert: {
+          ar: string
+          college_id: string
+          en: string
+          id?: string
+          sort?: number
+        }
+        Update: {
+          ar?: string
+          college_id?: string
+          en?: string
+          id?: string
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_majors_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_reports: {
+        Row: {
+          college: string | null
+          created_at: string
+          id: string
+          kind: string
+          major: string | null
+          message: string
+          status: string
+          university: string | null
+          user_id: string
+        }
+        Insert: {
+          college?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          major?: string | null
+          message: string
+          status?: string
+          university?: string | null
+          user_id: string
+        }
+        Update: {
+          college?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          major?: string | null
+          message?: string
+          status?: string
+          university?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      catalog_universities: {
+        Row: {
+          active: boolean
+          aliases: string[]
+          ar: string
+          en: string
+          id: string
+          official: string
+          sort: number
+          type: string
+          verified: boolean
+        }
+        Insert: {
+          active?: boolean
+          aliases?: string[]
+          ar: string
+          en: string
+          id?: string
+          official: string
+          sort?: number
+          type?: string
+          verified?: boolean
+        }
+        Update: {
+          active?: boolean
+          aliases?: string[]
+          ar?: string
+          en?: string
+          id?: string
+          official?: string
+          sort?: number
+          type?: string
+          verified?: boolean
+        }
+        Relationships: []
       }
       chat_messages: {
         Row: {
@@ -743,144 +897,6 @@ export type Database = {
         }
         Relationships: []
       }
-      app_admins: {
-        Row: {
-          created_at: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      catalog_universities: {
-        Row: {
-          active: boolean
-          aliases: string[]
-          ar: string
-          en: string
-          id: string
-          official: string
-          sort: number
-          type: string
-          verified: boolean
-        }
-        Insert: {
-          active?: boolean
-          aliases?: string[]
-          ar: string
-          en: string
-          id?: string
-          official: string
-          sort?: number
-          type?: string
-          verified?: boolean
-        }
-        Update: {
-          active?: boolean
-          aliases?: string[]
-          ar?: string
-          en?: string
-          id?: string
-          official?: string
-          sort?: number
-          type?: string
-          verified?: boolean
-        }
-        Relationships: []
-      }
-      catalog_colleges: {
-        Row: {
-          ar: string
-          en: string | null
-          id: string
-          sort: number
-          university_id: string
-        }
-        Insert: {
-          ar: string
-          en?: string | null
-          id?: string
-          sort?: number
-          university_id: string
-        }
-        Update: {
-          ar?: string
-          en?: string | null
-          id?: string
-          sort?: number
-          university_id?: string
-        }
-        Relationships: []
-      }
-      catalog_majors: {
-        Row: {
-          ar: string
-          college_id: string
-          en: string
-          id: string
-          sort: number
-        }
-        Insert: {
-          ar: string
-          college_id: string
-          en: string
-          id?: string
-          sort?: number
-        }
-        Update: {
-          ar?: string
-          college_id?: string
-          en?: string
-          id?: string
-          sort?: number
-        }
-        Relationships: []
-      }
-      catalog_reports: {
-        Row: {
-          college: string | null
-          created_at: string
-          id: string
-          kind: string
-          major: string | null
-          message: string
-          status: string
-          university: string | null
-          user_id: string
-        }
-        Insert: {
-          college?: string | null
-          created_at?: string
-          id?: string
-          kind: string
-          major?: string | null
-          message: string
-          status?: string
-          university?: string | null
-          user_id: string
-        }
-        Update: {
-          college?: string | null
-          created_at?: string
-          id?: string
-          kind?: string
-          major?: string | null
-          message?: string
-          status?: string
-          university?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       university_archives: {
         Row: {
           created_at: string
@@ -916,42 +932,29 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_tech_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+      _archive_current_university: {
+        Args: { p_university: string }
+        Returns: undefined
       }
-      my_admin_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string | null
-      }
+      _university_tables: { Args: never; Returns: string[] }
+      _wipe_university_data: { Args: never; Returns: undefined }
       admin_list_admins: {
-        Args: Record<PropertyKey, never>
-        Returns: { user_id: string; email: string; role: string; created_at: string }[]
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          role: string
+          user_id: string
+        }[]
       }
+      admin_overview: { Args: never; Returns: Json }
+      admin_remove_admin: { Args: { p_user_id: string }; Returns: undefined }
       admin_set_admin: {
         Args: { p_email: string; p_role: string }
         Returns: undefined
       }
-      admin_remove_admin: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
-      admin_overview: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      is_app_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      switch_university: {
-        Args: { p_new_university: string }
-        Returns: undefined
-      }
-      restore_university_archive: {
-        Args: { p_archive_id: string }
-        Returns: undefined
-      }
+      is_app_admin: { Args: never; Returns: boolean }
+      is_tech_admin: { Args: never; Returns: boolean }
       list_professor_reviews: {
         Args: { p_professor_id: string }
         Returns: {
@@ -966,6 +969,7 @@ export type Database = {
           rating: number
         }[]
       }
+      my_admin_role: { Args: never; Returns: string }
       professor_rating_summary: {
         Args: never
         Returns: {
@@ -973,6 +977,15 @@ export type Database = {
           professor_id: string
           review_count: number
         }[]
+      }
+      purge_expired_university_archives: { Args: never; Returns: undefined }
+      restore_university_archive: {
+        Args: { p_archive_id: string }
+        Returns: undefined
+      }
+      switch_university: {
+        Args: { p_new_university: string }
+        Returns: undefined
       }
     }
     Enums: {
