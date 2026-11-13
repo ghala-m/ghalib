@@ -70,6 +70,8 @@ const COPY = {
     heroHint: "تجارب الطلاب الحقيقية مع دكاترة جامعتك — شارك تجربتك وساعد زملاءك على اختيار شعبهم.",
     back: "كل الدكاترة",
     reviewsTitle: "تقييمات الطلاب",
+    respectNotice:
+      "يرجى الالتزام بالاحترام: التقييم يخص التجربة الأكاديمية فقط، ولا يُسمح بالسب أو الإساءة أو التعدي على الشخص. التقييمات المخالفة تُحذف.",
     distribution: "توزيع التقييمات",
     pickCollege: "اختر الكلية",
     pickUniversityFirst: "اختر الجامعة أولاً",
@@ -90,6 +92,8 @@ const COPY = {
       "Real student experiences with your university's professors — share yours and help classmates pick their sections.",
     back: "All professors",
     reviewsTitle: "Student reviews",
+    respectNotice:
+      "Please keep it respectful: reviews are about the academic experience only. Insults, abuse and personal attacks are not allowed and violating reviews are removed.",
     distribution: "Rating breakdown",
     pickCollege: "Choose a college",
     pickUniversityFirst: "Choose a university first",
@@ -165,7 +169,7 @@ function ProfessorsPage() {
     rating: 0,
     course_name: "",
     comment: "",
-    is_anonymous: true,
+    is_anonymous: false,
   });
   const catalog = useCatalog();
   const dialogUniversity = myUniversity || newProfessor.university;
@@ -186,7 +190,7 @@ function ProfessorsPage() {
             comment: own.comment,
             is_anonymous: own.is_anonymous,
           }
-        : { rating: 0, course_name: "", comment: "", is_anonymous: true },
+        : { rating: 0, course_name: "", comment: "", is_anonymous: false },
     );
   }, [selected, own]);
 
@@ -456,11 +460,9 @@ function ProfessorsPage() {
                           <span className="flex size-8 items-center justify-center rounded-full bg-muted">
                             <UserRound className="size-4 text-muted-foreground" />
                           </span>
-                          {r.is_anonymous
+                          {r.is_anonymous || !r.author_name
                             ? t("anonymousStudent")
-                            : r.author_name === "Student"
-                              ? t("namedStudent")
-                              : r.author_name}
+                            : `${r.author_name}•••`}
                         </span>
                         <Stars value={r.rating} />
                       </div>
@@ -477,10 +479,14 @@ function ProfessorsPage() {
                       <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">
                         {r.comment}
                       </p>
-                      <div className="mt-2 flex justify-end">
+                      <div className="mt-2 flex items-start justify-between gap-2">
+                        <p className="text-[11px] leading-relaxed text-muted-foreground">
+                          {c.respectNotice}
+                        </p>
                         <Button
                           variant="ghost"
                           size="icon"
+                          className="shrink-0"
                           title={t(r.is_own ? "remove" : "reportReview")}
                           aria-label={t(r.is_own ? "remove" : "reportReview")}
                           disabled={remove.isPending}
