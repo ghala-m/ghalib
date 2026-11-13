@@ -1,8 +1,15 @@
 import { useState } from "react";
-import { Download, MoreVertical, PlusSquare, Share, Smartphone, X } from "lucide-react";
+import { Download, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useInstallPrompt } from "@/hooks/useInstallPrompt";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import {
+  InstallPerks,
+  PhoneIllustration,
+  StepIllustration,
+  type StepKind,
+} from "@/components/app/InstallGraphics";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +36,10 @@ const TEXT = {
     other1: "افتح قائمة المتصفح",
     other2: "اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»",
     dismiss: "إخفاء",
+    perks: ["وصول أسرع", "بدون شريط المتصفح", "تنبيهات المواعيد"] as [string, string, string],
+    shareSheetAdd: "إضافة إلى الشاشة الرئيسية",
+    add: "إضافة",
+    installApp: "تثبيت التطبيق",
   },
   en: {
     title: "Install Ghalib as an app",
@@ -45,32 +56,38 @@ const TEXT = {
     other1: "Open the browser menu",
     other2: "Choose “Install app” or “Add to Home screen”",
     dismiss: "Dismiss",
+    perks: ["Faster access", "No browser bar", "Deadline alerts"] as [string, string, string],
+    shareSheetAdd: "Add to Home Screen",
+    add: "Add",
+    installApp: "Install app",
   },
 } as const;
 
 function Steps({ lang, ios }: { lang: "ar" | "en"; ios: boolean }) {
   const c = TEXT[lang];
-  const rows = ios
+  const rows: { kind: StepKind; text: string; label?: string }[] = ios
     ? [
-        { icon: Share, text: c.ios1 },
-        { icon: PlusSquare, text: c.ios2 },
-        { icon: Download, text: c.ios3 },
+        { kind: "ios-share", text: c.ios1 },
+        { kind: "ios-add", text: c.ios2, label: c.shareSheetAdd },
+        { kind: "ios-confirm", text: c.ios3, label: c.add },
       ]
     : [
-        { icon: MoreVertical, text: c.other1 },
-        { icon: Download, text: c.other2 },
+        { kind: "menu", text: c.other1 },
+        { kind: "install", text: c.other2, label: c.installApp },
       ];
   return (
     <div className="space-y-3 text-sm">
       <p className="text-muted-foreground">{ios ? c.iosIntro : c.otherIntro}</p>
-      <ol className="space-y-2">
+      <ol className="space-y-3">
         {rows.map((r, i) => (
-          <li key={r.text} className="flex items-center gap-3 rounded-xl border bg-card p-3">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
-              {i + 1}
-            </span>
-            <r.icon className="size-4 shrink-0 text-muted-foreground" />
-            <span>{r.text}</span>
+          <li key={r.kind} className="rounded-2xl border bg-card p-3">
+            <div className="mb-2 flex items-center gap-2.5">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
+                {i + 1}
+              </span>
+              <span className="font-medium">{r.text}</span>
+            </div>
+            <StepIllustration kind={r.kind} {...(r.label ? { label: r.label } : {})} />
           </li>
         ))}
       </ol>
@@ -118,27 +135,29 @@ export function InstallAppCard({ variant = "card" }: { variant?: "card" | "banne
   return (
     <>
       <div
-        className={
-          variant === "banner"
-            ? "mb-6 flex items-start gap-3 rounded-2xl border border-accent/40 bg-accent/10 p-4"
-            : "flex items-start gap-3 rounded-2xl border bg-card p-4"
-        }
+        className={cn(
+          "relative overflow-hidden rounded-2xl border",
+          variant === "banner" ? "mb-6 border-accent/40 bg-accent/10 p-4" : "bg-card p-5",
+        )}
       >
-        <Smartphone className="mt-0.5 size-5 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 text-sm">
-          <p className="font-semibold">{c.title}</p>
-          <p className="mt-0.5 text-muted-foreground">{c.body}</p>
-          <Button size="sm" className="mt-3" onClick={onInstall}>
-            <Download className="me-1 size-4" />
-            {c.install}
-          </Button>
+        <div className="flex items-center gap-4">
+          <PhoneIllustration size={variant === "banner" ? "sm" : "lg"} />
+          <div className="min-w-0 flex-1 text-sm">
+            <p className={cn("font-bold", variant === "banner" ? "" : "text-base")}>{c.title}</p>
+            <p className="mt-1 text-muted-foreground">{c.body}</p>
+            {variant === "card" ? <InstallPerks items={c.perks} /> : null}
+            <Button size="sm" className="mt-3" onClick={onInstall}>
+              <Download className="me-1 size-4" />
+              {c.install}
+            </Button>
+          </div>
         </div>
         {variant === "banner" ? (
           <button
             type="button"
             aria-label={c.dismiss}
             onClick={dismiss}
-            className="rounded p-1 text-muted-foreground hover:bg-muted"
+            className="absolute end-2 top-2 rounded p-1 text-muted-foreground hover:bg-muted"
           >
             <X className="size-4" />
           </button>
@@ -146,7 +165,7 @@ export function InstallAppCard({ variant = "card" }: { variant?: "card" | "banne
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent dir={dir} className="sm:max-w-md">
+        <DialogContent dir={dir} className="max-h-[90vh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{c.howTitle}</DialogTitle>
             <DialogDescription className="sr-only">{c.howTitle}</DialogDescription>
