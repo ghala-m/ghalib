@@ -1,3 +1,4 @@
+import { PrivacyLink } from "@/components/app/PrivacyLink";
 import { useAdminRole } from "@/hooks/useCatalog";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isMissingSchemaError } from "@/lib/db-errors";
@@ -38,6 +39,7 @@ import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { AchievementsBadges } from "@/components/app/AchievementsBadges";
 import { GpaHistoryManager } from "@/components/app/GpaHistoryManager";
+import { InstallAppCard } from "@/components/app/InstallAppCard";
 import {
   AccentPicker,
   BackgroundPatternPicker,
@@ -527,6 +529,14 @@ function ProfilePage() {
           <BackgroundPatternPicker />
         </div>
       </SectionCard>
+
+      {/* Install as an app (PWA) */}
+      <div className="mt-6">
+        <InstallAppCard />
+        <p className="mt-3 text-xs text-muted-foreground">
+          <PrivacyLink />
+        </p>
+      </div>
 
       {/* Every reminder control in one place */}
       <NotificationSettings userId={user?.id} />

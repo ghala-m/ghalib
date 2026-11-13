@@ -1,3 +1,4 @@
+import { PrivacyLink } from "@/components/app/PrivacyLink";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -122,6 +123,9 @@ function Index() {
 
       <footer className="mx-auto max-w-6xl px-6 py-10 text-sm text-muted-foreground">
         {t("appName")} — {t("tagline")}
+        <p className="mt-2 text-xs">
+          <PrivacyLink />
+        </p>
         <CopyrightNotice className="mt-2 text-xs" />
       </footer>
       <FeedbackButton />

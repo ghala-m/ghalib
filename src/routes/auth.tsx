@@ -1,3 +1,4 @@
+import { PrivacyLink } from "@/components/app/PrivacyLink";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ScrollText } from "lucide-react";
@@ -16,7 +17,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — Ghalib Academic Assistant" },
-      { name: "description", content: "Sign in or create your Ghalib account to manage your courses." },
+      {
+        name: "description",
+        content: "Sign in or create your Ghalib account to manage your courses.",
+      },
       { property: "og:title", content: "Sign in — Ghalib Academic Assistant" },
       { property: "og:description", content: "Access your AI-powered academic dashboard." },
     ],
@@ -50,7 +54,8 @@ function AuthPage() {
       if (error) {
         const msg = error.message.toLowerCase();
         if (msg.includes("email not confirmed")) toast.error(t("authEmailNotConfirmed"));
-        else if (msg.includes("invalid login credentials")) toast.error(t("authInvalidCredentials"));
+        else if (msg.includes("invalid login credentials"))
+          toast.error(t("authInvalidCredentials"));
         else if (isNetworkError(msg)) toast.error(t("authNetworkError"), { duration: 10000 });
         else toast.error(error.message);
         return;
@@ -77,7 +82,10 @@ function AuthPage() {
         },
       });
       if (error) {
-        toast.error(isNetworkError(error.message.toLowerCase()) ? t("authNetworkError") : error.message, { duration: 10000 });
+        toast.error(
+          isNetworkError(error.message.toLowerCase()) ? t("authNetworkError") : error.message,
+          { duration: 10000 },
+        );
         return;
       }
       // Supabase returns a user with no identities (and no error) when the email is already taken.
@@ -122,7 +130,10 @@ function AuthPage() {
   }
 
   return (
-    <div dir={dir} className="grid-paper flex min-h-screen flex-col items-center justify-center px-6 py-12">
+    <div
+      dir={dir}
+      className="grid-paper flex min-h-screen flex-col items-center justify-center px-6 py-12"
+    >
       <div className="mb-6 flex w-full max-w-md items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -147,7 +158,13 @@ function AuthPage() {
             <form className="space-y-4 pt-4" onSubmit={signIn}>
               <div className="space-y-2">
                 <Label htmlFor="email">{t("email")}</Label>
-                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">{t("password")}</Label>
@@ -173,7 +190,13 @@ function AuthPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email2">{t("email")}</Label>
-                <Input id="email2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  id="email2"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password2">{t("password")}</Label>
@@ -203,7 +226,10 @@ function AuthPage() {
           {t("continueGoogle")}
         </Button>
       </div>
-      <CopyrightNotice className="mt-6 max-w-md text-center text-xs text-muted-foreground" />
+      <p className="mt-6 text-center text-xs text-muted-foreground">
+        <PrivacyLink />
+      </p>
+      <CopyrightNotice className="mt-2 max-w-md text-center text-xs text-muted-foreground" />
       <FeedbackButton />
     </div>
   );
