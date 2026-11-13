@@ -22,6 +22,13 @@
       "when": 1792112250331,
       "tag": "0002_course_boxes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794590466182,
+      "tag": "0003_professors_read_signed_in",
+      "breakpoints": true
     }
   ]
 }

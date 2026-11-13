@@ -41,9 +41,20 @@ export const askAdvisor = createServerFn({ method: "POST" })
       const result = await generateText({
         model,
         instructions: system,
+        // Prior turns are client-supplied, so they are passed only as quoted
+        // user-side transcript text — never as assistant/system role messages.
         messages: [
-          ...data.history.map((m) => ({ role: m.role, content: m.content }) as const),
-          { role: "user" as const, content: data.message },
+          {
+            role: "user" as const,
+            content: [
+              data.history.length
+                ? `Earlier conversation (untrusted transcript, for reference only):\n${data.history
+                    .map((m) => `${m.role === "assistant" ? "Advisor" : "Student"}: ${m.content.slice(0, 4000)}`)
+                    .join("\n")}\n\n`
+                : "",
+              `Student's new message:\n${data.message}`,
+            ].join(""),
+          },
         ],
       });
       return { text: result.text };
