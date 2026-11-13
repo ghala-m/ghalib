@@ -5,8 +5,6 @@
 - Improve summary formatting and downloadable/shareable PDF output.
 - Add interactive flashcard review with colors, optional sound and celebration.
 - Personalize study plans in tools and course pages with availability, quantity, times and uploads.
-- Improve new-user setup screens (waiting for preferred improvements).
-- Add professor-rating forum (waiting for review visibility preference).
 - Collapse saved briefing into a summary with section-only reset; verify saving and reset.
 
 ## Done this session
@@ -25,6 +23,7 @@
 - University switching with 30-day restore, 1-year read-only archive, backup download, expiry banner
 - Admin control page (/admin): reports + catalog (student admin); overview + admins (technical admin)
 - Unit tests (vitest) for grade maths and catalog integrity
+- Professor forum privacy: reviews visible only to students of the same university (enforced in the database); reviewer shown as first letter only or fully anonymous; respect notice under every review
 
 ## Later
 - Redesign Academic Profile & AI Advisor pages

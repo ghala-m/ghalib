@@ -4,15 +4,24 @@ export type Lang = "ar" | "en";
 
 const dict = {
   languageSettings: { ar: "لغة التطبيق", en: "App language" },
-  languageSettingsHint: { ar: "اختر لغة الواجهة؛ يتغير اتجاه الصفحة تلقائيًا.", en: "Choose the interface language; page direction updates automatically." },
+  languageSettingsHint: {
+    ar: "اختر لغة الواجهة؛ يتغير اتجاه الصفحة تلقائيًا.",
+    en: "Choose the interface language; page direction updates automatically.",
+  },
   more: { ar: "المزيد", en: "More" },
   editMaterial: { ar: "تعديل", en: "Edit" },
   materialTitle: { ar: "العنوان", en: "Title" },
   materialCourse: { ar: "المادة المالكة", en: "Owning course" },
   materialUpdated: { ar: "تم تحديث العنصر", en: "Item updated" },
-  briefingSwitchHint: { ar: "فعّله لتصلك رسالة قبل أول محاضرة بوقت الخروج المناسب.", en: "Turn on to get a message telling you when to leave before your first class." },
+  briefingSwitchHint: {
+    ar: "فعّله لتصلك رسالة قبل أول محاضرة بوقت الخروج المناسب.",
+    en: "Turn on to get a message telling you when to leave before your first class.",
+  },
   studentDetails: { ar: "بيانات الطالب", en: "Student details" },
-  setupRequired: { ar: "أكمل الاسم والجامعة والتخصص والفصل الحالي أولًا.", en: "Enter your name, university, major and current term first." },
+  setupRequired: {
+    ar: "أكمل الاسم والجامعة والتخصص والفصل الحالي أولًا.",
+    en: "Enter your name, university, major and current term first.",
+  },
   professorForum: { ar: "منتدى تقييم الدكاترة", en: "Professor ratings" },
   professorName: { ar: "اسم الدكتور", en: "Professor name" },
   departmentLabel: { ar: "القسم", en: "Department" },
@@ -24,7 +33,10 @@ const dict = {
   writeReview: { ar: "تقييم الدكتور", en: "Rate professor" },
   reviewComment: { ar: "تجربتك مع الدكتور", en: "Your experience" },
   reviewCourse: { ar: "اسم المادة (اختياري)", en: "Course name (optional)" },
-  anonymousReview: { ar: "إخفاء اسمي عن الطلاب", en: "Hide my name from students" },
+  anonymousReview: {
+    ar: "إخفاء الحرف الأول من اسمي أيضاً",
+    en: "Also hide the first letter of my name",
+  },
   anonymousStudent: { ar: "طالب مجهول", en: "Anonymous student" },
   namedStudent: { ar: "طالب", en: "Student" },
   publishReview: { ar: "نشر التقييم", en: "Publish review" },
@@ -32,7 +44,10 @@ const dict = {
   reportReason: { ar: "سبب الإبلاغ", en: "Report reason" },
   reportSent: { ar: "تم تسجيل البلاغ", en: "Report recorded" },
   reviewSaved: { ar: "تم حفظ تقييمك", en: "Review saved" },
-  reviewValidation: { ar: "اختر تقييمًا واكتب تجربة من 10 أحرف على الأقل.", en: "Choose a rating and write at least 10 characters." },
+  reviewValidation: {
+    ar: "اختر تقييمًا واكتب تجربة من 10 أحرف على الأقل.",
+    en: "Choose a rating and write at least 10 characters.",
+  },
   loadFailed: { ar: "تعذّر تحميل البيانات", en: "Couldn't load data" },
   appName: { ar: "غالِـب", en: "Ghalib" },
   tagline: {
@@ -708,7 +723,10 @@ const dict = {
   reportSend: { ar: "إرسال البلاغ", en: "Send report" },
   reportThanks: { ar: "شكراً! وصلنا بلاغك.", en: "Thanks! Your report was received." },
   archivedBadge: { ar: "أرشيف للقراءة فقط", en: "Read-only archive" },
-  archiveDeletesOn: { ar: "يُحذف نهائياً بعد {days} يوم", en: "Permanently deleted in {days} days" },
+  archiveDeletesOn: {
+    ar: "يُحذف نهائياً بعد {days} يوم",
+    en: "Permanently deleted in {days} days",
+  },
   viewArchive: { ar: "عرض الأرشيف", en: "View archive" },
   downloadArchive: { ar: "تنزيل نسخة", en: "Download backup" },
   downloadArchiveFailed: { ar: "تعذّر تنزيل النسخة", en: "Couldn't download the backup" },
@@ -742,7 +760,10 @@ const dict = {
     ar: "تم تغيير الجامعة. بياناتك السابقة محفوظة لمدة {days} يوماً.",
     en: "University changed. Your previous data is kept for {days} days.",
   },
-  previousUniversities: { ar: "جامعات سابقة (قابلة للاسترجاع)", en: "Previous universities (restorable)" },
+  previousUniversities: {
+    ar: "جامعات سابقة (قابلة للاسترجاع)",
+    en: "Previous universities (restorable)",
+  },
   archiveDaysLeft: { ar: "متاح للاسترجاع لمدة {days} يوم", en: "Restorable for {days} more days" },
   restoreData: { ar: "استرجاع البيانات", en: "Restore data" },
   restoreTitle: { ar: "استرجاع بيانات الجامعة السابقة؟", en: "Restore previous university?" },
@@ -751,7 +772,10 @@ const dict = {
     en: "“{to}” data will be restored. Your current “{from}” data is kept for {days} days so you can switch back.",
   },
   universityRestored: { ar: "تم استرجاع البيانات", en: "Data restored" },
-  archiveExpired: { ar: "انتهت مهلة الاسترجاع لهذه الجامعة.", en: "The restore window for this university has ended." },
+  archiveExpired: {
+    ar: "انتهت مهلة الاسترجاع لهذه الجامعة.",
+    en: "The restore window for this university has ended.",
+  },
   currentGrade: { ar: "أداؤك الحالي", en: "Current standing" },
   whatDoINeedFor: { ar: "وش أحتاج عشان أطلع", en: "What do I need for" },
   onRemainingWeight: { ar: "على باقي {weight}٪", en: "on the remaining {weight}%" },
@@ -843,12 +867,18 @@ const dict = {
     ar: "ما قدرت أستخرج الإحداثيات من هذا الرابط — تأكد أنه رابط خرائط جوجل لمكان محدد.",
     en: "Couldn't extract coordinates from this link — make sure it's a Google Maps link to a specific place.",
   },
-  mapsLinkExtracted: { ar: "تم استخراج الإحداثيات من الرابط", en: "Coordinates extracted from the link" },
+  mapsLinkExtracted: {
+    ar: "تم استخراج الإحداثيات من الرابط",
+    en: "Coordinates extracted from the link",
+  },
   // --- Morning briefing ---
   briefingTitle: { ar: "رفيق الصباح", en: "Morning companion" },
   briefingReset: { ar: "إعادة تعيين القسم", en: "Reset section" },
   briefingResetDone: { ar: "تمت إعادة تعيين إعدادات البريفنج فقط", en: "Briefing settings reset" },
-  briefingInvalidTiming: { ar: "وقت الإرسال يجب أن يكون 15 دقيقة أو أكثر، والهامش صفر أو أكثر.", en: "Lead time must be at least 15 minutes and the buffer at least zero." },
+  briefingInvalidTiming: {
+    ar: "وقت الإرسال يجب أن يكون 15 دقيقة أو أكثر، والهامش صفر أو أكثر.",
+    en: "Lead time must be at least 15 minutes and the buffer at least zero.",
+  },
   briefingStatus: { ar: "حالة البريفنج", en: "Briefing status" },
   briefingActive: { ar: "مفعّل", en: "Enabled" },
   briefingInactive: { ar: "غير مفعّل", en: "Disabled" },
