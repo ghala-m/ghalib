@@ -710,6 +710,8 @@ const dict = {
   archivedBadge: { ar: "أرشيف للقراءة فقط", en: "Read-only archive" },
   archiveDeletesOn: { ar: "يُحذف نهائياً بعد {days} يوم", en: "Permanently deleted in {days} days" },
   viewArchive: { ar: "عرض الأرشيف", en: "View archive" },
+  downloadArchive: { ar: "تنزيل نسخة", en: "Download backup" },
+  downloadArchiveFailed: { ar: "تعذّر تنزيل النسخة", en: "Couldn't download the backup" },
   archiveReadOnlyNote: {
     ar: "هذا أرشيف للقراءة فقط: لا يمكن تعديله أو استرجاعه بعد انتهاء مهلة الـ 30 يوماً، ويُحذف نهائياً بعد سنة.",
     en: "Read-only archive: it can't be edited or restored after the 30-day window, and is deleted after one more year.",
@@ -830,10 +832,6 @@ const dict = {
     en: "Notification permission was denied — enable it in your browser's site settings and try again.",
   },
   searchLocation: { ar: "ابحث عن اسم المكان أو العنوان…", en: "Search for a place or address…" },
-  mapsKeyMissing: {
-    ar: "بحث المواقع يحتاج مفتاح خرائط جوجل (VITE_GOOGLE_MAPS_API_KEY) — راجع EMERGENCE.md.",
-    en: "Location search needs a Google Maps key (VITE_GOOGLE_MAPS_API_KEY) — see EMERGENCE.md.",
-  },
   mapsLoadFailed: { ar: "تعذّر تحميل خرائط جوجل.", en: "Couldn't load Google Maps." },
   locationSet: { ar: "الموقع محدَّد", en: "Location set" },
   pasteMapsLink: {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { History } from "lucide-react";
+import { Download, History } from "lucide-react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { useCatalog } from "@/hooks/useCatalog";
 import {
   ARCHIVE_DAYS,
   daysLeft,
+  downloadArchive,
   isRestorable,
   listArchives,
   readArchive,
@@ -158,9 +159,22 @@ export function UniversityChangeSection({ current }: { current: string }) {
                       : `${t("archivedBadge")} · ${t("archiveDeletesOn").replace("{days}", String(daysLeft(a.delete_at)))}`}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="ghost" onClick={() => setViewId(a.id)}>
                     {t("viewArchive")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      user &&
+                      downloadArchive(user.id, a.id).catch(() =>
+                        toast.error(t("downloadArchiveFailed")),
+                      )
+                    }
+                  >
+                    <Download className="me-1 size-4" />
+                    {t("downloadArchive")}
                   </Button>
                   {restorable && (
                     <Button size="sm" variant="outline" onClick={() => setRestoreId(a.id)}>
