@@ -953,6 +953,7 @@ export type Database = {
         Args: { p_email: string; p_role: string }
         Returns: undefined
       }
+      can_see_professor: { Args: { p_professor_id: string }; Returns: boolean }
       is_app_admin: { Args: never; Returns: boolean }
       is_tech_admin: { Args: never; Returns: boolean }
       list_professor_reviews: {
@@ -987,6 +988,7 @@ export type Database = {
         Args: { p_new_university: string }
         Returns: undefined
       }
+      university_key: { Args: { p_value: string }; Returns: string }
     }
     Enums: {
       course_category:
