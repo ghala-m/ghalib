@@ -29,6 +29,13 @@
       "when": 1794590466182,
       "tag": "0003_professors_read_signed_in",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794661694074,
+      "tag": "0004_professors_read_scoped",
+      "breakpoints": true
     }
   ]
 }
