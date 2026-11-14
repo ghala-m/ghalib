@@ -1,7 +1,7 @@
+import { BrandMark } from "@/components/app/BrandMark";
 import { PrivacyLink } from "@/components/app/PrivacyLink";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ScrollText } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -136,9 +136,7 @@ function AuthPage() {
     >
       <div className="mb-6 flex w-full max-w-md items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <ScrollText className="size-5" />
-          </div>
+          <BrandMark className="size-9" />
           <span className="font-display text-lg font-bold">{t("appName")}</span>
         </Link>
       </div>

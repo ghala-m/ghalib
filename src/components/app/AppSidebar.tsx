@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/app/BrandMark";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +13,6 @@ import {
   LogOut,
   Menu,
   MessageSquareHeart,
-  ScrollText,
   Route as RouteIcon,
   Search,
   Sparkles,
@@ -69,9 +69,7 @@ export function MobileNav() {
         </SheetContent>
       </Sheet>
       <div className="flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-          <ScrollText className="size-4" />
-        </div>
+        <BrandMark className="size-8" />
         <p className="font-display text-base font-bold">{t("appName")}</p>
       </div>
     </div>
@@ -103,9 +101,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: (() => void) | undefined })
   return (
     <div className="flex h-full min-h-0 w-full flex-1 flex-col">
       <div className="flex shrink-0 items-center gap-2 px-5 py-5">
-        <div className="flex size-9 items-center justify-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-          <ScrollText className="size-5" />
-        </div>
+        <BrandMark className="size-9" />
         <div className="min-w-0">
           <p className="font-display text-base leading-tight font-bold">{t("appName")}</p>
           <p className="truncate text-xs text-sidebar-foreground/60">{t("tagline")}</p>

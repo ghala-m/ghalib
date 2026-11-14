@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/app/BrandMark";
 import { PrivacyLink } from "@/components/app/PrivacyLink";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -8,7 +9,6 @@ import {
   FileUp,
   MessagesSquare,
   RotateCcw,
-  ScrollText,
   Sparkles,
   Library,
   CalendarDays,
@@ -63,9 +63,7 @@ function Index() {
     <div dir={dir} className="min-h-screen bg-background">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <ScrollText className="size-5" />
-          </div>
+          <BrandMark className="size-9" />
           <span className="font-display text-lg font-bold">{t("appName")}</span>
         </div>
         <div className="flex items-center gap-2">
