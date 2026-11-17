@@ -13,10 +13,52 @@ import {
   Library,
   CalendarDays,
   Network,
+  GraduationCap,
+  UsersRound,
+  Smartphone,
+  Bot,
+  Upload,
+  ListChecks,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { CopyrightNotice, FeedbackButton } from "@/components/app/FeedbackButton";
+
+const STEPS = {
+  ar: {
+    title: "كيف يشتغل غالب؟",
+    items: [
+      { icon: Upload, t: "ارفع", b: "ارفع خطة تخصصك وسلابس كل مادة (PDF أو Word)." },
+      {
+        icon: ListChecks,
+        t: "راجع",
+        b: "يستخرج الذكاء الاصطناعي كل شيء، وأنت تراجعه وتعدّل عليه.",
+      },
+      { icon: TrendingUp, t: "تابع", b: "تقويم وتذكيرات ومعدل وخطة أسبوعية تتحدث معك طوال الفصل." },
+    ],
+  },
+  en: {
+    title: "How Ghalib works",
+    items: [
+      {
+        icon: Upload,
+        t: "Upload",
+        b: "Drop in your degree plan and each course syllabus (PDF or Word).",
+      },
+      {
+        icon: ListChecks,
+        t: "Review",
+        b: "The AI extracts everything; you check it and fix anything.",
+      },
+      {
+        icon: TrendingUp,
+        t: "Follow",
+        b: "Calendar, reminders, GPA and a weekly plan that stay current all term.",
+      },
+    ],
+  },
+} as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,7 +81,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { t, dir } = useI18n();
+  const { t, dir, lang } = useI18n();
+  const steps = STEPS[lang];
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
@@ -57,6 +100,10 @@ function Index() {
     { icon: Library, title: t("f6t"), body: t("f6b") },
     { icon: CalendarDays, title: t("f7t"), body: t("f7b") },
     { icon: Network, title: t("f8t"), body: t("f8b") },
+    { icon: Bot, title: t("f9t"), body: t("f9b") },
+    { icon: GraduationCap, title: t("f10t"), body: t("f10b") },
+    { icon: UsersRound, title: t("f11t"), body: t("f11b") },
+    { icon: Smartphone, title: t("f12t"), body: t("f12b") },
   ];
 
   return (
@@ -75,22 +122,51 @@ function Index() {
 
       <main>
         <section className="grid-paper border-y border-border">
-          <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-            <p className="mb-4 inline-flex rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              {t("tagline")}
-            </p>
-            <h1 className="max-w-3xl text-4xl leading-tight font-bold text-balance md:text-6xl">
-              {t("heroTitle")}
-            </h1>
-            <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
-              {t("heroBody")}
-            </p>
-            <div className="mt-8">
-              <Button asChild size="lg">
-                <Link to="/auth">{t("getStarted")}</Link>
-              </Button>
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 md:grid-cols-[1fr_auto] md:py-28">
+            <div>
+              <p className="mb-4 inline-flex rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                {t("tagline")}
+              </p>
+              <h1 className="max-w-3xl text-4xl leading-tight font-bold text-balance md:text-6xl">
+                {t("heroTitle")}
+              </h1>
+              <p className="mt-6 max-w-xl text-base text-muted-foreground md:text-lg">
+                {t("heroBody")}
+              </p>
+              <div className="mt-8">
+                <Button asChild size="lg">
+                  <Link to="/auth">{t("getStarted")}</Link>
+                </Button>
+              </div>
             </div>
+            <img
+              src="/logo.png"
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="hidden size-56 rounded-[3rem] shadow-xl md:block lg:size-64"
+            />
           </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-6 pt-20">
+          <h2 className="text-2xl font-bold md:text-3xl">{steps.title}</h2>
+          <ol className="mt-8 grid gap-5 md:grid-cols-3">
+            {steps.items.map((it, i) => (
+              <li key={it.t} className="panel flex gap-4 p-6">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent font-bold text-accent-foreground">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="flex items-center gap-2 text-lg font-semibold">
+                    <it.icon className="size-4 text-accent" />
+                    {it.t}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{it.b}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section className="mx-auto max-w-6xl px-6 py-20">
