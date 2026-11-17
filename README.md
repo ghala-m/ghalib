@@ -1,3 +1,5 @@
+<p align="center"><img src="public/logo.png" alt="Ghalib logo" width="120" /></p>
+
 # غالِـب · Ghalib — AI Academic Assistant
 
 Ghalib (غالِـب) is a bilingual (Arabic / English) web app that turns a university student's
@@ -81,6 +83,34 @@ courses so that taking one strikes the alternatives through.
 Light / dark / system themes and a choice of accent colours, applied across the whole app.
 Full RTL support in Arabic.
 
+### 12. University, college & major
+Pick **University → College → Major** from lists stored in the database (with an "Other" option
+and a "Report a missing item / mistake" button). Switching university is safe: the old data is
+archived, restorable for **30 days**, kept read-only for **1 year**, then permanently deleted. A
+banner warns before the archive expires and a JSON backup can be downloaded at any time.
+
+### 13. Scores & grade distribution
+Record each item as *earned / out of* with its weight, optionally **drop the lowest** score, and
+view the grade distribution for the course.
+
+### 14. Professor forum (private to your university)
+Reviews are visible only to students of the **same university** (enforced by row-level security
+in the database). The reviewer appears as a single letter or fully anonymous, and a respect
+notice sits under every review.
+
+### 15. Install as an app (PWA)
+An "Install" card in Settings and a dashboard banner install Ghalib to the home screen
+(Android/desktop prompt; iOS via Share → Add to Home Screen). Push notifications need the VAPID
+key below.
+
+### 16. Privacy & your data
+A public bilingual **Privacy & Terms** page (`/privacy`), data export/backup, "Reset account", and
+a permanent **"Delete my account"** button (type `DELETE`) that removes the account, files and data.
+
+### 17. Admin control page (`/admin`)
+*Student admin*: catalog reports + catalog editor. *Technical admin*: also overview (aggregate
+numbers only) and admin management. Admin roles live in the `app_admins` table.
+
 ---
 
 ## Tech
@@ -105,6 +135,10 @@ src/
   lib/                    queries, i18n, theme, plan graph, AI server functions
 ```
 
+Database changes live in `supabase/migrations/` (all idempotent). They are **not** applied
+automatically: run new files, in filename order, in the Supabase SQL Editor, then merge and
+**Publish** from Lovable so the live site picks up the code.
+
 Every row is protected by row-level security: a student can only ever read and write their own data.
 
 ## Development
@@ -113,7 +147,9 @@ Every row is protected by row-level security: a student can only ever read and w
 git clone <this-repository-url>
 cd <repository-name>
 npm i
-npm run dev
+npm run dev      # local dev server
+npm test         # unit tests (vitest)
+npm run build    # production build
 ```
 
 ### Optional integrations (`.env`)

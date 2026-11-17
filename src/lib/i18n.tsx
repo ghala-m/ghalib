@@ -283,6 +283,26 @@ const dict = {
     ar: "شوف وش تفتح لك موادك الحالية، وتابع معدلك وكم تحتاج تجيب بالنهائي.",
     en: "See what your current courses unlock, track your GPA and the grade you need on the final.",
   },
+  f9t: { ar: "مرشد ذكي يعرف سجلك", en: "An advisor that knows your record" },
+  f9b: {
+    ar: "اسأله «وش أسجل الفصل الجاي؟» ويجاوبك بناءً على تخصصك ومعدلك وموادك ومواعيدك.",
+    en: "Ask “what should I register next term?” and get an answer grounded in your major, GPA, courses and deadlines.",
+  },
+  f10t: { ar: "جامعتك وكليتك وتخصصك", en: "Your university, college & major" },
+  f10b: {
+    ar: "اختر جامعتك وكليتك وتخصصك من قوائم جاهزة، وبدّل الجامعة بأمان مع استرجاع خلال ٣٠ يوماً.",
+    en: "Pick your university, college and major from ready lists, and switch universities safely with a 30-day restore.",
+  },
+  f11t: { ar: "منتدى الدكاترة لطلاب جامعتك", en: "Professor forum for your university" },
+  f11b: {
+    ar: "تقييمات يراها طلاب جامعتك فقط، واسم المقيّم مخفي ويظهر أول حرف منه أو يبقى مجهولاً.",
+    en: "Reviews only your own university's students can see; reviewers show as a first letter or stay fully anonymous.",
+  },
+  f12t: { ar: "ثبّته كتطبيق، وبياناتك بيدك", en: "Install it as an app — your data stays yours" },
+  f12b: {
+    ar: "ثبّت غالب على جوالك بضغطة، حمّل نسخة احتياطية، أو احذف حسابك وكل بياناتك متى ما أردت.",
+    en: "Install Ghalib on your phone in a tap, download a backup, or delete your account and all your data whenever you like.",
+  },
   // --- Navigation & shell ---
   calendar: { ar: "التقويم", en: "Calendar" },
   advisor: { ar: "المرشد الذكي", en: "AI advisor" },
