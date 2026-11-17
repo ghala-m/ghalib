@@ -35,6 +35,7 @@ import { UniversityChangeSection } from "@/components/app/UniversityChangeSectio
 import { PlaceSearchInput } from "@/components/app/PlaceSearchInput";
 import { MapsLinkInput } from "@/components/app/MapsLinkInput";
 import { ResetAccountCard } from "@/components/app/ResetAccountCard";
+import { DeleteAccountCard } from "@/components/app/DeleteAccountCard";
 import { DataExportCard } from "@/components/app/DataExportCard";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { AchievementsBadges } from "@/components/app/AchievementsBadges";
@@ -798,6 +799,7 @@ function ProfilePage() {
 
       <DataExportCard />
       <ResetAccountCard />
+      <DeleteAccountCard />
     </div>
   );
 }

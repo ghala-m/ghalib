@@ -979,6 +979,7 @@ export type Database = {
           review_count: number
         }[]
       }
+      delete_my_account: { Args: never; Returns: undefined }
       purge_expired_university_archives: { Args: never; Returns: undefined }
       restore_university_archive: {
         Args: { p_archive_id: string }
